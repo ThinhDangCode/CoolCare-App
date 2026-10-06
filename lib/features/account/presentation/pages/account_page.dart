@@ -161,15 +161,27 @@ class AccountPage extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 18),
-          TextButton(
-            onPressed: () => _confirmLogout(context),
-            style: TextButton.styleFrom(
-              foregroundColor: CoolCareColors.error,
-              padding: EdgeInsets.zero,
-            ),
-            child: const Text(
-              'Log Out',
-              style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: () => _confirmLogout(context),
+              icon: const Icon(Icons.logout_rounded, size: 17),
+              label: const Text('Log Out'),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: CoolCareColors.error,
+                side: BorderSide(
+                  color: CoolCareColors.error.withValues(alpha: .28),
+                ),
+                backgroundColor: CoolCareColors.error.withValues(alpha: .04),
+                minimumSize: const Size.fromHeight(46),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                textStyle: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
             ),
           ),
         ],
