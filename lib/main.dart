@@ -13,11 +13,21 @@ Future<void> main() async {
     'API_BASE_URL',
     defaultValue: 'http://10.0.2.2:3000/api',
   );
+
   final repository = ApiAuthRepository(
-    apiClient: ApiClient(baseUrl: baseUrl),
+    apiClient: ApiClient(
+      baseUrl: baseUrl,
+    ),
     sessionStore: const SecureSessionStore(),
   );
-  final authController = AuthController(repository)..initialize();
 
-  runApp(CoolCareApp(authController: authController));
+  final authController = AuthController(
+    repository,
+  )..initialize();
+
+  runApp(
+    CoolCareApp(
+      authController: authController,
+    ),
+  );
 }

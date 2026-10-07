@@ -1,13 +1,21 @@
 import 'package:flutter/material.dart';
 
 import '../../../../app/theme/coolcare_theme.dart';
+import '../../../../core/network/api_client.dart';
 import '../../../account/presentation/pages/account_page.dart';
+import '../../../address/pages/addresses_page.dart';
 import '../../../auth/presentation/auth_controller.dart';
 import '../../../auth/presentation/screens/login_page.dart';
-import '../../../services/presentation/pages/services_page.dart';
+import '../../../services/controllers/service_controller.dart';
+import '../../../services/models/service_model.dart';
+import '../../../services/pages/service_detail_page.dart';
+import '../../../services/pages/services_page.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({required this.controller, super.key});
+  const HomePage({
+    required this.controller,
+    super.key,
+  });
 
   final AuthController controller;
 
@@ -24,43 +32,88 @@ class _HomePageState extends State<HomePage> {
         builder: (_) => LoginPage(controller: widget.controller),
       ),
     );
-    if (destination == 'services' && mounted) _selectTab(1);
+
+    if (destination == 'services' && mounted) {
+      _selectTab(1);
+    }
   }
 
   void _openProfile() {
     final user = widget.controller.user;
-    if (user == null) return;
-    Navigator.of(
-      context,
-    ).push(MaterialPageRoute(builder: (_) => PersonalProfilePage(user: user)));
+
+    if (user == null) {
+      return;
+    }
+
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => PersonalProfilePage(user: user),
+      ),
+    );
   }
 
-  Widget _selectedPage() {
-    return switch (_selectedIndex) {
-      0 => _HomeBody(onExploreServices: () => _selectTab(1)),
-      1 => const ServicesPage(),
-      2 =>
-        widget.controller.status == AuthStatus.authenticated
-            ? const _BookingsPage()
-            : _RestrictedPage(onLogin: () => _openLogin(context)),
-      3 =>
-        widget.controller.user == null
-            ? _RestrictedPage(onLogin: () => _openLogin(context))
-            : AccountPage(
-                user: widget.controller.user!,
-                onViewProfile: _openProfile,
-                onLogout: () async {
-                  await widget.controller.logout();
-                  if (mounted) setState(() => _selectedIndex = 0);
-                },
-              ),
-      _ => const SizedBox.shrink(),
-    };
+  void _openAddresses() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => const AddressesPage(),
+      ),
+    );
   }
 
   void _selectTab(int index) {
-    if (_selectedIndex == index) return;
-    setState(() => _selectedIndex = index);
+    if (_selectedIndex == index) {
+      return;
+    }
+
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
+
+  Widget _selectedPage() {
+    switch (_selectedIndex) {
+      case 0:
+        return _HomeBody(
+          onExploreServices: () => _selectTab(1),
+        );
+
+      case 1:
+        return const ServicesPage();
+
+      case 2:
+        if (widget.controller.status == AuthStatus.authenticated) {
+          return const _BookingsPage();
+        }
+
+        return _RestrictedPage(
+          onLogin: () => _openLogin(context),
+        );
+
+      case 3:
+        if (widget.controller.user == null) {
+          return _RestrictedPage(
+            onLogin: () => _openLogin(context),
+          );
+        }
+
+        return AccountPage(
+          user: widget.controller.user!,
+          onViewProfile: _openProfile,
+          onViewAddresses: _openAddresses,
+          onLogout: () async {
+            await widget.controller.logout();
+
+            if (mounted) {
+              setState(() {
+                _selectedIndex = 0;
+              });
+            }
+          },
+        );
+
+      default:
+        return const SizedBox.shrink();
+    }
   }
 
   @override
@@ -78,7 +131,9 @@ class _HomePageState extends State<HomePage> {
                   controller: widget.controller,
                   onLogin: () => _openLogin(context),
                 ),
-                Expanded(child: _selectedPage()),
+                Expanded(
+                  child: _selectedPage(),
+                ),
                 _HomeNavigation(
                   selectedIndex: _selectedIndex,
                   onSelected: _selectTab,
@@ -92,8 +147,15 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
+// ============================================================
+// HEADER
+// ============================================================
+
 class _HomeHeader extends StatelessWidget {
-  const _HomeHeader({required this.controller, required this.onLogin});
+  const _HomeHeader({
+    required this.controller,
+    required this.onLogin,
+  });
 
   final AuthController controller;
   final VoidCallback onLogin;
@@ -101,11 +163,13 @@ class _HomeHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 70,
-      padding: const EdgeInsets.symmetric(horizontal: 24),
+      height: 58,
+      padding: const EdgeInsets.symmetric(horizontal: 18),
       decoration: const BoxDecoration(
         color: Colors.white,
-        border: Border(bottom: BorderSide(color: Color(0xFFE8EEEE))),
+        border: Border(
+          bottom: BorderSide(color: Color(0xFFE8EEEE)),
+        ),
       ),
       child: Row(
         children: [
@@ -123,9 +187,9 @@ class _HomeHeader extends StatelessWidget {
               ],
             ),
             style: TextStyle(
-              fontSize: 19,
+              fontSize: 18,
               fontWeight: FontWeight.w800,
-              letterSpacing: -0.7,
+              letterSpacing: -0.5,
             ),
           ),
           const Spacer(),
@@ -134,6 +198,7 @@ class _HomeHeader extends StatelessWidget {
             builder: (context, _) {
               if (controller.status == AuthStatus.authenticated) {
                 return const Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(
                       Icons.notifications_none_rounded,
@@ -149,11 +214,28 @@ class _HomeHeader extends StatelessWidget {
                   ],
                 );
               }
+
               return TextButton.icon(
                 onPressed: onLogin,
                 iconAlignment: IconAlignment.end,
-                icon: const Icon(Icons.north_east_rounded, size: 14),
-                label: const Text('Log In'),
+                style: TextButton.styleFrom(
+                  foregroundColor: CoolCareColors.primaryDark,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 6,
+                  ),
+                ),
+                label: const Text(
+                  'Log In',
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                icon: const Icon(
+                  Icons.north_east_rounded,
+                  size: 12,
+                ),
               );
             },
           ),
@@ -163,82 +245,255 @@ class _HomeHeader extends StatelessWidget {
   }
 }
 
-class _HomeBody extends StatelessWidget {
-  const _HomeBody({required this.onExploreServices});
+// ============================================================
+// HOME BODY
+// ============================================================
+
+class _HomeBody extends StatefulWidget {
+  const _HomeBody({
+    required this.onExploreServices,
+  });
 
   final VoidCallback onExploreServices;
 
   @override
-  Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(24, 20, 24, 22),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _HeroCard(onExploreServices: onExploreServices),
-          const SizedBox(height: 26),
-          const _SectionTitle('How can we help?'),
-          const SizedBox(height: 14),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              _ServiceShortcut(
-                icon: Icons.cleaning_services_outlined,
-                label: 'Cleaning',
-                onTap: onExploreServices,
-              ),
-              _ServiceShortcut(
-                icon: Icons.build_outlined,
-                label: 'Repair',
-                onTap: onExploreServices,
-              ),
-              _ServiceShortcut(
-                icon: Icons.air_rounded,
-                label: 'Installation',
-                onTap: onExploreServices,
-              ),
-            ],
-          ),
-          const SizedBox(height: 27),
-          const _SectionTitle('Booking made simple'),
-          const SizedBox(height: 13),
-          const Row(
-            children: [
-              Expanded(
-                child: _BookingStep(number: '01', label: 'Choose service'),
-              ),
-              Expanded(
-                child: _BookingStep(number: '02', label: 'Schedule'),
-              ),
-              Expanded(
-                child: _BookingStep(number: '03', label: 'Choose\ntechnician'),
-              ),
-            ],
-          ),
-          const SizedBox(height: 27),
-          const Row(
-            children: [
-              Expanded(child: _SectionTitle('AC Care')),
-              Text(
-                'See more  →',
-                style: TextStyle(
-                  color: CoolCareColors.primaryDark,
-                  fontSize: 11,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 13),
-          const _CareArticle(),
-        ],
+  State<_HomeBody> createState() => _HomeBodyState();
+}
+
+class _HomeBodyState extends State<_HomeBody> {
+  late final ServiceController _serviceController;
+
+  @override
+  void initState() {
+    super.initState();
+
+    const baseUrl = String.fromEnvironment(
+      'API_BASE_URL',
+      defaultValue: 'http://10.0.2.2:3000/api',
+    );
+
+    _serviceController = ServiceController(
+      apiClient: ApiClient(baseUrl: baseUrl),
+    );
+
+    _serviceController.addListener(_refresh);
+    _serviceController.loadInitialData();
+  }
+
+  void _refresh() {
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  void _openService(ServiceModel service) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => ServiceDetailPage(serviceId: service.id),
       ),
     );
   }
+
+  @override
+  void dispose() {
+    _serviceController.removeListener(_refresh);
+    _serviceController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return RefreshIndicator(
+      color: CoolCareColors.primary,
+      onRefresh: _serviceController.loadInitialData,
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.fromLTRB(18, 14, 18, 24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _HeroCard(
+              onExploreServices: widget.onExploreServices,
+            ),
+            const SizedBox(height: 20),
+            const _SectionTitle('How can we help?'),
+            const SizedBox(height: 12),
+            _buildServices(),
+            const SizedBox(height: 22),
+            const _SectionTitle('Booking made simple'),
+            const SizedBox(height: 12),
+            const Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: _BookingStep(
+                    number: '01',
+                    label: 'Choose service',
+                  ),
+                ),
+                SizedBox(width: 12),
+                Expanded(
+                  child: _BookingStep(
+                    number: '02',
+                    label: 'Schedule',
+                  ),
+                ),
+                SizedBox(width: 12),
+                Expanded(
+                  child: _BookingStep(
+                    number: '03',
+                    label: 'Choose technician',
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 22),
+            Row(
+              children: [
+                const Expanded(
+                  child: _SectionTitle('AC Care'),
+                ),
+                TextButton(
+                  onPressed: widget.onExploreServices,
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 4,
+                      vertical: 4,
+                    ),
+                    minimumSize: const Size(0, 28),
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
+                  child: const Text(
+                    'See more  →',
+                    style: TextStyle(
+                      color: CoolCareColors.primaryDark,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            const _CareArticle(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildServices() {
+    if (_serviceController.isLoading &&
+        _serviceController.allServices.isEmpty) {
+      return const SizedBox(
+        height: 112,
+        child: Center(
+          child: CircularProgressIndicator(
+            strokeWidth: 2,
+            color: CoolCareColors.primary,
+          ),
+        ),
+      );
+    }
+
+    if (_serviceController.errorMessage != null &&
+        _serviceController.allServices.isEmpty) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: CoolCareColors.surfaceTint,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Column(
+          children: [
+            const Text(
+              'Unable to load services',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: CoolCareColors.text,
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 4),
+            TextButton(
+              onPressed: _serviceController.retry,
+              child: const Text('Try Again'),
+            ),
+          ],
+        ),
+      );
+    }
+
+    final services = _serviceController.allServices.take(4).toList();
+
+    if (services.isEmpty) {
+      return const SizedBox(
+        width: double.infinity,
+        child: Text(
+          'No services available.',
+          style: TextStyle(
+            color: CoolCareColors.mutedText,
+            fontSize: 11,
+          ),
+        ),
+      );
+    }
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final itemWidth = (constraints.maxWidth - 12) / 2;
+
+        return Wrap(
+          spacing: 12,
+          runSpacing: 12,
+          children: services.map((service) {
+            return SizedBox(
+              width: itemWidth,
+              child: _ServiceShortcut(
+                icon: _serviceIcon(service.name),
+                label: service.name,
+                onTap: () => _openService(service),
+              ),
+            );
+          }).toList(),
+        );
+      },
+    );
+  }
+
+  IconData _serviceIcon(String name) {
+    final value = name.toLowerCase();
+
+    if (value.contains('vệ sinh')) {
+      return Icons.cleaning_services_outlined;
+    }
+
+    if (value.contains('kiểm tra') || value.contains('chẩn đoán')) {
+      return Icons.search_rounded;
+    }
+
+    if (value.contains('bảo dưỡng')) {
+      return Icons.settings_suggest_outlined;
+    }
+
+    if (value.contains('sửa chữa') || value.contains('sửa')) {
+      return Icons.build_outlined;
+    }
+
+    return Icons.home_repair_service_outlined;
+  }
 }
 
+// ============================================================
+// HERO
+// ============================================================
+
 class _HeroCard extends StatelessWidget {
-  const _HeroCard({required this.onExploreServices});
+  const _HeroCard({
+    required this.onExploreServices,
+  });
 
   final VoidCallback onExploreServices;
 
@@ -246,78 +501,94 @@ class _HeroCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(20, 19, 16, 18),
+      padding: const EdgeInsets.fromLTRB(16, 16, 14, 16),
       decoration: BoxDecoration(
         color: CoolCareColors.surfaceTint,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(14),
       ),
-      child: Stack(
+      child: Row(
         children: [
-          Positioned(
-            right: 3,
-            top: 40,
-            child: Icon(
-              Icons.air_rounded,
-              size: 54,
-              color: CoolCareColors.primary.withValues(alpha: .18),
-            ),
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'HOME AC CARE SERVICE',
-                style: TextStyle(
-                  color: CoolCareColors.primaryDark,
-                  fontSize: 9,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: .4,
-                ),
-              ),
-              const SizedBox(height: 12),
-              const Text(
-                'Cool comfort, every\nday.\nPeace of mind,\nalways.',
-                style: TextStyle(
-                  color: CoolCareColors.text,
-                  fontSize: 21,
-                  height: 1.02,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: -.5,
-                ),
-              ),
-              const SizedBox(height: 12),
-              const Text(
-                'Find the right service,\nbook at your convenience.',
-                style: TextStyle(
-                  color: CoolCareColors.mutedText,
-                  fontSize: 11,
-                  height: 1.35,
-                ),
-              ),
-              const SizedBox(height: 14),
-              FilledButton.icon(
-                onPressed: onExploreServices,
-                iconAlignment: IconAlignment.end,
-                icon: const Icon(Icons.arrow_forward_rounded, size: 15),
-                style: FilledButton.styleFrom(
-                  minimumSize: const Size(0, 40),
-                  padding: const EdgeInsets.symmetric(horizontal: 18),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'HOME AC CARE SERVICE',
+                  style: TextStyle(
+                    color: CoolCareColors.primaryDark,
+                    fontSize: 8,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: .5,
                   ),
                 ),
-                label: const Text(
-                  'Explore Services',
-                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+                const SizedBox(height: 8),
+                const Text(
+                  'Cool comfort, every day.\n'
+                      'Peace of mind, always.',
+                  style: TextStyle(
+                    color: CoolCareColors.text,
+                    fontSize: 18,
+                    height: 1.08,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: -.3,
+                  ),
                 ),
-              ),
-            ],
+                const SizedBox(height: 8),
+                const Text(
+                  'Find the right service,\n'
+                      'book at your convenience.',
+                  style: TextStyle(
+                    color: CoolCareColors.mutedText,
+                    fontSize: 10,
+                    height: 1.35,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                SizedBox(
+                  height: 35,
+                  child: FilledButton.icon(
+                    onPressed: onExploreServices,
+                    iconAlignment: IconAlignment.end,
+                    icon: const Icon(
+                      Icons.arrow_forward_rounded,
+                      size: 14,
+                    ),
+                    style: FilledButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 13),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(7),
+                      ),
+                    ),
+                    label: const Text(
+                      'Explore Services',
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          SizedBox(
+            width: 68,
+            child: Icon(
+              Icons.air_rounded,
+              size: 52,
+              color: CoolCareColors.primary.withValues(alpha: .18),
+            ),
           ),
         ],
       ),
     );
   }
 }
+
+// ============================================================
+// SECTION TITLE
+// ============================================================
 
 class _SectionTitle extends StatelessWidget {
   const _SectionTitle(this.text);
@@ -330,12 +601,16 @@ class _SectionTitle extends StatelessWidget {
       text,
       style: const TextStyle(
         color: CoolCareColors.text,
-        fontSize: 14,
+        fontSize: 12,
         fontWeight: FontWeight.w800,
       ),
     );
   }
 }
+
+// ============================================================
+// REAL SERVICE SHORTCUT
+// ============================================================
 
 class _ServiceShortcut extends StatelessWidget {
   const _ServiceShortcut({
@@ -350,40 +625,69 @@ class _ServiceShortcut extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: 88,
+    return Material(
+      color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(11),
-        child: Column(
-          children: [
-            Container(
-              width: 54,
-              height: 54,
-              decoration: BoxDecoration(
-                color: CoolCareColors.surfaceTint,
-                borderRadius: BorderRadius.circular(11),
-              ),
-              child: Icon(icon, color: CoolCareColors.primary, size: 25),
+        borderRadius: BorderRadius.circular(13),
+        child: Container(
+          constraints: const BoxConstraints(minHeight: 94),
+          padding: const EdgeInsets.symmetric(
+            horizontal: 8,
+            vertical: 10,
+          ),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(13),
+            border: Border.all(
+              color: CoolCareColors.border,
             ),
-            const SizedBox(height: 9),
-            Text(
-              label,
-              style: const TextStyle(
-                color: CoolCareColors.text,
-                fontSize: 11,
-                fontWeight: FontWeight.w600,
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: CoolCareColors.surfaceTint,
+                  borderRadius: BorderRadius.circular(11),
+                ),
+                child: Icon(
+                  icon,
+                  color: CoolCareColors.primary,
+                  size: 22,
+                ),
               ),
-            ),
-          ],
+              const SizedBox(height: 7),
+              Text(
+                label,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  color: CoolCareColors.text,
+                  fontSize: 9.5,
+                  height: 1.25,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 }
 
+// ============================================================
+// BOOKING STEP
+// ============================================================
+
 class _BookingStep extends StatelessWidget {
-  const _BookingStep({required this.number, required this.label});
+  const _BookingStep({
+    required this.number,
+    required this.label,
+  });
 
   final String number;
   final String label;
@@ -397,17 +701,18 @@ class _BookingStep extends StatelessWidget {
           number,
           style: const TextStyle(
             color: CoolCareColors.primary,
-            fontSize: 18,
+            fontSize: 17,
             fontWeight: FontWeight.w800,
           ),
         ),
         const SizedBox(height: 4),
         Text(
           label,
+          maxLines: 2,
           style: const TextStyle(
             color: CoolCareColors.mutedText,
             fontSize: 9,
-            height: 1.2,
+            height: 1.25,
           ),
         ),
       ],
@@ -415,33 +720,39 @@ class _BookingStep extends StatelessWidget {
   }
 }
 
+// ============================================================
+// AC CARE
+// ============================================================
+
 class _CareArticle extends StatelessWidget {
   const _CareArticle();
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(13),
+      width: double.infinity,
+      padding: const EdgeInsets.all(11),
       decoration: BoxDecoration(
+        color: Colors.white,
         border: Border.all(color: CoolCareColors.border),
-        borderRadius: BorderRadius.circular(11),
+        borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
         children: [
           Container(
-            width: 66,
-            height: 66,
+            width: 58,
+            height: 58,
             decoration: BoxDecoration(
               color: CoolCareColors.surfaceTint,
-              borderRadius: BorderRadius.circular(9),
+              borderRadius: BorderRadius.circular(10),
             ),
             child: const Icon(
               Icons.ac_unit_rounded,
               color: CoolCareColors.primary,
-              size: 30,
+              size: 27,
             ),
           ),
-          const SizedBox(width: 14),
+          const SizedBox(width: 12),
           const Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -450,26 +761,28 @@ class _CareArticle extends StatelessWidget {
                   'TIPS & TRICKS',
                   style: TextStyle(
                     color: CoolCareColors.primary,
-                    fontSize: 8,
+                    fontSize: 7.5,
                     fontWeight: FontWeight.w800,
-                    letterSpacing: .5,
+                    letterSpacing: .4,
                   ),
                 ),
                 SizedBox(height: 4),
                 Text(
                   'When should you clean your AC?',
+                  maxLines: 2,
                   style: TextStyle(
                     color: CoolCareColors.text,
-                    fontSize: 12,
+                    fontSize: 10.5,
+                    height: 1.25,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
-                SizedBox(height: 6),
+                SizedBox(height: 5),
                 Text(
                   'Read article  →',
                   style: TextStyle(
                     color: CoolCareColors.primary,
-                    fontSize: 9,
+                    fontSize: 8.5,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -481,6 +794,10 @@ class _CareArticle extends StatelessWidget {
     );
   }
 }
+
+// ============================================================
+// BOTTOM NAVIGATION
+// ============================================================
 
 class _HomeNavigation extends StatelessWidget {
   const _HomeNavigation({
@@ -494,31 +811,38 @@ class _HomeNavigation extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 64,
-      padding: const EdgeInsets.fromLTRB(14, 4, 14, 4),
+      height: 62,
+      padding: const EdgeInsets.symmetric(
+        horizontal: 8,
+        vertical: 4,
+      ),
       color: CoolCareColors.primary,
       child: Row(
         children: [
           _NavItem(
             icon: Icons.home_outlined,
+            selectedIcon: Icons.home_rounded,
             label: 'Home',
             selected: selectedIndex == 0,
             onTap: () => onSelected(0),
           ),
           _NavItem(
-            icon: Icons.grid_view_rounded,
+            icon: Icons.grid_view_outlined,
+            selectedIcon: Icons.grid_view_rounded,
             label: 'Services',
             selected: selectedIndex == 1,
             onTap: () => onSelected(1),
           ),
           _NavItem(
             icon: Icons.shopping_bag_outlined,
+            selectedIcon: Icons.shopping_bag_rounded,
             label: 'My Bookings',
             selected: selectedIndex == 2,
             onTap: () => onSelected(2),
           ),
           _NavItem(
             icon: Icons.person_outline_rounded,
+            selectedIcon: Icons.person_rounded,
             label: 'Account',
             selected: selectedIndex == 3,
             onTap: () => onSelected(3),
@@ -529,15 +853,21 @@ class _HomeNavigation extends StatelessWidget {
   }
 }
 
+// ============================================================
+// NAV ITEM
+// ============================================================
+
 class _NavItem extends StatelessWidget {
   const _NavItem({
     required this.icon,
+    required this.selectedIcon,
     required this.label,
     required this.onTap,
-    this.selected = false,
+    required this.selected,
   });
 
   final IconData icon;
+  final IconData selectedIcon;
   final String label;
   final VoidCallback onTap;
   final bool selected;
@@ -545,63 +875,49 @@ class _NavItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Expanded(
-      child: Semantics(
-        selected: selected,
-        button: true,
-        label: label,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(14),
-          child: Stack(
-            alignment: Alignment.topCenter,
-            children: [
-              if (selected)
-                Container(
-                  width: 48,
-                  height: 42,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: .18),
-                    borderRadius: BorderRadius.circular(15),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Center(
+          child: Container(
+            constraints: const BoxConstraints(
+              minWidth: 48,
+              minHeight: 46,
+            ),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 7,
+              vertical: 5,
+            ),
+            decoration: BoxDecoration(
+              color: selected
+                  ? Colors.white.withValues(alpha: .17)
+                  : Colors.transparent,
+              borderRadius: BorderRadius.circular(13),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  selected ? selectedIcon : icon,
+                  color: Colors.white,
+                  size: 19,
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 8,
+                    fontWeight:
+                    selected ? FontWeight.w700 : FontWeight.w500,
                   ),
                 ),
-              Column(
-                children: [
-                  const SizedBox(height: 7),
-                  Icon(icon, color: Colors.white, size: 19),
-                  const SizedBox(height: 2),
-                  SizedBox(
-                    width: double.infinity,
-                    child: Text(
-                      label,
-                      maxLines: 1,
-                      textAlign: TextAlign.center,
-                      overflow: TextOverflow.visible,
-                      style: TextStyle(
-                        color: Colors.white.withValues(
-                          alpha: selected ? 1 : .9,
-                        ),
-                        fontSize: 8,
-                        fontWeight: selected
-                            ? FontWeight.w700
-                            : FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              if (selected)
-                Positioned(
-                  bottom: 0,
-                  child: Container(
-                    width: 58,
-                    height: 3,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                  ),
-                ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -609,16 +925,22 @@ class _NavItem extends StatelessWidget {
   }
 }
 
+// ============================================================
+// RESTRICTED
+// ============================================================
+
 class _RestrictedPage extends StatelessWidget {
-  const _RestrictedPage({required this.onLogin});
+  const _RestrictedPage({
+    required this.onLogin,
+  });
 
   final VoidCallback onLogin;
 
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(28),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -638,13 +960,14 @@ class _RestrictedPage extends StatelessWidget {
             const SizedBox(height: 18),
             const Text(
               'Sign in to continue',
+              textAlign: TextAlign.center,
               style: TextStyle(
                 color: CoolCareColors.text,
                 fontSize: 18,
                 fontWeight: FontWeight.w800,
               ),
             ),
-            const SizedBox(height: 7),
+            const SizedBox(height: 8),
             const Text(
               'Log in to view your bookings and manage your CoolCare account.',
               textAlign: TextAlign.center,
@@ -657,6 +980,7 @@ class _RestrictedPage extends StatelessWidget {
             const SizedBox(height: 20),
             SizedBox(
               width: 180,
+              height: 42,
               child: FilledButton(
                 onPressed: onLogin,
                 child: const Text('Log In'),
@@ -669,13 +993,17 @@ class _RestrictedPage extends StatelessWidget {
   }
 }
 
+// ============================================================
+// BOOKINGS
+// ============================================================
+
 class _BookingsPage extends StatelessWidget {
   const _BookingsPage();
 
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(20, 18, 20, 24),
+      padding: const EdgeInsets.fromLTRB(18, 20, 18, 28),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -683,14 +1011,17 @@ class _BookingsPage extends StatelessWidget {
             'My Bookings',
             style: TextStyle(
               color: CoolCareColors.text,
-              fontSize: 22,
+              fontSize: 21,
               fontWeight: FontWeight.w800,
             ),
           ),
           const SizedBox(height: 18),
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 42),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 22,
+              vertical: 42,
+            ),
             decoration: BoxDecoration(
               color: CoolCareColors.surfaceTint,
               borderRadius: BorderRadius.circular(14),
@@ -711,7 +1042,7 @@ class _BookingsPage extends StatelessWidget {
                     fontWeight: FontWeight.w800,
                   ),
                 ),
-                SizedBox(height: 5),
+                SizedBox(height: 6),
                 Text(
                   'Your upcoming services will appear here.',
                   textAlign: TextAlign.center,
