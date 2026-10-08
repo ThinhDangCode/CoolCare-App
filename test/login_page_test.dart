@@ -128,4 +128,41 @@ class _NoopAuthRepository implements AuthRepository {
     required String email,
     required String otp,
   }) async => 'token';
+
+  @override
+  Future<AuthUser> updateProfile({
+    required String fullName,
+    String? phone,
+    String? dateOfBirth,
+    String? gender,
+  }) async => AuthUser(
+    id: session?.user.id ?? 'user-id',
+    email: session?.user.email ?? 'customer@coolcare.test',
+    fullName: fullName,
+    role: session?.user.role ?? 'CUSTOMER',
+    phone: phone,
+    dateOfBirth: dateOfBirth,
+    gender: gender,
+  );
+
+  @override
+  Future<AuthUser> updateAvatar({required String? avatarUrl}) async {
+    final current = session?.user;
+    return AuthUser(
+      id: current?.id ?? 'user-id',
+      email: current?.email ?? 'customer@coolcare.test',
+      fullName: current?.fullName ?? 'Customer Demo',
+      role: current?.role ?? 'CUSTOMER',
+      phone: current?.phone,
+      dateOfBirth: current?.dateOfBirth,
+      gender: current?.gender,
+      avatarUrl: avatarUrl,
+    );
+  }
+
+  @override
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {}
 }

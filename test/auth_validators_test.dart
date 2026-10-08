@@ -32,6 +32,7 @@ void main() {
 
     test('rejects invalid phone', () {
       expect(AuthValidators.phone('12345'), isNotNull);
+      expect(AuthValidators.phone('0999999999'), isNotNull);
     });
   });
 

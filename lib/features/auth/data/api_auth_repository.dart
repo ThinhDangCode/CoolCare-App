@@ -160,4 +160,89 @@ class ApiAuthRepository implements AuthRepository {
       body: {'resetToken': resetToken, 'newPassword': newPassword},
     );
   }
+
+  @override
+  Future<AuthUser> updateProfile({
+    required String fullName,
+    String? phone,
+    String? dateOfBirth,
+    String? gender,
+  }) async {
+    final session = await _sessionStore.read();
+    if (session == null) {
+      throw const ApiException(
+        code: 'UNAUTHENTICATED',
+        message: 'Phiên đăng nhập đã hết hạn.',
+      );
+    }
+    final payload = await _apiClient.patch(
+      '/auth/profile',
+      bearerToken: session.token,
+      body: {
+        'fullName': fullName.trim(),
+        'phone': phone,
+        'dateOfBirth': dateOfBirth,
+        'gender': gender,
+      },
+    );
+    final data = payload['data'];
+    if (data is! Map<String, dynamic>) {
+      throw const ApiException(
+        code: 'INVALID_RESPONSE',
+        message: 'Phản hồi hồ sơ không hợp lệ.',
+      );
+    }
+    final updatedUser = AuthUser.fromJson(data);
+    await _sessionStore.write(
+      AuthSession(token: session.token, user: updatedUser),
+    );
+    return updatedUser;
+  }
+
+  @override
+  Future<AuthUser> updateAvatar({required String? avatarUrl}) async {
+    final session = await _sessionStore.read();
+    if (session == null) {
+      throw const ApiException(
+        code: 'UNAUTHENTICATED',
+        message: 'Phiên đăng nhập đã hết hạn.',
+      );
+    }
+    final payload = await _apiClient.patch(
+      '/auth/profile/avatar',
+      bearerToken: session.token,
+      body: {'avatarUrl': avatarUrl},
+    );
+    final data = payload['data'];
+    if (data is! Map<String, dynamic>) {
+      throw const ApiException(
+        code: 'INVALID_RESPONSE',
+        message: 'Phản hồi ảnh đại diện không hợp lệ.',
+      );
+    }
+    final updatedUser = AuthUser.fromJson(data);
+    await _sessionStore.write(
+      AuthSession(token: session.token, user: updatedUser),
+    );
+    return updatedUser;
+  }
+
+  @override
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    final session = await _sessionStore.read();
+    if (session == null) {
+      throw const ApiException(
+        code: 'UNAUTHENTICATED',
+        message: 'Phiên đăng nhập đã hết hạn.',
+      );
+    }
+    await _apiClient.post(
+      '/auth/change-password',
+      bearerToken: session.token,
+      body: {'currentPassword': currentPassword, 'newPassword': newPassword},
+    );
+  }
 }

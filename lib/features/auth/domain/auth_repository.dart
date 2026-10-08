@@ -30,4 +30,15 @@ abstract interface class AuthRepository {
     required String resetToken,
     required String newPassword,
   });
+  Future<AuthUser> updateProfile({
+    required String fullName,
+    String? phone,
+    String? dateOfBirth,
+    String? gender,
+  });
+  Future<AuthUser> updateAvatar({required String? avatarUrl});
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  });
 }

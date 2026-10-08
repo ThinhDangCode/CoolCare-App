@@ -33,7 +33,13 @@ abstract final class AuthValidators {
     final requiredError = requiredText(value, 'số điện thoại');
     if (requiredError != null) return requiredError;
     final normalized = value!.replaceAll(RegExp(r'[\s.-]'), '');
-    if (!RegExp(r'^(0\d{9}|\+84\d{9})$').hasMatch(normalized)) {
+    final localPhone = normalized.startsWith('+84')
+        ? '0${normalized.substring(3)}'
+        : normalized;
+    final validPrefix = RegExp(
+      r'^(?:0|\+84)(?:3[2-9]|5[25689]|7[06789]|8[1-689]|9[0-46-9])\d{7}$',
+    ).hasMatch(normalized);
+    if (!validPrefix || RegExp(r'^0(\d)\1{8}$').hasMatch(localPhone)) {
       return 'Số điện thoại Việt Nam không hợp lệ.';
     }
     return null;

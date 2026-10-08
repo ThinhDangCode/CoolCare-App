@@ -32,7 +32,7 @@ class _HomePageState extends State<HomePage> {
     if (user == null) return;
     Navigator.of(
       context,
-    ).push(MaterialPageRoute(builder: (_) => PersonalProfilePage(user: user)));
+    ).push(MaterialPageRoute(builder: (_) => PersonalProfilePage(user: user, controller: widget.controller)));
   }
 
   Widget _selectedPage() {
@@ -48,6 +48,7 @@ class _HomePageState extends State<HomePage> {
             ? _RestrictedPage(onLogin: () => _openLogin(context))
             : AccountPage(
                 user: widget.controller.user!,
+                controller: widget.controller,
                 onViewProfile: _openProfile,
                 onLogout: () async {
                   await widget.controller.logout();
@@ -78,7 +79,12 @@ class _HomePageState extends State<HomePage> {
                   controller: widget.controller,
                   onLogin: () => _openLogin(context),
                 ),
-                Expanded(child: _selectedPage()),
+                Expanded(
+                  child: ListenableBuilder(
+                    listenable: widget.controller,
+                    builder: (context, _) => _selectedPage(),
+                  ),
+                ),
                 _HomeNavigation(
                   selectedIndex: _selectedIndex,
                   onSelected: _selectTab,

@@ -1,15 +1,19 @@
 import 'package:flutter/foundation.dart';
 
 import '../../../core/network/api_exception.dart';
+import '../../../core/network/cloudinary_image_uploader.dart';
 import '../domain/auth_repository.dart';
 import '../domain/auth_user.dart';
 
 enum AuthStatus { initial, loading, authenticated, unauthenticated }
 
 class AuthController extends ChangeNotifier {
-  AuthController(this._repository);
+  AuthController(this._repository, {CloudinaryImageUploader? imageUploader})
+    : _imageUploader =
+          imageUploader ?? CloudinaryImageUploader.fromEnvironment();
 
   final AuthRepository _repository;
+  final CloudinaryImageUploader _imageUploader;
 
   AuthStatus status = AuthStatus.initial;
   AuthUser? user;
@@ -166,4 +170,51 @@ class AuthController extends ChangeNotifier {
     errorMessage = null;
     notifyListeners();
   }
+
+  Future<bool> updateProfile({
+    required String fullName,
+    String? phone,
+    String? dateOfBirth,
+    String? gender,
+    String? avatarPath,
+    bool avatarChanged = false,
+  }) async {
+    isBusy = true;
+    errorMessage = null;
+    notifyListeners();
+    try {
+      if (avatarChanged) {
+        final avatarUrl = avatarPath == null
+            ? null
+            : await _imageUploader.uploadProfilePhoto(avatarPath);
+        user = await _repository.updateAvatar(avatarUrl: avatarUrl);
+      }
+      user = await _repository.updateProfile(
+        fullName: fullName,
+        phone: phone,
+        dateOfBirth: dateOfBirth,
+        gender: gender,
+      );
+      isBusy = false;
+      notifyListeners();
+      return true;
+    } on ApiException catch (error) {
+      errorMessage = error.message;
+    } catch (_) {
+      errorMessage = 'Đã có lỗi xảy ra. Vui lòng thử lại.';
+    }
+    isBusy = false;
+    notifyListeners();
+    return false;
+  }
+
+  Future<bool> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) => _runOperation(
+    () => _repository.changePassword(
+      currentPassword: currentPassword,
+      newPassword: newPassword,
+    ),
+  );
 }

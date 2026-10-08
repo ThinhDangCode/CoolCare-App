@@ -153,4 +153,31 @@ class _FakeAuthRepository implements AuthRepository {
   }) async {
     return 'reset-token';
   }
+
+  @override
+  Future<AuthUser> updateProfile({
+    required String fullName,
+    String? phone,
+    String? dateOfBirth,
+    String? gender,
+  }) async {
+    return AuthUser(
+      id: _user.id,
+      email: _user.email,
+      fullName: fullName,
+      role: _user.role,
+      phone: phone,
+      dateOfBirth: dateOfBirth,
+      gender: gender,
+    );
+  }
+
+  @override
+  Future<AuthUser> updateAvatar({required String? avatarUrl}) async => _user;
+
+  @override
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {}
 }
