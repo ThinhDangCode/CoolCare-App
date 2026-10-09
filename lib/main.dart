@@ -17,6 +17,7 @@ Future<void> main() async {
     // or another emulator provider such as Genymotion.
     defaultValue: 'http://10.0.2.2:3000/api',
   );
+
   final repository = ApiAuthRepository(
     apiClient: ApiClient(
       baseUrl: baseUrl,
@@ -32,5 +33,9 @@ Future<void> main() async {
     imageUploader: CloudinaryImageUploader.fromEnvironment(),
   )..initialize();
 
-  runApp(CoolCareApp(authController: authController));
+  runApp(
+    CoolCareApp(
+      authController: authController,
+    ),
+  );
 }
