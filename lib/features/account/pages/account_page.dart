@@ -3,10 +3,10 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
-import '../../../../app/theme/coolcare_theme.dart';
-import '../../../auth/domain/auth_user.dart';
-import '../../../auth/domain/auth_validators.dart';
-import '../../../auth/presentation/auth_controller.dart';
+import '../../../app/theme/coolcare_theme.dart';
+import '../../auth/controllers/auth_controller.dart';
+import '../../auth/models/auth_user.dart';
+import '../../auth/validators/auth_validators.dart';
 
 String _displayDate(String? value) {
   final date = DateTime.tryParse(value ?? '');
@@ -45,12 +45,7 @@ class AccountPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return SingleChildScrollView(
       key: const PageStorageKey('account-page'),
-      padding: const EdgeInsets.fromLTRB(
-        20,
-        18,
-        20,
-        24,
-      ),
+      padding: const EdgeInsets.fromLTRB(20, 18, 20, 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -87,8 +82,7 @@ class AccountPage extends StatelessWidget {
 
                   Expanded(
                     child: Column(
-                      crossAxisAlignment:
-                      CrossAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
                           user.fullName,
@@ -108,8 +102,7 @@ class AccountPage extends StatelessWidget {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
-                            color:
-                            CoolCareColors.mutedText,
+                            color: CoolCareColors.mutedText,
                             fontSize: 9,
                           ),
                         ),
@@ -135,9 +128,7 @@ class AccountPage extends StatelessWidget {
           const SizedBox(height: 24),
 
           // YOUR SERVICES
-          const _AccountSectionTitle(
-            'YOUR SERVICES',
-          ),
+          const _AccountSectionTitle('YOUR SERVICES'),
 
           // My Addresses
           _AccountRow(
@@ -156,10 +147,7 @@ class AccountPage extends StatelessWidget {
             label: 'Payment History',
           ),
 
-          const _AccountRow(
-            icon: Icons.forum_outlined,
-            label: 'My Complaints',
-          ),
+          const _AccountRow(icon: Icons.forum_outlined, label: 'My Complaints'),
 
           const SizedBox(height: 18),
           const _AccountSectionTitle('SECURITY'),
@@ -175,9 +163,7 @@ class AccountPage extends StatelessWidget {
 
           const SizedBox(height: 20),
           // TECHNICIAN
-          const _AccountSectionTitle(
-            'FOR TECHNICIANS',
-          ),
+          const _AccountSectionTitle('FOR TECHNICIANS'),
 
           const SizedBox(height: 8),
 
@@ -185,9 +171,7 @@ class AccountPage extends StatelessWidget {
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
               color: CoolCareColors.surfaceTint,
-              border: Border.all(
-                color: const Color(0xFFC9EDEE),
-              ),
+              border: Border.all(color: const Color(0xFFC9EDEE)),
               borderRadius: BorderRadius.circular(11),
             ),
             child: Column(
@@ -220,11 +204,9 @@ class AccountPage extends StatelessWidget {
                   child: FilledButton(
                     onPressed: () {},
                     style: FilledButton.styleFrom(
-                      minimumSize:
-                      const Size.fromHeight(39),
+                      minimumSize: const Size.fromHeight(39),
                       shape: RoundedRectangleBorder(
-                        borderRadius:
-                        BorderRadius.circular(7),
+                        borderRadius: BorderRadius.circular(7),
                       ),
                     ),
                     child: const Text(
@@ -269,45 +251,27 @@ class AccountPage extends StatelessWidget {
     );
   }
 
-  Future<void> _confirmLogout(
-      BuildContext context,
-      ) async {
-    final shouldLogout =
-    await showDialog<bool>(
+  Future<void> _confirmLogout(BuildContext context) async {
+    final shouldLogout = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
         icon: const Icon(
           Icons.error_outline_rounded,
           color: CoolCareColors.error,
         ),
-        title: const Text(
-          'Log out of CoolCare?',
-        ),
-        content: const Text(
-          'You can log in again anytime.',
-        ),
+        title: const Text('Log out of CoolCare?'),
+        content: const Text('You can log in again anytime.'),
         actions: [
           TextButton(
-            onPressed: () =>
-                Navigator.of(
-                  dialogContext,
-                ).pop(false),
-            child: const Text(
-              'Stay',
-            ),
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text('Stay'),
           ),
           FilledButton(
-            onPressed: () =>
-                Navigator.of(
-                  dialogContext,
-                ).pop(true),
+            onPressed: () => Navigator.of(dialogContext).pop(true),
             style: FilledButton.styleFrom(
-              backgroundColor:
-              CoolCareColors.error,
+              backgroundColor: CoolCareColors.error,
             ),
-            child: const Text(
-              'Log Out',
-            ),
+            child: const Text('Log Out'),
           ),
         ],
       ),
@@ -340,11 +304,8 @@ class PersonalProfilePage extends StatelessWidget {
         elevation: 0,
 
         leading: IconButton(
-          onPressed: () =>
-              Navigator.of(context).pop(),
-          icon: const Icon(
-            Icons.arrow_back_rounded,
-          ),
+          onPressed: () => Navigator.of(context).pop(),
+          icon: const Icon(Icons.arrow_back_rounded),
         ),
 
         title: const Text(
@@ -405,9 +366,7 @@ class PersonalProfilePage extends StatelessWidget {
               _ProfileField(label: 'Email', value: user.email),
               _ProfileField(
                 label: 'Phone Number',
-                value:
-                user.phone?.trim().isNotEmpty ==
-                    true
+                value: user.phone?.trim().isNotEmpty == true
                     ? user.phone!
                     : 'Not updated',
               ),
@@ -1212,24 +1171,17 @@ class _InitialAvatar extends StatelessWidget {
   final String? imageUrl;
 
   String get initials {
-    final parts =
-    name.trim().split(
-      RegExp(r'\s+'),
-    );
+    final parts = name.trim().split(RegExp(r'\s+'));
 
-    if (parts.isEmpty ||
-        parts.first.isEmpty) {
+    if (parts.isEmpty || parts.first.isEmpty) {
       return 'CC';
     }
 
     if (parts.length == 1) {
-      return parts.first
-          .substring(0, 1)
-          .toUpperCase();
+      return parts.first.substring(0, 1).toUpperCase();
     }
 
-    return '${parts.first[0]}${parts.last[0]}'
-        .toUpperCase();
+    return '${parts.first[0]}${parts.last[0]}'.toUpperCase();
   }
 
   @override
@@ -1272,27 +1224,21 @@ class _InitialAvatar extends StatelessWidget {
     ),
   );
 }
+
 // ACCOUNT SECTION TITLE
-class _AccountSectionTitle
-    extends StatelessWidget {
-  const _AccountSectionTitle(
-      this.text,
-      );
+class _AccountSectionTitle extends StatelessWidget {
+  const _AccountSectionTitle(this.text);
 
   final String text;
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding:
-      const EdgeInsets.only(
-        bottom: 5,
-      ),
+      padding: const EdgeInsets.only(bottom: 5),
       child: Text(
         text,
         style: const TextStyle(
-          color:
-          CoolCareColors.mutedText,
+          color: CoolCareColors.mutedText,
           fontSize: 9,
           fontWeight: FontWeight.w700,
           letterSpacing: .25,
@@ -1342,25 +1288,19 @@ class _AccountRow extends StatelessWidget {
     );
   }
 }
+
 // PROFILE SECTION TITLE
-class _ProfileSectionTitle
-    extends StatelessWidget {
-  const _ProfileSectionTitle(
-      this.text,
-      );
+class _ProfileSectionTitle extends StatelessWidget {
+  const _ProfileSectionTitle(this.text);
 
   final String text;
 
   @override
   Widget build(BuildContext context) {
     return Align(
-      alignment:
-      Alignment.centerLeft,
+      alignment: Alignment.centerLeft,
       child: Padding(
-        padding:
-        const EdgeInsets.only(
-          bottom: 5,
-        ),
+        padding: const EdgeInsets.only(bottom: 5),
         child: Text(
           text,
           style: const TextStyle(
@@ -1373,13 +1313,10 @@ class _ProfileSectionTitle
     );
   }
 }
+
 // PROFILE FIELD
-class _ProfileField
-    extends StatelessWidget {
-  const _ProfileField({
-    required this.label,
-    required this.value,
-  });
+class _ProfileField extends StatelessWidget {
+  const _ProfileField({required this.label, required this.value});
 
   final String label;
   final String value;
@@ -1388,20 +1325,12 @@ class _ProfileField
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding:
-      const EdgeInsets.symmetric(
-        vertical: 11,
-      ),
+      padding: const EdgeInsets.symmetric(vertical: 11),
       decoration: const BoxDecoration(
-        border: Border(
-          bottom: BorderSide(
-            color: CoolCareColors.border,
-          ),
-        ),
+        border: Border(bottom: BorderSide(color: CoolCareColors.border)),
       ),
       child: Column(
-        crossAxisAlignment:
-        CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             label,

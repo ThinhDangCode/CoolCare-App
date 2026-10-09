@@ -6,39 +6,22 @@ import '../models/service_model.dart';
 import 'service_detail_page.dart';
 
 class ServicesPage extends StatefulWidget {
-  const ServicesPage({
-    super.key,
-  });
+  const ServicesPage({super.key});
 
   @override
-  State<ServicesPage> createState() =>
-      _ServicesPageState();
+  State<ServicesPage> createState() => _ServicesPageState();
 }
 
-class _ServicesPageState
-    extends State<ServicesPage> {
+class _ServicesPageState extends State<ServicesPage> {
   late final ServiceController _controller;
 
-  final TextEditingController
-  _searchController =
-  TextEditingController();
+  final TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
 
-    const baseUrl =
-    String.fromEnvironment(
-      'API_BASE_URL',
-      defaultValue:
-      'http://10.0.2.2:3000/api',
-    );
-
-    _controller = ServiceController(
-      apiClient: ApiClient(
-        baseUrl: baseUrl,
-      ),
-    );
+    _controller = ServiceController(apiClient: ApiClient.fromEnvironment());
 
     _controller.addListener(_refresh);
     _controller.loadInitialData();
@@ -59,12 +42,8 @@ class _ServicesPageState
     _controller.searchServices('');
   }
 
-  void _selectService(
-      String? serviceId,
-      ) {
-    _controller.filterByService(
-      serviceId,
-    );
+  void _selectService(String? serviceId) {
+    _controller.filterByService(serviceId);
   }
 
   void _clearFilters() {
@@ -72,24 +51,17 @@ class _ServicesPageState
     _controller.clearFilters();
   }
 
-  void _openDetails(
-      String serviceId,
-      ) {
+  void _openDetails(String serviceId) {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) =>
-            ServiceDetailPage(
-              serviceId: serviceId,
-            ),
+        builder: (_) => ServiceDetailPage(serviceId: serviceId),
       ),
     );
   }
 
   @override
   void dispose() {
-    _controller.removeListener(
-      _refresh,
-    );
+    _controller.removeListener(_refresh);
     _controller.dispose();
     _searchController.dispose();
 
@@ -103,15 +75,12 @@ class _ServicesPageState
       body: SafeArea(
         top: false,
         child: Column(
-          crossAxisAlignment:
-          CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildHeader(),
             _buildSearchBar(),
             _buildServiceFilters(),
-            Expanded(
-              child: _buildBody(),
-            ),
+            Expanded(child: _buildBody()),
           ],
         ),
       ),
@@ -124,15 +93,9 @@ class _ServicesPageState
 
   Widget _buildHeader() {
     return const Padding(
-      padding: EdgeInsets.fromLTRB(
-        20,
-        18,
-        20,
-        6,
-      ),
+      padding: EdgeInsets.fromLTRB(20, 18, 20, 6),
       child: Column(
-        crossAxisAlignment:
-        CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             'AC Services',
@@ -163,74 +126,39 @@ class _ServicesPageState
 
   Widget _buildSearchBar() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(
-        20,
-        12,
-        20,
-        10,
-      ),
+      padding: const EdgeInsets.fromLTRB(20, 12, 20, 10),
       child: SizedBox(
         height: 44,
         child: TextField(
           controller: _searchController,
           onChanged: _onSearchChanged,
-          textInputAction:
-          TextInputAction.search,
-          style: const TextStyle(
-            fontSize: 12,
-            color: Color(0xFF183333),
-          ),
+          textInputAction: TextInputAction.search,
+          style: const TextStyle(fontSize: 12, color: Color(0xFF183333)),
           decoration: InputDecoration(
             hintText: 'Search services',
-            hintStyle: const TextStyle(
-              color: Color(0xFF9AA7A7),
-              fontSize: 11,
-            ),
+            hintStyle: const TextStyle(color: Color(0xFF9AA7A7), fontSize: 11),
             prefixIcon: const Icon(
               Icons.search_rounded,
               size: 19,
               color: Color(0xFF6F8282),
             ),
-            suffixIcon:
-            _searchController
-                .text
-                .isNotEmpty
+            suffixIcon: _searchController.text.isNotEmpty
                 ? IconButton(
-              onPressed:
-              _clearSearch,
-              icon: const Icon(
-                Icons
-                    .close_rounded,
-                size: 18,
-              ),
-            )
+                    onPressed: _clearSearch,
+                    icon: const Icon(Icons.close_rounded, size: 18),
+                  )
                 : null,
             filled: true,
             fillColor: Colors.white,
-            contentPadding:
-            EdgeInsets.zero,
-            enabledBorder:
-            OutlineInputBorder(
-              borderRadius:
-              BorderRadius.circular(
-                11,
-              ),
-              borderSide:
-              const BorderSide(
-                color:
-                Color(0xFFDDE7E7),
-              ),
+            contentPadding: EdgeInsets.zero,
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(11),
+              borderSide: const BorderSide(color: Color(0xFFDDE7E7)),
             ),
-            focusedBorder:
-            OutlineInputBorder(
-              borderRadius:
-              BorderRadius.circular(
-                11,
-              ),
-              borderSide:
-              const BorderSide(
-                color:
-                Color(0xFF109DA0),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(11),
+              borderSide: const BorderSide(
+                color: Color(0xFF109DA0),
                 width: 1.3,
               ),
             ),
@@ -246,67 +174,46 @@ class _ServicesPageState
   // ============================================================
 
   Widget _buildServiceFilters() {
-    if (_controller.isLoading &&
-        _controller.allServices.isEmpty) {
-      return const SizedBox(
-        height: 42,
-      );
+    if (_controller.isLoading && _controller.allServices.isEmpty) {
+      return const SizedBox(height: 42);
     }
 
     return SizedBox(
       height: 42,
       child: ListView(
-        padding:
-        const EdgeInsets.symmetric(
-          horizontal: 20,
-        ),
-        scrollDirection:
-        Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        scrollDirection: Axis.horizontal,
         children: [
           _ServiceChip(
             label: 'All',
-            selected:
-            _controller
-                .selectedServiceId ==
-                null,
+            selected: _controller.selectedServiceId == null,
             onTap: () {
               _selectService(null);
             },
           ),
 
-          ..._controller.allServices.map(
-                (service) {
-              return _ServiceChip(
-                label: _chipName(
-                  service.name,
-                ),
-                selected:
-                _controller
-                    .selectedServiceId ==
-                    service.id,
-                onTap: () {
-                  _selectService(
-                    service.id,
-                  );
-                },
-              );
-            },
-          ),
+          ..._controller.allServices.map((service) {
+            return _ServiceChip(
+              label: _chipName(service.name),
+              selected: _controller.selectedServiceId == service.id,
+              onTap: () {
+                _selectService(service.id);
+              },
+            );
+          }),
         ],
       ),
     );
   }
 
   String _chipName(String name) {
-    final value =
-    name.toLowerCase();
+    final value = name.toLowerCase();
 
     if (value.contains('vệ sinh')) {
       return 'Vệ sinh';
     }
 
-    if (value.contains('kiểm tra') ||
-        value.contains('chẩn đoán')) {
+    if (value.contains('kiểm tra') || value.contains('chẩn đoán')) {
       return 'Kiểm tra';
     }
 
@@ -330,8 +237,7 @@ class _ServicesPageState
       return _buildLoadingState();
     }
 
-    if (_controller.errorMessage !=
-        null) {
+    if (_controller.errorMessage != null) {
       return _buildErrorState();
     }
 
@@ -347,16 +253,11 @@ class _ServicesPageState
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          CircularProgressIndicator(
-            color: Color(0xFF109DA0),
-          ),
+          CircularProgressIndicator(color: Color(0xFF109DA0)),
           SizedBox(height: 12),
           Text(
             'Loading services...',
-            style: TextStyle(
-              color: Color(0xFF758686),
-              fontSize: 11,
-            ),
+            style: TextStyle(color: Color(0xFF758686), fontSize: 11),
           ),
         ],
       ),
@@ -366,11 +267,9 @@ class _ServicesPageState
   Widget _buildErrorState() {
     return Center(
       child: Padding(
-        padding:
-        const EdgeInsets.all(30),
+        padding: const EdgeInsets.all(30),
         child: Column(
-          mainAxisSize:
-          MainAxisSize.min,
+          mainAxisSize: MainAxisSize.min,
           children: [
             const Icon(
               Icons.wifi_off_rounded,
@@ -381,34 +280,22 @@ class _ServicesPageState
             const Text(
               'Unable to load services',
               style: TextStyle(
-                color:
-                Color(0xFF183333),
+                color: Color(0xFF183333),
                 fontSize: 16,
-                fontWeight:
-                FontWeight.w800,
+                fontWeight: FontWeight.w800,
               ),
             ),
             const SizedBox(height: 7),
             Text(
-              _controller.errorMessage ??
-                  'Something went wrong.',
+              _controller.errorMessage ?? 'Something went wrong.',
               textAlign: TextAlign.center,
-              style: const TextStyle(
-                color:
-                Color(0xFF758686),
-                fontSize: 11,
-              ),
+              style: const TextStyle(color: Color(0xFF758686), fontSize: 11),
             ),
             const SizedBox(height: 18),
             FilledButton.icon(
-              onPressed:
-              _controller.retry,
-              icon: const Icon(
-                Icons.refresh_rounded,
-                size: 17,
-              ),
-              label:
-              const Text('Try Again'),
+              onPressed: _controller.retry,
+              icon: const Icon(Icons.refresh_rounded, size: 17),
+              label: const Text('Try Again'),
             ),
           ],
         ),
@@ -418,20 +305,14 @@ class _ServicesPageState
 
   Widget _buildEmptyState() {
     final hasFilter =
-        _controller
-            .searchKeyword
-            .isNotEmpty ||
-            _controller
-                .selectedServiceId !=
-                null;
+        _controller.searchKeyword.isNotEmpty ||
+        _controller.selectedServiceId != null;
 
     return Center(
       child: Padding(
-        padding:
-        const EdgeInsets.all(30),
+        padding: const EdgeInsets.all(30),
         child: Column(
-          mainAxisSize:
-          MainAxisSize.min,
+          mainAxisSize: MainAxisSize.min,
           children: [
             const Icon(
               Icons.search_off_rounded,
@@ -440,15 +321,11 @@ class _ServicesPageState
             ),
             const SizedBox(height: 14),
             Text(
-              hasFilter
-                  ? 'No matching services'
-                  : 'No services available',
+              hasFilter ? 'No matching services' : 'No services available',
               style: const TextStyle(
-                color:
-                Color(0xFF183333),
+                color: Color(0xFF183333),
                 fontSize: 16,
-                fontWeight:
-                FontWeight.w800,
+                fontWeight: FontWeight.w800,
               ),
             ),
             const SizedBox(height: 7),
@@ -457,20 +334,13 @@ class _ServicesPageState
                   ? 'Try another keyword or service.'
                   : 'There are no active services at the moment.',
               textAlign: TextAlign.center,
-              style: const TextStyle(
-                color:
-                Color(0xFF758686),
-                fontSize: 11,
-              ),
+              style: const TextStyle(color: Color(0xFF758686), fontSize: 11),
             ),
             if (hasFilter) ...[
               const SizedBox(height: 16),
               OutlinedButton(
-                onPressed:
-                _clearFilters,
-                child: const Text(
-                  'Clear Filters',
-                ),
+                onPressed: _clearFilters,
+                child: const Text('Clear Filters'),
               ),
             ],
           ],
@@ -488,47 +358,22 @@ class _ServicesPageState
       onRefresh: _controller.retry,
       color: const Color(0xFF109DA0),
       child: ListView.separated(
-        physics:
-        const AlwaysScrollableScrollPhysics(),
-        padding:
-        const EdgeInsets.fromLTRB(
-          20,
-          8,
-          20,
-          24,
-        ),
-        itemCount:
-        _controller.services.length +
-            1,
-        separatorBuilder:
-            (_, index) =>
-        index == 0
-            ? const SizedBox(
-          height: 9,
-        )
-            : const SizedBox(
-          height: 10,
-        ),
-        itemBuilder:
-            (context, index) {
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+        itemCount: _controller.services.length + 1,
+        separatorBuilder: (_, index) =>
+            index == 0 ? const SizedBox(height: 9) : const SizedBox(height: 10),
+        itemBuilder: (context, index) {
           if (index == 0) {
             return _buildListHeader();
           }
 
-          final service =
-          _controller
-              .services[index - 1];
+          final service = _controller.services[index - 1];
 
           return _ServiceCard(
             service: service,
-            onDetails: () =>
-                _openDetails(
-                  service.id,
-                ),
-            onBook: () =>
-                _openDetails(
-                  service.id,
-                ),
+            onDetails: () => _openDetails(service.id),
+            onBook: () => _openDetails(service.id),
           );
         },
       ),
@@ -538,14 +383,9 @@ class _ServicesPageState
   Widget _buildListHeader() {
     String title = 'All Services';
 
-    if (_controller
-        .selectedServiceId !=
-        null) {
-      for (final service
-      in _controller.allServices) {
-        if (service.id ==
-            _controller
-                .selectedServiceId) {
+    if (_controller.selectedServiceId != null) {
+      for (final service in _controller.allServices) {
+        if (service.id == _controller.selectedServiceId) {
           title = service.name;
           break;
         }
@@ -558,26 +398,22 @@ class _ServicesPageState
           child: Text(
             title,
             maxLines: 1,
-            overflow:
-            TextOverflow.ellipsis,
+            overflow: TextOverflow.ellipsis,
             style: const TextStyle(
-              color:
-              Color(0xFF183333),
+              color: Color(0xFF183333),
               fontSize: 13,
-              fontWeight:
-              FontWeight.w800,
+              fontWeight: FontWeight.w800,
             ),
           ),
         ),
         const SizedBox(width: 8),
         Text(
           '${_controller.services.length} '
-              '${_controller.services.length == 1 ? 'service' : 'services'}',
+          '${_controller.services.length == 1 ? 'service' : 'services'}',
           style: const TextStyle(
             color: Color(0xFF8A9999),
             fontSize: 9,
-            fontWeight:
-            FontWeight.w600,
+            fontWeight: FontWeight.w600,
           ),
         ),
       ],
@@ -589,8 +425,7 @@ class _ServicesPageState
 // SERVICE CHIP
 // ============================================================
 
-class _ServiceChip
-    extends StatelessWidget {
+class _ServiceChip extends StatelessWidget {
   const _ServiceChip({
     required this.label,
     required this.selected,
@@ -604,46 +439,24 @@ class _ServiceChip
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding:
-      const EdgeInsets.only(
-        right: 7,
-      ),
+      padding: const EdgeInsets.only(right: 7),
       child: ChoiceChip(
         selected: selected,
         onSelected: (_) => onTap(),
         showCheckmark: false,
-        label: Text(
-          label,
-          maxLines: 1,
-        ),
+        label: Text(label, maxLines: 1),
         labelStyle: TextStyle(
-          color: selected
-              ? Colors.white
-              : const Color(
-            0xFF526666,
-          ),
+          color: selected ? Colors.white : const Color(0xFF526666),
           fontSize: 9,
-          fontWeight:
-          FontWeight.w700,
+          fontWeight: FontWeight.w700,
         ),
-        selectedColor:
-        const Color(0xFF109DA0),
+        selectedColor: const Color(0xFF109DA0),
         backgroundColor: Colors.white,
         side: BorderSide(
-          color: selected
-              ? const Color(
-            0xFF109DA0,
-          )
-              : const Color(
-            0xFFDDE7E7,
-          ),
+          color: selected ? const Color(0xFF109DA0) : const Color(0xFFDDE7E7),
         ),
-        shape: RoundedRectangleBorder(
-          borderRadius:
-          BorderRadius.circular(18),
-        ),
-        visualDensity:
-        VisualDensity.compact,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        visualDensity: VisualDensity.compact,
       ),
     );
   }
@@ -653,8 +466,7 @@ class _ServiceChip
 // SERVICE CARD
 // ============================================================
 
-class _ServiceCard
-    extends StatelessWidget {
+class _ServiceCard extends StatelessWidget {
   const _ServiceCard({
     required this.service,
     required this.onDetails,
@@ -668,20 +480,14 @@ class _ServiceCard
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding:
-      const EdgeInsets.all(11),
+      padding: const EdgeInsets.all(11),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius:
-        BorderRadius.circular(11),
-        border: Border.all(
-          color:
-          const Color(0xFFDDE7E7),
-        ),
+        borderRadius: BorderRadius.circular(11),
+        border: Border.all(color: const Color(0xFFDDE7E7)),
       ),
       child: Row(
-        crossAxisAlignment:
-        CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildIcon(),
 
@@ -689,22 +495,16 @@ class _ServiceCard
 
           Expanded(
             child: Column(
-              crossAxisAlignment:
-              CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  _serviceType(
-                    service.name,
-                  ).toUpperCase(),
+                  _serviceType(service.name).toUpperCase(),
                   maxLines: 1,
-                  overflow:
-                  TextOverflow.ellipsis,
+                  overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
-                    color:
-                    Color(0xFF109DA0),
+                    color: Color(0xFF109DA0),
                     fontSize: 7.5,
-                    fontWeight:
-                    FontWeight.w800,
+                    fontWeight: FontWeight.w800,
                     letterSpacing: .4,
                   ),
                 ),
@@ -714,32 +514,23 @@ class _ServiceCard
                 Text(
                   service.name,
                   style: const TextStyle(
-                    color:
-                    Color(0xFF183333),
+                    color: Color(0xFF183333),
                     fontSize: 12,
-                    fontWeight:
-                    FontWeight.w800,
+                    fontWeight: FontWeight.w800,
                     height: 1.2,
                   ),
                 ),
 
-                if (service.description !=
-                    null &&
-                    service.description!
-                        .trim()
-                        .isNotEmpty) ...[
+                if (service.description != null &&
+                    service.description!.trim().isNotEmpty) ...[
                   const SizedBox(height: 4),
 
                   Text(
                     service.description!,
                     maxLines: 2,
-                    overflow:
-                    TextOverflow
-                        .ellipsis,
-                    style:
-                    const TextStyle(
-                      color:
-                      Color(0xFF788888),
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: Color(0xFF788888),
                       fontSize: 9,
                       height: 1.3,
                     ),
@@ -749,57 +540,26 @@ class _ServiceCard
                 const SizedBox(height: 9),
 
                 LayoutBuilder(
-                  builder:
-                      (context,
-                      constraints) {
-                    final narrow =
-                        constraints
-                            .maxWidth <
-                            210;
+                  builder: (context, constraints) {
+                    final narrow = constraints.maxWidth < 210;
 
                     if (narrow) {
                       return Column(
-                        crossAxisAlignment:
-                        CrossAxisAlignment
-                            .start,
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          _PriceBlock(
-                            service:
-                            service,
-                          ),
-                          const SizedBox(
-                            height: 8,
-                          ),
-                          _CardActions(
-                            onBook:
-                            onBook,
-                            onDetails:
-                            onDetails,
-                          ),
+                          _PriceBlock(service: service),
+                          const SizedBox(height: 8),
+                          _CardActions(onBook: onBook, onDetails: onDetails),
                         ],
                       );
                     }
 
                     return Row(
-                      crossAxisAlignment:
-                      CrossAxisAlignment
-                          .end,
+                      crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
-                        Expanded(
-                          child:
-                          _PriceBlock(
-                            service:
-                            service,
-                          ),
-                        ),
-                        const SizedBox(
-                          width: 8,
-                        ),
-                        _CardActions(
-                          onBook: onBook,
-                          onDetails:
-                          onDetails,
-                        ),
+                        Expanded(child: _PriceBlock(service: service)),
+                        const SizedBox(width: 8),
+                        _CardActions(onBook: onBook, onDetails: onDetails),
                       ],
                     );
                   },
@@ -812,18 +572,14 @@ class _ServiceCard
     );
   }
 
-  String _serviceType(
-      String name,
-      ) {
-    final value =
-    name.toLowerCase();
+  String _serviceType(String name) {
+    final value = name.toLowerCase();
 
     if (value.contains('vệ sinh')) {
       return 'Vệ sinh';
     }
 
-    if (value.contains('kiểm tra') ||
-        value.contains('chẩn đoán')) {
+    if (value.contains('kiểm tra') || value.contains('chẩn đoán')) {
       return 'Kiểm tra';
     }
 
@@ -839,43 +595,28 @@ class _ServiceCard
   }
 
   Widget _buildIcon() {
-    final name =
-    service.name.toLowerCase();
+    final name = service.name.toLowerCase();
 
-    IconData icon =
-        Icons.ac_unit_rounded;
+    IconData icon = Icons.ac_unit_rounded;
 
     if (name.contains('sửa')) {
       icon = Icons.build_rounded;
-    } else if (name
-        .contains('kiểm tra') ||
-        name.contains('chẩn đoán')) {
+    } else if (name.contains('kiểm tra') || name.contains('chẩn đoán')) {
       icon = Icons.search_rounded;
-    } else if (name
-        .contains('bảo dưỡng')) {
-      icon =
-          Icons.settings_suggest_rounded;
-    } else if (name
-        .contains('vệ sinh')) {
-      icon =
-          Icons.cleaning_services_rounded;
+    } else if (name.contains('bảo dưỡng')) {
+      icon = Icons.settings_suggest_rounded;
+    } else if (name.contains('vệ sinh')) {
+      icon = Icons.cleaning_services_rounded;
     }
 
     return Container(
       width: 38,
       height: 38,
       decoration: BoxDecoration(
-        color:
-        const Color(0xFFEAF8F7),
-        borderRadius:
-        BorderRadius.circular(9),
+        color: const Color(0xFFEAF8F7),
+        borderRadius: BorderRadius.circular(9),
       ),
-      child: Icon(
-        icon,
-        color:
-        const Color(0xFF109DA0),
-        size: 20,
-      ),
+      child: Icon(icon, color: const Color(0xFF109DA0), size: 20),
     );
   }
 }
@@ -884,68 +625,44 @@ class _ServiceCard
 // PRICE
 // ============================================================
 
-class _PriceBlock
-    extends StatelessWidget {
-  const _PriceBlock({
-    required this.service,
-  });
+class _PriceBlock extends StatelessWidget {
+  const _PriceBlock({required this.service});
 
   final ServiceModel service;
 
   @override
   Widget build(BuildContext context) {
     return Column(
-      crossAxisAlignment:
-      CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
           'Starting from',
-          style: TextStyle(
-            color: Color(0xFF8A9999),
-            fontSize: 7,
-          ),
+          style: TextStyle(color: Color(0xFF8A9999), fontSize: 7),
         ),
         const SizedBox(height: 2),
         Text(
-          _formatPrice(
-            service.basePrice,
-          ),
+          _formatPrice(service.basePrice),
           maxLines: 1,
-          overflow:
-          TextOverflow.ellipsis,
+          overflow: TextOverflow.ellipsis,
           style: const TextStyle(
             color: Color(0xFF183333),
             fontSize: 10,
-            fontWeight:
-            FontWeight.w800,
+            fontWeight: FontWeight.w800,
           ),
         ),
       ],
     );
   }
 
-  String _formatPrice(
-      dynamic value,
-      ) {
-    final number = value is num
-        ? value
-        : num.tryParse(
-      value.toString(),
-    ) ??
-        0;
+  String _formatPrice(dynamic value) {
+    final number = value is num ? value : num.tryParse(value.toString()) ?? 0;
 
-    final digits =
-    number.round().toString();
+    final digits = number.round().toString();
 
     final buffer = StringBuffer();
 
-    for (var i = 0;
-    i < digits.length;
-    i++) {
-      if (i > 0 &&
-          (digits.length - i) %
-              3 ==
-              0) {
+    for (var i = 0; i < digits.length; i++) {
+      if (i > 0 && (digits.length - i) % 3 == 0) {
         buffer.write('.');
       }
 
@@ -960,12 +677,8 @@ class _PriceBlock
 // ACTIONS
 // ============================================================
 
-class _CardActions
-    extends StatelessWidget {
-  const _CardActions({
-    required this.onBook,
-    required this.onDetails,
-  });
+class _CardActions extends StatelessWidget {
+  const _CardActions({required this.onBook, required this.onDetails});
 
   final VoidCallback onBook;
   final VoidCallback onDetails;
@@ -973,36 +686,21 @@ class _CardActions
   @override
   Widget build(BuildContext context) {
     return Row(
-      mainAxisSize:
-      MainAxisSize.min,
+      mainAxisSize: MainAxisSize.min,
       children: [
         SizedBox(
           height: 28,
           child: FilledButton(
             onPressed: onBook,
-            style:
-            FilledButton.styleFrom(
-              backgroundColor:
-              const Color(
-                0xFF109DA0,
-              ),
-              padding:
-              const EdgeInsets
-                  .symmetric(
-                horizontal: 10,
-              ),
+            style: FilledButton.styleFrom(
+              backgroundColor: const Color(0xFF109DA0),
+              padding: const EdgeInsets.symmetric(horizontal: 10),
               minimumSize: Size.zero,
-              tapTargetSize:
-              MaterialTapTargetSize
-                  .shrinkWrap,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
             ),
             child: const Text(
               'Book Now',
-              style: TextStyle(
-                fontSize: 8,
-                fontWeight:
-                FontWeight.w800,
-              ),
+              style: TextStyle(fontSize: 8, fontWeight: FontWeight.w800),
             ),
           ),
         ),
@@ -1012,18 +710,13 @@ class _CardActions
         InkWell(
           onTap: onDetails,
           child: const Padding(
-            padding:
-            EdgeInsets.symmetric(
-              vertical: 7,
-            ),
+            padding: EdgeInsets.symmetric(vertical: 7),
             child: Text(
               'Details →',
               style: TextStyle(
-                color:
-                Color(0xFF109DA0),
+                color: Color(0xFF109DA0),
                 fontSize: 8,
-                fontWeight:
-                FontWeight.w800,
+                fontWeight: FontWeight.w800,
               ),
             ),
           ),

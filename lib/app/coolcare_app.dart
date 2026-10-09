@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../features/auth/presentation/auth_controller.dart';
+import '../features/auth/controllers/auth_controller.dart';
 import '../features/home/presentation/pages/home_page.dart';
 import 'theme/coolcare_theme.dart';
 

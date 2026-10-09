@@ -1,9 +1,9 @@
 import '../../../core/network/api_client.dart';
 import '../../../core/network/api_exception.dart';
-import '../domain/auth_repository.dart';
-import '../domain/auth_user.dart';
-import 'google_auth_client.dart';
-import 'secure_session_store.dart';
+import '../models/auth_user.dart';
+import '../services/google_auth_client.dart';
+import '../services/secure_session_store.dart';
+import 'auth_repository.dart';
 
 class ApiAuthRepository implements AuthRepository {
   ApiAuthRepository({

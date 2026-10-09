@@ -1,7 +1,7 @@
 import 'package:coolcare_mobile/app/coolcare_app.dart';
-import 'package:coolcare_mobile/features/auth/domain/auth_repository.dart';
-import 'package:coolcare_mobile/features/auth/domain/auth_user.dart';
-import 'package:coolcare_mobile/features/auth/presentation/auth_controller.dart';
+import 'package:coolcare_mobile/features/auth/controllers/auth_controller.dart';
+import 'package:coolcare_mobile/features/auth/models/auth_user.dart';
+import 'package:coolcare_mobile/features/auth/repositories/auth_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -36,7 +36,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('AC Services'), findsOneWidget);
-    expect(find.text('AC Cleaning'), findsOneWidget);
+    expect(find.byType(TextField), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 

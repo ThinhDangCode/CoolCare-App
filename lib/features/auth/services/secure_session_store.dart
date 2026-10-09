@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
-import '../domain/auth_user.dart';
+import '../models/auth_user.dart';
 
 class SecureSessionStore {
   const SecureSessionStore({

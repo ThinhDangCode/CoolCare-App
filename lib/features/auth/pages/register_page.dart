@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../domain/auth_validators.dart';
-import '../auth_controller.dart';
+import '../controllers/auth_controller.dart';
+import '../validators/auth_validators.dart';
 import '../widgets/auth_fields.dart';
 import '../widgets/auth_scaffold.dart';
 import 'email_verification_page.dart';

@@ -898,7 +898,7 @@ class _AddressFormPageState extends State<AddressFormPage> {
               _label('Province / City *'),
               DropdownButtonFormField<
                   ProvinceModel>(
-                value: _selectedProvince,
+                initialValue: _selectedProvince,
                 isExpanded: true,
                 icon: const Icon(
                   Icons.keyboard_arrow_down,
@@ -940,7 +940,7 @@ class _AddressFormPageState extends State<AddressFormPage> {
 
               _label('Ward / Commune *'),
               DropdownButtonFormField<WardModel>(
-                value: _selectedWard,
+                initialValue: _selectedWard,
                 isExpanded: true,
                 icon:
                 widget.controller.isLoadingWards

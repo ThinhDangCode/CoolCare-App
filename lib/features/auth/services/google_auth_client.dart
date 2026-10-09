@@ -3,6 +3,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 
 import '../../../core/network/api_exception.dart';
 
+/// Handles the native Google sign-in flow.
 class GoogleAuthClient {
   GoogleAuthClient({GoogleSignIn? signIn})
     : _signIn = signIn ?? GoogleSignIn.instance;

@@ -1,3 +1,4 @@
+/// Authenticated customer data returned by the CoolCare API.
 class AuthUser {
   const AuthUser({
     required this.id,

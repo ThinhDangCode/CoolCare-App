@@ -1,4 +1,4 @@
-import 'auth_user.dart';
+import '../models/auth_user.dart';
 
 abstract interface class AuthRepository {
   Future<AuthSession?> restoreSession();

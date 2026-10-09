@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../../app/theme/coolcare_theme.dart';
+import '../../../app/theme/coolcare_theme.dart';
 
 class AuthScaffold extends StatelessWidget {
   const AuthScaffold({

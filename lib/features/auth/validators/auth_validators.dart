@@ -1,3 +1,4 @@
+/// Shared validation rules for authentication forms.
 abstract final class AuthValidators {
   static String? requiredText(String? value, String label) {
     if (value == null || value.trim().isEmpty) return 'Vui lòng nhập $label.';

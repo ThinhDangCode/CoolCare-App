@@ -1,6 +1,6 @@
-import 'package:coolcare_mobile/features/auth/domain/auth_repository.dart';
-import 'package:coolcare_mobile/features/auth/domain/auth_user.dart';
-import 'package:coolcare_mobile/features/auth/presentation/auth_controller.dart';
+import 'package:coolcare_mobile/features/auth/controllers/auth_controller.dart';
+import 'package:coolcare_mobile/features/auth/models/auth_user.dart';
+import 'package:coolcare_mobile/features/auth/repositories/auth_repository.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

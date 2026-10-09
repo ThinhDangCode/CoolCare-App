@@ -2,20 +2,17 @@ import 'package:flutter/material.dart';
 
 import '../../../../app/theme/coolcare_theme.dart';
 import '../../../../core/network/api_client.dart';
-import '../../../account/presentation/pages/account_page.dart';
+import '../../../account/pages/account_page.dart';
 import '../../../address/pages/addresses_page.dart';
-import '../../../auth/presentation/auth_controller.dart';
-import '../../../auth/presentation/screens/login_page.dart';
+import '../../../auth/controllers/auth_controller.dart';
+import '../../../auth/pages/login_page.dart';
 import '../../../services/controllers/service_controller.dart';
 import '../../../services/models/service_model.dart';
 import '../../../services/pages/service_detail_page.dart';
 import '../../../services/pages/services_page.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({
-    required this.controller,
-    super.key,
-  });
+  const HomePage({required this.controller, super.key});
 
   final AuthController controller;
 
@@ -47,17 +44,16 @@ class _HomePageState extends State<HomePage> {
 
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) => PersonalProfilePage(user: user),
+        builder: (_) =>
+            PersonalProfilePage(user: user, controller: widget.controller),
       ),
     );
   }
 
   void _openAddresses() {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => const AddressesPage(),
-      ),
-    );
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => const AddressesPage()));
   }
 
   void _selectTab(int index) {
@@ -73,9 +69,7 @@ class _HomePageState extends State<HomePage> {
   Widget _selectedPage() {
     switch (_selectedIndex) {
       case 0:
-        return _HomeBody(
-          onExploreServices: () => _selectTab(1),
-        );
+        return _HomeBody(onExploreServices: () => _selectTab(1));
 
       case 1:
         return const ServicesPage();
@@ -85,19 +79,16 @@ class _HomePageState extends State<HomePage> {
           return const _BookingsPage();
         }
 
-        return _RestrictedPage(
-          onLogin: () => _openLogin(context),
-        );
+        return _RestrictedPage(onLogin: () => _openLogin(context));
 
       case 3:
         if (widget.controller.user == null) {
-          return _RestrictedPage(
-            onLogin: () => _openLogin(context),
-          );
+          return _RestrictedPage(onLogin: () => _openLogin(context));
         }
 
         return AccountPage(
           user: widget.controller.user!,
+          controller: widget.controller,
           onViewProfile: _openProfile,
           onViewAddresses: _openAddresses,
           onLogout: () async {
@@ -131,9 +122,7 @@ class _HomePageState extends State<HomePage> {
                   controller: widget.controller,
                   onLogin: () => _openLogin(context),
                 ),
-                Expanded(
-                  child: _selectedPage(),
-                ),
+                Expanded(child: _selectedPage()),
                 _HomeNavigation(
                   selectedIndex: _selectedIndex,
                   onSelected: _selectTab,
@@ -152,10 +141,7 @@ class _HomePageState extends State<HomePage> {
 // ============================================================
 
 class _HomeHeader extends StatelessWidget {
-  const _HomeHeader({
-    required this.controller,
-    required this.onLogin,
-  });
+  const _HomeHeader({required this.controller, required this.onLogin});
 
   final AuthController controller;
   final VoidCallback onLogin;
@@ -167,9 +153,7 @@ class _HomeHeader extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 18),
       decoration: const BoxDecoration(
         color: Colors.white,
-        border: Border(
-          bottom: BorderSide(color: Color(0xFFE8EEEE)),
-        ),
+        border: Border(bottom: BorderSide(color: Color(0xFFE8EEEE))),
       ),
       child: Row(
         children: [
@@ -227,15 +211,9 @@ class _HomeHeader extends StatelessWidget {
                 ),
                 label: const Text(
                   'Log In',
-                  style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w700,
-                  ),
+                  style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700),
                 ),
-                icon: const Icon(
-                  Icons.north_east_rounded,
-                  size: 12,
-                ),
+                icon: const Icon(Icons.north_east_rounded, size: 12),
               );
             },
           ),
@@ -250,9 +228,7 @@ class _HomeHeader extends StatelessWidget {
 // ============================================================
 
 class _HomeBody extends StatefulWidget {
-  const _HomeBody({
-    required this.onExploreServices,
-  });
+  const _HomeBody({required this.onExploreServices});
 
   final VoidCallback onExploreServices;
 
@@ -267,13 +243,8 @@ class _HomeBodyState extends State<_HomeBody> {
   void initState() {
     super.initState();
 
-    const baseUrl = String.fromEnvironment(
-      'API_BASE_URL',
-      defaultValue: 'http://10.0.2.2:3000/api',
-    );
-
     _serviceController = ServiceController(
-      apiClient: ApiClient(baseUrl: baseUrl),
+      apiClient: ApiClient.fromEnvironment(),
     );
 
     _serviceController.addListener(_refresh);
@@ -312,9 +283,7 @@ class _HomeBodyState extends State<_HomeBody> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _HeroCard(
-              onExploreServices: widget.onExploreServices,
-            ),
+            _HeroCard(onExploreServices: widget.onExploreServices),
             const SizedBox(height: 20),
             const _SectionTitle('How can we help?'),
             const SizedBox(height: 12),
@@ -326,33 +295,22 @@ class _HomeBodyState extends State<_HomeBody> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Expanded(
-                  child: _BookingStep(
-                    number: '01',
-                    label: 'Choose service',
-                  ),
+                  child: _BookingStep(number: '01', label: 'Choose service'),
                 ),
                 SizedBox(width: 12),
                 Expanded(
-                  child: _BookingStep(
-                    number: '02',
-                    label: 'Schedule',
-                  ),
+                  child: _BookingStep(number: '02', label: 'Schedule'),
                 ),
                 SizedBox(width: 12),
                 Expanded(
-                  child: _BookingStep(
-                    number: '03',
-                    label: 'Choose technician',
-                  ),
+                  child: _BookingStep(number: '03', label: 'Choose technician'),
                 ),
               ],
             ),
             const SizedBox(height: 22),
             Row(
               children: [
-                const Expanded(
-                  child: _SectionTitle('AC Care'),
-                ),
+                const Expanded(child: _SectionTitle('AC Care')),
                 TextButton(
                   onPressed: widget.onExploreServices,
                   style: TextButton.styleFrom(
@@ -433,10 +391,7 @@ class _HomeBodyState extends State<_HomeBody> {
         width: double.infinity,
         child: Text(
           'No services available.',
-          style: TextStyle(
-            color: CoolCareColors.mutedText,
-            fontSize: 11,
-          ),
+          style: TextStyle(color: CoolCareColors.mutedText, fontSize: 11),
         ),
       );
     }
@@ -491,9 +446,7 @@ class _HomeBodyState extends State<_HomeBody> {
 // ============================================================
 
 class _HeroCard extends StatelessWidget {
-  const _HeroCard({
-    required this.onExploreServices,
-  });
+  const _HeroCard({required this.onExploreServices});
 
   final VoidCallback onExploreServices;
 
@@ -524,7 +477,7 @@ class _HeroCard extends StatelessWidget {
                 const SizedBox(height: 8),
                 const Text(
                   'Cool comfort, every day.\n'
-                      'Peace of mind, always.',
+                  'Peace of mind, always.',
                   style: TextStyle(
                     color: CoolCareColors.text,
                     fontSize: 18,
@@ -536,7 +489,7 @@ class _HeroCard extends StatelessWidget {
                 const SizedBox(height: 8),
                 const Text(
                   'Find the right service,\n'
-                      'book at your convenience.',
+                  'book at your convenience.',
                   style: TextStyle(
                     color: CoolCareColors.mutedText,
                     fontSize: 10,
@@ -549,10 +502,7 @@ class _HeroCard extends StatelessWidget {
                   child: FilledButton.icon(
                     onPressed: onExploreServices,
                     iconAlignment: IconAlignment.end,
-                    icon: const Icon(
-                      Icons.arrow_forward_rounded,
-                      size: 14,
-                    ),
+                    icon: const Icon(Icons.arrow_forward_rounded, size: 14),
                     style: FilledButton.styleFrom(
                       padding: const EdgeInsets.symmetric(horizontal: 13),
                       shape: RoundedRectangleBorder(
@@ -632,15 +582,10 @@ class _ServiceShortcut extends StatelessWidget {
         borderRadius: BorderRadius.circular(13),
         child: Container(
           constraints: const BoxConstraints(minHeight: 94),
-          padding: const EdgeInsets.symmetric(
-            horizontal: 8,
-            vertical: 10,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(13),
-            border: Border.all(
-              color: CoolCareColors.border,
-            ),
+            border: Border.all(color: CoolCareColors.border),
           ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -652,11 +597,7 @@ class _ServiceShortcut extends StatelessWidget {
                   color: CoolCareColors.surfaceTint,
                   borderRadius: BorderRadius.circular(11),
                 ),
-                child: Icon(
-                  icon,
-                  color: CoolCareColors.primary,
-                  size: 22,
-                ),
+                child: Icon(icon, color: CoolCareColors.primary, size: 22),
               ),
               const SizedBox(height: 7),
               Text(
@@ -684,10 +625,7 @@ class _ServiceShortcut extends StatelessWidget {
 // ============================================================
 
 class _BookingStep extends StatelessWidget {
-  const _BookingStep({
-    required this.number,
-    required this.label,
-  });
+  const _BookingStep({required this.number, required this.label});
 
   final String number;
   final String label;
@@ -812,10 +750,7 @@ class _HomeNavigation extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       height: 62,
-      padding: const EdgeInsets.symmetric(
-        horizontal: 8,
-        vertical: 4,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       color: CoolCareColors.primary,
       child: Row(
         children: [
@@ -880,14 +815,8 @@ class _NavItem extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         child: Center(
           child: Container(
-            constraints: const BoxConstraints(
-              minWidth: 48,
-              minHeight: 46,
-            ),
-            padding: const EdgeInsets.symmetric(
-              horizontal: 7,
-              vertical: 5,
-            ),
+            constraints: const BoxConstraints(minWidth: 48, minHeight: 46),
+            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 5),
             decoration: BoxDecoration(
               color: selected
                   ? Colors.white.withValues(alpha: .17)
@@ -912,8 +841,7 @@ class _NavItem extends StatelessWidget {
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 8,
-                    fontWeight:
-                    selected ? FontWeight.w700 : FontWeight.w500,
+                    fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
                   ),
                 ),
               ],
@@ -930,9 +858,7 @@ class _NavItem extends StatelessWidget {
 // ============================================================
 
 class _RestrictedPage extends StatelessWidget {
-  const _RestrictedPage({
-    required this.onLogin,
-  });
+  const _RestrictedPage({required this.onLogin});
 
   final VoidCallback onLogin;
 
@@ -1018,10 +944,7 @@ class _BookingsPage extends StatelessWidget {
           const SizedBox(height: 18),
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.symmetric(
-              horizontal: 22,
-              vertical: 42,
-            ),
+            padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 42),
             decoration: BoxDecoration(
               color: CoolCareColors.surfaceTint,
               borderRadius: BorderRadius.circular(14),

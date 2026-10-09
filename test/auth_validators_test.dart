@@ -1,4 +1,4 @@
-import 'package:coolcare_mobile/features/auth/domain/auth_validators.dart';
+import 'package:coolcare_mobile/features/auth/validators/auth_validators.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

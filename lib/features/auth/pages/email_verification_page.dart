@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../../domain/auth_validators.dart';
-import '../auth_controller.dart';
+import '../controllers/auth_controller.dart';
+import '../validators/auth_validators.dart';
 import '../widgets/auth_fields.dart';
 import '../widgets/auth_scaffold.dart';
 

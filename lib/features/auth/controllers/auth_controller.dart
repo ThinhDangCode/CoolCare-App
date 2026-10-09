@@ -2,8 +2,8 @@ import 'package:flutter/foundation.dart';
 
 import '../../../core/network/api_exception.dart';
 import '../../../core/network/cloudinary_image_uploader.dart';
-import '../domain/auth_repository.dart';
-import '../domain/auth_user.dart';
+import '../models/auth_user.dart';
+import '../repositories/auth_repository.dart';
 
 enum AuthStatus { initial, loading, authenticated, unauthenticated }
 

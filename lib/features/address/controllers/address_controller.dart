@@ -3,7 +3,7 @@ import 'package:flutter/foundation.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/network/api_endpoints.dart';
 import '../../../core/network/api_exception.dart';
-import '../../auth/data/secure_session_store.dart';
+import '../../auth/services/secure_session_store.dart';
 import '../models/address_model.dart';
 import '../models/location_model.dart';
 
@@ -11,8 +11,8 @@ class AddressController extends ChangeNotifier {
   AddressController({
     required ApiClient apiClient,
     SecureSessionStore sessionStore = const SecureSessionStore(),
-  })  : _apiClient = apiClient,
-        _sessionStore = sessionStore;
+  }) : _apiClient = apiClient,
+       _sessionStore = sessionStore;
 
   final ApiClient _apiClient;
   final SecureSessionStore _sessionStore;
@@ -303,11 +303,7 @@ class AddressController extends ChangeNotifier {
 
     return jsonList
         .whereType<Map>()
-        .map(
-          (item) => AddressModel.fromJson(
-        Map<String, dynamic>.from(item),
-      ),
-    )
+        .map((item) => AddressModel.fromJson(Map<String, dynamic>.from(item)))
         .toList();
   }
 
@@ -317,11 +313,7 @@ class AddressController extends ChangeNotifier {
 
     return jsonList
         .whereType<Map>()
-        .map(
-          (item) => ProvinceModel.fromJson(
-        Map<String, dynamic>.from(item),
-      ),
-    )
+        .map((item) => ProvinceModel.fromJson(Map<String, dynamic>.from(item)))
         .toList();
   }
 
@@ -331,11 +323,7 @@ class AddressController extends ChangeNotifier {
 
     return jsonList
         .whereType<Map>()
-        .map(
-          (item) => WardModel.fromJson(
-        Map<String, dynamic>.from(item),
-      ),
-    )
+        .map((item) => WardModel.fromJson(Map<String, dynamic>.from(item)))
         .toList();
   }
 

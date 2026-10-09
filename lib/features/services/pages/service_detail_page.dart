@@ -5,16 +5,12 @@ import '../controllers/service_controller.dart';
 import '../models/service_model.dart';
 
 class ServiceDetailPage extends StatefulWidget {
-  const ServiceDetailPage({
-    required this.serviceId,
-    super.key,
-  });
+  const ServiceDetailPage({required this.serviceId, super.key});
 
   final String serviceId;
 
   @override
-  State<ServiceDetailPage> createState() =>
-      _ServiceDetailPageState();
+  State<ServiceDetailPage> createState() => _ServiceDetailPageState();
 }
 
 class _ServiceDetailPageState extends State<ServiceDetailPage> {
@@ -24,16 +20,7 @@ class _ServiceDetailPageState extends State<ServiceDetailPage> {
   void initState() {
     super.initState();
 
-    const baseUrl = String.fromEnvironment(
-      'API_BASE_URL',
-      defaultValue: 'http://10.0.2.2:3000/api',
-    );
-
-    _controller = ServiceController(
-      apiClient: ApiClient(
-        baseUrl: baseUrl,
-      ),
-    );
+    _controller = ServiceController(apiClient: ApiClient.fromEnvironment());
 
     _controller.addListener(_refresh);
     _controller.loadServiceDetail(widget.serviceId);
@@ -102,16 +89,11 @@ class _ServiceDetailPageState extends State<ServiceDetailPage> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            CircularProgressIndicator(
-              color: Color(0xFF109DA0),
-            ),
+            CircularProgressIndicator(color: Color(0xFF109DA0)),
             SizedBox(height: 14),
             Text(
               'Loading service...',
-              style: TextStyle(
-                color: Color(0xFF758686),
-                fontSize: 11,
-              ),
+              style: TextStyle(color: Color(0xFF758686), fontSize: 11),
             ),
           ],
         ),
@@ -128,10 +110,7 @@ class _ServiceDetailPageState extends State<ServiceDetailPage> {
       return const Center(
         child: Text(
           'Service not found.',
-          style: TextStyle(
-            color: Color(0xFF758686),
-            fontSize: 12,
-          ),
+          style: TextStyle(color: Color(0xFF758686), fontSize: 12),
         ),
       );
     }
@@ -175,8 +154,7 @@ class _ServiceDetailPageState extends State<ServiceDetailPage> {
             ),
             const SizedBox(height: 7),
             Text(
-              _controller.detailErrorMessage ??
-                  'Something went wrong.',
+              _controller.detailErrorMessage ?? 'Something went wrong.',
               textAlign: TextAlign.center,
               style: const TextStyle(
                 color: Color(0xFF758686),
@@ -187,14 +165,9 @@ class _ServiceDetailPageState extends State<ServiceDetailPage> {
             const SizedBox(height: 18),
             FilledButton.icon(
               onPressed: () {
-                _controller.loadServiceDetail(
-                  widget.serviceId,
-                );
+                _controller.loadServiceDetail(widget.serviceId);
               },
-              icon: const Icon(
-                Icons.refresh_rounded,
-                size: 17,
-              ),
+              icon: const Icon(Icons.refresh_rounded, size: 17),
               label: const Text('Try Again'),
               style: FilledButton.styleFrom(
                 backgroundColor: const Color(0xFF109DA0),
@@ -251,12 +224,7 @@ class _ServiceDetailPageState extends State<ServiceDetailPage> {
 
   Widget _buildOverview(ServiceModel service) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(
-        20,
-        6,
-        20,
-        18,
-      ),
+      padding: const EdgeInsets.fromLTRB(20, 6, 20, 18),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -363,17 +331,14 @@ class _ServiceDetailPageState extends State<ServiceDetailPage> {
 
     if (service.maintenanceIntervalDays != null) {
       if (items.isNotEmpty) {
-        items.add(
-          const SizedBox(height: 12),
-        );
+        items.add(const SizedBox(height: 12));
       }
 
       items.add(
         _InfoRow(
           icon: Icons.event_repeat_rounded,
           title: 'Maintenance interval',
-          value:
-          '${service.maintenanceIntervalDays} days',
+          value: '${service.maintenanceIntervalDays} days',
         ),
       );
     }
@@ -383,20 +348,14 @@ class _ServiceDetailPageState extends State<ServiceDetailPage> {
         title: 'Service Information',
         child: Text(
           'Additional service information is currently being updated.',
-          style: TextStyle(
-            color: Color(0xFF6F8080),
-            fontSize: 10,
-            height: 1.5,
-          ),
+          style: TextStyle(color: Color(0xFF6F8080), fontSize: 10, height: 1.5),
         ),
       );
     }
 
     return _Section(
       title: 'Service Information',
-      child: Column(
-        children: items,
-      ),
+      child: Column(children: items),
     );
   }
 
@@ -412,9 +371,7 @@ class _ServiceDetailPageState extends State<ServiceDetailPage> {
         padding: const EdgeInsets.all(12),
         decoration: const BoxDecoration(
           color: Color(0xFFEAF7F6),
-          borderRadius: BorderRadius.all(
-            Radius.circular(10),
-          ),
+          borderRadius: BorderRadius.all(Radius.circular(10)),
         ),
         child: const Row(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -428,8 +385,8 @@ class _ServiceDetailPageState extends State<ServiceDetailPage> {
             Expanded(
               child: Text(
                 'You can review the service information before booking. '
-                    'Final service requirements and cost may be confirmed '
-                    'during the service process.',
+                'Final service requirements and cost may be confirmed '
+                'during the service process.',
                 style: TextStyle(
                   color: Color(0xFF496565),
                   fontSize: 9,
@@ -451,12 +408,7 @@ class _ServiceDetailPageState extends State<ServiceDetailPage> {
     final reviews = _controller.reviews;
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(
-        20,
-        15,
-        20,
-        18,
-      ),
+      padding: const EdgeInsets.fromLTRB(20, 15, 20, 18),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -479,12 +431,9 @@ class _ServiceDetailPageState extends State<ServiceDetailPage> {
                     _showAllReviews();
                   },
                   style: TextButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 4,
-                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
                     minimumSize: const Size(0, 30),
-                    tapTargetSize:
-                    MaterialTapTargetSize.shrinkWrap,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   ),
                   child: const Text(
                     'View All',
@@ -503,14 +452,14 @@ class _ServiceDetailPageState extends State<ServiceDetailPage> {
           if (reviews.isEmpty)
             _buildEmptyReviews()
           else
-            ...reviews.take(2).map(
+            ...reviews
+                .take(2)
+                .map(
                   (review) => Padding(
-                padding: const EdgeInsets.only(
-                  bottom: 10,
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: _buildReviewCard(review),
+                  ),
                 ),
-                child: _buildReviewCard(review),
-              ),
-            ),
         ],
       ),
     );
@@ -519,24 +468,15 @@ class _ServiceDetailPageState extends State<ServiceDetailPage> {
   Widget _buildEmptyReviews() {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(
-        horizontal: 16,
-        vertical: 18,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
       decoration: BoxDecoration(
         color: const Color(0xFFF8FAFA),
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(
-          color: const Color(0xFFE7EEEE),
-        ),
+        border: Border.all(color: const Color(0xFFE7EEEE)),
       ),
       child: const Column(
         children: [
-          Icon(
-            Icons.rate_review_outlined,
-            color: Color(0xFF91A1A1),
-            size: 25,
-          ),
+          Icon(Icons.rate_review_outlined, color: Color(0xFF91A1A1), size: 25),
           SizedBox(height: 7),
           Text(
             'No reviews yet',
@@ -550,25 +490,17 @@ class _ServiceDetailPageState extends State<ServiceDetailPage> {
           Text(
             'Customer reviews will appear here.',
             textAlign: TextAlign.center,
-            style: TextStyle(
-              color: Color(0xFF8A9999),
-              fontSize: 9,
-            ),
+            style: TextStyle(color: Color(0xFF8A9999), fontSize: 9),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildReviewCard(
-      Map<String, dynamic> review,
-      ) {
-    final rating = _parseRating(
-      review['rating'],
-    );
+  Widget _buildReviewCard(Map<String, dynamic> review) {
+    final rating = _parseRating(review['rating']);
 
-    final comment =
-        review['comment']?.toString().trim() ?? '';
+    final comment = review['comment']?.toString().trim() ?? '';
 
     return Container(
       width: double.infinity,
@@ -576,9 +508,7 @@ class _ServiceDetailPageState extends State<ServiceDetailPage> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(
-          color: const Color(0xFFE5ECEC),
-        ),
+        border: Border.all(color: const Color(0xFFE5ECEC)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -644,23 +574,16 @@ class _ServiceDetailPageState extends State<ServiceDetailPage> {
 
     return Row(
       mainAxisSize: MainAxisSize.min,
-      children: List.generate(
-        5,
-            (index) {
-          return Padding(
-            padding: const EdgeInsets.only(
-              right: 1,
-            ),
-            child: Icon(
-              index < safeRating
-                  ? Icons.star_rounded
-                  : Icons.star_border_rounded,
-              size: 14,
-              color: const Color(0xFFFFB547),
-            ),
-          );
-        },
-      ),
+      children: List.generate(5, (index) {
+        return Padding(
+          padding: const EdgeInsets.only(right: 1),
+          child: Icon(
+            index < safeRating ? Icons.star_rounded : Icons.star_border_rounded,
+            size: 14,
+            color: const Color(0xFFFFB547),
+          ),
+        );
+      }),
     );
   }
 
@@ -669,11 +592,7 @@ class _ServiceDetailPageState extends State<ServiceDetailPage> {
       return value.toInt().clamp(0, 5);
     }
 
-    return (int.tryParse(
-      value?.toString() ?? '',
-    ) ??
-        0)
-        .clamp(0, 5);
+    return (int.tryParse(value?.toString() ?? '') ?? 0).clamp(0, 5);
   }
 
   // ============================================================
@@ -689,9 +608,7 @@ class _ServiceDetailPageState extends State<ServiceDetailPage> {
       isScrollControlled: true,
       useSafeArea: true,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(20),
-        ),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (context) {
         return DraggableScrollableSheet(
@@ -709,18 +626,12 @@ class _ServiceDetailPageState extends State<ServiceDetailPage> {
                   height: 4,
                   decoration: BoxDecoration(
                     color: const Color(0xFFD5DEDE),
-                    borderRadius:
-                    BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(20),
                   ),
                 ),
 
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(
-                    20,
-                    16,
-                    12,
-                    10,
-                  ),
+                  padding: const EdgeInsets.fromLTRB(20, 16, 12, 10),
                   child: Row(
                     children: [
                       const Expanded(
@@ -738,30 +649,22 @@ class _ServiceDetailPageState extends State<ServiceDetailPage> {
                         onPressed: () {
                           Navigator.of(context).pop();
                         },
-                        icon: const Icon(
-                          Icons.close_rounded,
-                        ),
+                        icon: const Icon(Icons.close_rounded),
                       ),
                     ],
                   ),
                 ),
 
-                const Divider(
-                  height: 1,
-                  color: Color(0xFFEDF1F1),
-                ),
+                const Divider(height: 1, color: Color(0xFFEDF1F1)),
 
                 Expanded(
                   child: ListView.separated(
                     controller: scrollController,
                     padding: const EdgeInsets.all(20),
                     itemCount: reviews.length,
-                    separatorBuilder: (_, __) =>
-                    const SizedBox(height: 10),
+                    separatorBuilder: (_, _) => const SizedBox(height: 10),
                     itemBuilder: (context, index) {
-                      return _buildReviewCard(
-                        reviews[index],
-                      );
+                      return _buildReviewCard(reviews[index]);
                     },
                   ),
                 ),
@@ -777,41 +680,26 @@ class _ServiceDetailPageState extends State<ServiceDetailPage> {
   // BOTTOM BOOKING BAR
   // ============================================================
 
-  Widget _buildBottomBookingBar(
-      ServiceModel service,
-      ) {
+  Widget _buildBottomBookingBar(ServiceModel service) {
     return Container(
       decoration: const BoxDecoration(
         color: Colors.white,
-        border: Border(
-          top: BorderSide(
-            color: Color(0xFFE1E9E9),
-          ),
-        ),
+        border: Border(top: BorderSide(color: Color(0xFFE1E9E9))),
       ),
       child: SafeArea(
         top: false,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(
-            20,
-            10,
-            20,
-            10,
-          ),
+          padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
           child: Row(
             children: [
               Expanded(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment:
-                  CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
                       'From',
-                      style: TextStyle(
-                        color: Color(0xFF8A9999),
-                        fontSize: 8,
-                      ),
+                      style: TextStyle(color: Color(0xFF8A9999), fontSize: 8),
                     ),
 
                     const SizedBox(height: 2),
@@ -837,23 +725,16 @@ class _ServiceDetailPageState extends State<ServiceDetailPage> {
                 child: FilledButton(
                   onPressed: _showBookingMessage,
                   style: FilledButton.styleFrom(
-                    backgroundColor:
-                    const Color(0xFF109DA0),
+                    backgroundColor: const Color(0xFF109DA0),
                     foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 22,
-                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 22),
                     shape: RoundedRectangleBorder(
-                      borderRadius:
-                      BorderRadius.circular(9),
+                      borderRadius: BorderRadius.circular(9),
                     ),
                   ),
                   child: const Text(
                     'Book Service',
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w800,
-                    ),
+                    style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800),
                   ),
                 ),
               ),
@@ -866,11 +747,7 @@ class _ServiceDetailPageState extends State<ServiceDetailPage> {
 
   void _showBookingMessage() {
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text(
-          'Booking flow will be connected here.',
-        ),
-      ),
+      const SnackBar(content: Text('Booking flow will be connected here.')),
     );
   }
 
@@ -879,19 +756,13 @@ class _ServiceDetailPageState extends State<ServiceDetailPage> {
   // ============================================================
 
   String _formatPrice(dynamic value) {
-    final number = value is num
-        ? value
-        : num.tryParse(
-      value.toString(),
-    ) ??
-        0;
+    final number = value is num ? value : num.tryParse(value.toString()) ?? 0;
 
     final digits = number.round().toString();
     final buffer = StringBuffer();
 
     for (var i = 0; i < digits.length; i++) {
-      if (i > 0 &&
-          (digits.length - i) % 3 == 0) {
+      if (i > 0 && (digits.length - i) % 3 == 0) {
         buffer.write('.');
       }
 
@@ -907,10 +778,7 @@ class _ServiceDetailPageState extends State<ServiceDetailPage> {
 // ============================================================
 
 class _Section extends StatelessWidget {
-  const _Section({
-    required this.title,
-    required this.child,
-  });
+  const _Section({required this.title, required this.child});
 
   final String title;
   final Widget child;
@@ -918,10 +786,7 @@ class _Section extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 20,
-        vertical: 15,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -968,11 +833,7 @@ class _InfoRow extends StatelessWidget {
             color: const Color(0xFFEAF7F6),
             borderRadius: BorderRadius.circular(7),
           ),
-          child: Icon(
-            icon,
-            color: const Color(0xFF109DA0),
-            size: 16,
-          ),
+          child: Icon(icon, color: const Color(0xFF109DA0), size: 16),
         ),
 
         const SizedBox(width: 10),
@@ -983,10 +844,7 @@ class _InfoRow extends StatelessWidget {
             children: [
               Text(
                 title,
-                style: const TextStyle(
-                  color: Color(0xFF758686),
-                  fontSize: 9,
-                ),
+                style: const TextStyle(color: Color(0xFF758686), fontSize: 9),
               ),
 
               const SizedBox(height: 2),
@@ -1017,10 +875,6 @@ class _SectionDivider extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Divider(
-      height: 1,
-      thickness: 1,
-      color: Color(0xFFEDF1F1),
-    );
+    return const Divider(height: 1, thickness: 1, color: Color(0xFFEDF1F1));
   }
 }
