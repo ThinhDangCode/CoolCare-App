@@ -27,8 +27,7 @@ class ServiceModel {
       description: json['description']?.toString(),
       basePrice: _parseDouble(json['base_price']),
       estimatedDuration: _parseInt(json['estimated_duration']),
-      maintenanceIntervalDays:
-      _parseInt(json['maintenance_interval_days']),
+      maintenanceIntervalDays: _parseInt(json['maintenance_interval_days']),
       isActive: json['is_active'] == true,
     );
   }

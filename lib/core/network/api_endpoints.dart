@@ -7,19 +7,17 @@ class ApiEndpoints {
   static const String forgotPassword = '/auth/forgot-password';
 
   // Services
-  static const String services = '/services';
-  static const String serviceCategories = '/service-categories';
+  // Public mobile catalog. These paths mirror the backend mount at
+  // `/api/catalog`; the old top-level paths do not exist on the API.
+  static const String services = '/catalog/services';
+  static const String serviceCategories = '/catalog/categories';
 
   static String serviceDetail(String serviceId) {
-    return '/services/$serviceId';
-  }
-
-  static String serviceReviews(String serviceId) {
-    return '/services/$serviceId/reviews';
+    return '/catalog/services/$serviceId';
   }
   // ============================================================
-// ADDRESS
-// ============================================================
+  // ADDRESS
+  // ============================================================
 
   static const String addresses = '/addresses';
 
@@ -31,8 +29,7 @@ class ApiEndpoints {
     return '/addresses/$addressId/default';
   }
 
-  static const String provinces =
-      '/addresses/locations/provinces';
+  static const String provinces = '/addresses/locations/provinces';
 
   static String wards(String provinceCode) {
     return '/addresses/locations/provinces/$provinceCode/wards';

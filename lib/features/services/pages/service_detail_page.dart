@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../app/localization/app_strings.dart';
+import '../../../app/theme/coolcare_theme.dart';
 import '../../../core/network/api_client.dart';
 import '../controllers/service_controller.dart';
 import '../models/service_model.dart';
@@ -42,7 +44,7 @@ class _ServiceDetailPageState extends State<ServiceDetailPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: context.appBackground,
       appBar: _buildAppBar(),
       body: _buildBody(),
     );
@@ -54,24 +56,20 @@ class _ServiceDetailPageState extends State<ServiceDetailPage> {
 
   PreferredSizeWidget _buildAppBar() {
     return AppBar(
-      backgroundColor: Colors.white,
-      surfaceTintColor: Colors.white,
+      backgroundColor: context.appSurface,
+      surfaceTintColor: Colors.transparent,
       elevation: 0,
       scrolledUnderElevation: 0,
       leadingWidth: 44,
       leading: IconButton(
         onPressed: () => Navigator.of(context).pop(),
-        icon: const Icon(
-          Icons.arrow_back_rounded,
-          size: 20,
-          color: Color(0xFF183333),
-        ),
+        icon: Icon(Icons.arrow_back_rounded, size: 20, color: context.appText),
       ),
       titleSpacing: 0,
-      title: const Text(
-        'Service Details',
+      title: Text(
+        context.tr('serviceDetails'),
         style: TextStyle(
-          color: Color(0xFF183333),
+          color: context.appText,
           fontSize: 14,
           fontWeight: FontWeight.w800,
         ),
@@ -85,15 +83,15 @@ class _ServiceDetailPageState extends State<ServiceDetailPage> {
 
   Widget _buildBody() {
     if (_controller.isDetailLoading) {
-      return const Center(
+      return Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            CircularProgressIndicator(color: Color(0xFF109DA0)),
-            SizedBox(height: 14),
+            const CircularProgressIndicator(color: Color(0xFF109DA0)),
+            const SizedBox(height: 14),
             Text(
-              'Loading service...',
-              style: TextStyle(color: Color(0xFF758686), fontSize: 11),
+              context.tr('loadingService'),
+              style: TextStyle(color: context.appMuted, fontSize: 11),
             ),
           ],
         ),
@@ -107,10 +105,10 @@ class _ServiceDetailPageState extends State<ServiceDetailPage> {
     final service = _controller.selectedService;
 
     if (service == null) {
-      return const Center(
+      return Center(
         child: Text(
-          'Service not found.',
-          style: TextStyle(color: Color(0xFF758686), fontSize: 12),
+          context.tr('serviceNotFound'),
+          style: TextStyle(color: context.appMuted, fontSize: 12),
         ),
       );
     }
@@ -132,8 +130,8 @@ class _ServiceDetailPageState extends State<ServiceDetailPage> {
             Container(
               width: 66,
               height: 66,
-              decoration: const BoxDecoration(
-                color: Color(0xFFF0F8F7),
+              decoration: BoxDecoration(
+                color: context.appAccentSurface,
                 shape: BoxShape.circle,
               ),
               child: const Icon(
@@ -143,21 +141,21 @@ class _ServiceDetailPageState extends State<ServiceDetailPage> {
               ),
             ),
             const SizedBox(height: 15),
-            const Text(
-              'Unable to load service',
+            Text(
+              context.tr('unableLoadService'),
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: Color(0xFF183333),
+                color: context.appText,
                 fontSize: 16,
                 fontWeight: FontWeight.w800,
               ),
             ),
             const SizedBox(height: 7),
             Text(
-              _controller.detailErrorMessage ?? 'Something went wrong.',
+              _controller.detailErrorMessage ?? context.tr('genericError'),
               textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: Color(0xFF758686),
+              style: TextStyle(
+                color: context.appMuted,
                 fontSize: 11,
                 height: 1.4,
               ),
@@ -168,7 +166,7 @@ class _ServiceDetailPageState extends State<ServiceDetailPage> {
                 _controller.loadServiceDetail(widget.serviceId);
               },
               icon: const Icon(Icons.refresh_rounded, size: 17),
-              label: const Text('Try Again'),
+              label: Text(context.tr('tryAgain')),
               style: FilledButton.styleFrom(
                 backgroundColor: const Color(0xFF109DA0),
                 foregroundColor: Colors.white,
@@ -230,8 +228,8 @@ class _ServiceDetailPageState extends State<ServiceDetailPage> {
         children: [
           Text(
             service.name,
-            style: const TextStyle(
-              color: Color(0xFF183333),
+            style: TextStyle(
+              color: context.appText,
               fontSize: 20,
               fontWeight: FontWeight.w800,
               height: 1.2,
@@ -244,8 +242,8 @@ class _ServiceDetailPageState extends State<ServiceDetailPage> {
             const SizedBox(height: 7),
             Text(
               service.description!,
-              style: const TextStyle(
-                color: Color(0xFF758686),
+              style: TextStyle(
+                color: context.appMuted,
                 fontSize: 10,
                 height: 1.45,
               ),
@@ -254,10 +252,10 @@ class _ServiceDetailPageState extends State<ServiceDetailPage> {
 
           const SizedBox(height: 15),
 
-          const Text(
-            'Starting from',
+          Text(
+            context.tr('startingFrom'),
             style: TextStyle(
-              color: Color(0xFF7D8C8C),
+              color: context.appMuted,
               fontSize: 9,
               fontWeight: FontWeight.w500,
             ),
@@ -277,13 +275,9 @@ class _ServiceDetailPageState extends State<ServiceDetailPage> {
 
           const SizedBox(height: 6),
 
-          const Text(
-            'Final cost will be confirmed based on the actual condition and service requirements.',
-            style: TextStyle(
-              color: Color(0xFF7D8C8C),
-              fontSize: 9,
-              height: 1.4,
-            ),
+          Text(
+            context.tr('finalCostNote'),
+            style: TextStyle(color: context.appMuted, fontSize: 9, height: 1.4),
           ),
         ],
       ),
@@ -298,16 +292,12 @@ class _ServiceDetailPageState extends State<ServiceDetailPage> {
     final description = service.description?.trim();
 
     return _Section(
-      title: 'About This Service',
+      title: context.tr('aboutService'),
       child: Text(
         description != null && description.isNotEmpty
             ? description
-            : 'Service information is currently being updated.',
-        style: const TextStyle(
-          color: Color(0xFF6F8080),
-          fontSize: 10,
-          height: 1.5,
-        ),
+            : context.tr('serviceInfoUpdating'),
+        style: TextStyle(color: context.appMuted, fontSize: 10, height: 1.5),
       ),
     );
   }
@@ -323,8 +313,8 @@ class _ServiceDetailPageState extends State<ServiceDetailPage> {
       items.add(
         _InfoRow(
           icon: Icons.schedule_rounded,
-          title: 'Estimated duration',
-          value: '${service.estimatedDuration} minutes',
+          title: context.tr('estimatedDuration'),
+          value: '${service.estimatedDuration} ${context.tr('minutes')}',
         ),
       );
     }
@@ -337,24 +327,24 @@ class _ServiceDetailPageState extends State<ServiceDetailPage> {
       items.add(
         _InfoRow(
           icon: Icons.event_repeat_rounded,
-          title: 'Maintenance interval',
-          value: '${service.maintenanceIntervalDays} days',
+          title: context.tr('maintenanceInterval'),
+          value: '${service.maintenanceIntervalDays} ${context.tr('days')}',
         ),
       );
     }
 
     if (items.isEmpty) {
-      return const _Section(
-        title: 'Service Information',
+      return _Section(
+        title: context.tr('aboutService'),
         child: Text(
-          'Additional service information is currently being updated.',
-          style: TextStyle(color: Color(0xFF6F8080), fontSize: 10, height: 1.5),
+          context.tr('additionalInfoUpdating'),
+          style: TextStyle(color: context.appMuted, fontSize: 10, height: 1.5),
         ),
       );
     }
 
     return _Section(
-      title: 'Service Information',
+      title: context.tr('aboutService'),
       child: Column(children: items),
     );
   }
@@ -365,30 +355,28 @@ class _ServiceDetailPageState extends State<ServiceDetailPage> {
 
   Widget _buildBeforeBooking() {
     return _Section(
-      title: 'Before You Book',
+      title: context.tr('beforeBooking'),
       child: Container(
         width: double.infinity,
         padding: const EdgeInsets.all(12),
-        decoration: const BoxDecoration(
-          color: Color(0xFFEAF7F6),
-          borderRadius: BorderRadius.all(Radius.circular(10)),
+        decoration: BoxDecoration(
+          color: context.appAccentSurface,
+          borderRadius: const BorderRadius.all(Radius.circular(10)),
         ),
-        child: const Row(
+        child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(
+            const Icon(
               Icons.info_outline_rounded,
               size: 17,
               color: Color(0xFF109DA0),
             ),
-            SizedBox(width: 9),
+            const SizedBox(width: 9),
             Expanded(
               child: Text(
-                'You can review the service information before booking. '
-                'Final service requirements and cost may be confirmed '
-                'during the service process.',
+                context.tr('beforeBookingNote'),
                 style: TextStyle(
-                  color: Color(0xFF496565),
+                  color: context.appSubtleText,
                   fontSize: 9,
                   height: 1.45,
                 ),
@@ -414,11 +402,11 @@ class _ServiceDetailPageState extends State<ServiceDetailPage> {
         children: [
           Row(
             children: [
-              const Expanded(
+              Expanded(
                 child: Text(
-                  'Customer Reviews',
+                  context.tr('customerReviews'),
                   style: TextStyle(
-                    color: Color(0xFF274545),
+                    color: context.appText,
                     fontSize: 11,
                     fontWeight: FontWeight.w800,
                   ),
@@ -435,9 +423,9 @@ class _ServiceDetailPageState extends State<ServiceDetailPage> {
                     minimumSize: const Size(0, 30),
                     tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   ),
-                  child: const Text(
-                    'View All',
-                    style: TextStyle(
+                  child: Text(
+                    context.tr('viewAll'),
+                    style: const TextStyle(
                       color: Color(0xFF109DA0),
                       fontSize: 9,
                       fontWeight: FontWeight.w700,
@@ -470,27 +458,27 @@ class _ServiceDetailPageState extends State<ServiceDetailPage> {
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
       decoration: BoxDecoration(
-        color: const Color(0xFFF8FAFA),
+        color: context.appSoftSurface,
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: const Color(0xFFE7EEEE)),
+        border: Border.all(color: context.appBorder),
       ),
-      child: const Column(
+      child: Column(
         children: [
-          Icon(Icons.rate_review_outlined, color: Color(0xFF91A1A1), size: 25),
-          SizedBox(height: 7),
+          Icon(Icons.rate_review_outlined, color: context.appMuted, size: 25),
+          const SizedBox(height: 7),
           Text(
-            'No reviews yet',
+            context.tr('noReviews'),
             style: TextStyle(
-              color: Color(0xFF506767),
+              color: context.appText,
               fontSize: 10,
               fontWeight: FontWeight.w700,
             ),
           ),
-          SizedBox(height: 3),
+          const SizedBox(height: 3),
           Text(
-            'Customer reviews will appear here.',
+            context.tr('reviewsAppearHere'),
             textAlign: TextAlign.center,
-            style: TextStyle(color: Color(0xFF8A9999), fontSize: 9),
+            style: TextStyle(color: context.appMuted, fontSize: 9),
           ),
         ],
       ),
@@ -506,9 +494,9 @@ class _ServiceDetailPageState extends State<ServiceDetailPage> {
       width: double.infinity,
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.appSurface,
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: const Color(0xFFE5ECEC)),
+        border: Border.all(color: context.appBorder),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -517,8 +505,8 @@ class _ServiceDetailPageState extends State<ServiceDetailPage> {
             width: 36,
             height: 36,
             alignment: Alignment.center,
-            decoration: const BoxDecoration(
-              color: Color(0xFFE5F5F4),
+            decoration: BoxDecoration(
+              color: context.appAccentSurface,
               shape: BoxShape.circle,
             ),
             child: const Icon(
@@ -534,12 +522,12 @@ class _ServiceDetailPageState extends State<ServiceDetailPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Customer',
+                Text(
+                  context.tr('customer'),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    color: Color(0xFF274545),
+                    color: context.appText,
                     fontSize: 10,
                     fontWeight: FontWeight.w800,
                   ),
@@ -554,8 +542,8 @@ class _ServiceDetailPageState extends State<ServiceDetailPage> {
 
                   Text(
                     comment,
-                    style: const TextStyle(
-                      color: Color(0xFF657979),
+                    style: TextStyle(
+                      color: context.appMuted,
                       fontSize: 9,
                       height: 1.5,
                     ),
@@ -604,7 +592,7 @@ class _ServiceDetailPageState extends State<ServiceDetailPage> {
 
     showModalBottomSheet<void>(
       context: context,
-      backgroundColor: Colors.white,
+      backgroundColor: context.appSurface,
       isScrollControlled: true,
       useSafeArea: true,
       shape: const RoundedRectangleBorder(
@@ -625,7 +613,7 @@ class _ServiceDetailPageState extends State<ServiceDetailPage> {
                   width: 40,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: const Color(0xFFD5DEDE),
+                    color: context.appBorder,
                     borderRadius: BorderRadius.circular(20),
                   ),
                 ),
@@ -634,11 +622,11 @@ class _ServiceDetailPageState extends State<ServiceDetailPage> {
                   padding: const EdgeInsets.fromLTRB(20, 16, 12, 10),
                   child: Row(
                     children: [
-                      const Expanded(
+                      Expanded(
                         child: Text(
-                          'Customer Reviews',
+                          context.tr('customerReviews'),
                           style: TextStyle(
-                            color: Color(0xFF183333),
+                            color: context.appText,
                             fontSize: 16,
                             fontWeight: FontWeight.w800,
                           ),
@@ -655,7 +643,7 @@ class _ServiceDetailPageState extends State<ServiceDetailPage> {
                   ),
                 ),
 
-                const Divider(height: 1, color: Color(0xFFEDF1F1)),
+                Divider(height: 1, color: context.appBorder),
 
                 Expanded(
                   child: ListView.separated(
@@ -682,9 +670,9 @@ class _ServiceDetailPageState extends State<ServiceDetailPage> {
 
   Widget _buildBottomBookingBar(ServiceModel service) {
     return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        border: Border(top: BorderSide(color: Color(0xFFE1E9E9))),
+      decoration: BoxDecoration(
+        color: context.appSurface,
+        border: Border(top: BorderSide(color: context.appBorder)),
       ),
       child: SafeArea(
         top: false,
@@ -697,9 +685,9 @@ class _ServiceDetailPageState extends State<ServiceDetailPage> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'From',
-                      style: TextStyle(color: Color(0xFF8A9999), fontSize: 8),
+                    Text(
+                      context.tr('from'),
+                      style: TextStyle(color: context.appMuted, fontSize: 8),
                     ),
 
                     const SizedBox(height: 2),
@@ -708,8 +696,8 @@ class _ServiceDetailPageState extends State<ServiceDetailPage> {
                       '${_formatPrice(service.basePrice)} / unit',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: Color(0xFF183333),
+                      style: TextStyle(
+                        color: context.appText,
                         fontSize: 12,
                         fontWeight: FontWeight.w800,
                       ),
@@ -732,9 +720,12 @@ class _ServiceDetailPageState extends State<ServiceDetailPage> {
                       borderRadius: BorderRadius.circular(9),
                     ),
                   ),
-                  child: const Text(
-                    'Book Service',
-                    style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800),
+                  child: Text(
+                    context.tr('bookService'),
+                    style: const TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w800,
+                    ),
                   ),
                 ),
               ),
@@ -792,8 +783,8 @@ class _Section extends StatelessWidget {
         children: [
           Text(
             title,
-            style: const TextStyle(
-              color: Color(0xFF274545),
+            style: TextStyle(
+              color: context.appText,
               fontSize: 11,
               fontWeight: FontWeight.w800,
             ),
@@ -830,7 +821,7 @@ class _InfoRow extends StatelessWidget {
           width: 30,
           height: 30,
           decoration: BoxDecoration(
-            color: const Color(0xFFEAF7F6),
+            color: context.appAccentSurface,
             borderRadius: BorderRadius.circular(7),
           ),
           child: Icon(icon, color: const Color(0xFF109DA0), size: 16),
@@ -844,15 +835,15 @@ class _InfoRow extends StatelessWidget {
             children: [
               Text(
                 title,
-                style: const TextStyle(color: Color(0xFF758686), fontSize: 9),
+                style: TextStyle(color: context.appMuted, fontSize: 9),
               ),
 
               const SizedBox(height: 2),
 
               Text(
                 value,
-                style: const TextStyle(
-                  color: Color(0xFF274545),
+                style: TextStyle(
+                  color: context.appText,
                   fontSize: 10,
                   fontWeight: FontWeight.w700,
                   height: 1.3,
@@ -875,6 +866,6 @@ class _SectionDivider extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Divider(height: 1, thickness: 1, color: Color(0xFFEDF1F1));
+    return Divider(height: 1, thickness: 1, color: context.appBorder);
   }
 }

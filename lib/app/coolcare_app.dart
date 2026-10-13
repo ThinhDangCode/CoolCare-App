@@ -1,29 +1,48 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 
 import '../features/auth/controllers/auth_controller.dart';
 import '../features/home/presentation/pages/home_page.dart';
 import 'theme/coolcare_theme.dart';
+import 'preferences/app_preferences_controller.dart';
 
 class CoolCareApp extends StatelessWidget {
-  const CoolCareApp({required this.authController, super.key});
+  CoolCareApp({
+    required this.authController,
+    AppPreferencesController? preferencesController,
+    super.key,
+  }) : preferencesController =
+           preferencesController ?? AppPreferencesController();
 
   final AuthController authController;
+  final AppPreferencesController preferencesController;
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'CoolCare',
-      debugShowCheckedModeBanner: false,
-      theme: CoolCareTheme.light,
-      home: ListenableBuilder(
-        listenable: authController,
-        builder: (context, _) {
-          return switch (authController.status) {
-            AuthStatus.initial || AuthStatus.loading => const _SplashPage(),
-            AuthStatus.authenticated ||
-            AuthStatus.unauthenticated => HomePage(controller: authController),
-          };
-        },
+    return ListenableBuilder(
+      listenable: preferencesController,
+      builder: (context, _) => AppPreferencesScope(
+        notifier: preferencesController,
+        child: MaterialApp(
+          title: 'CoolCare',
+          debugShowCheckedModeBanner: false,
+          theme: CoolCareTheme.light,
+          darkTheme: CoolCareTheme.dark,
+          themeMode: preferencesController.themeMode,
+          locale: preferencesController.locale,
+          supportedLocales: const [Locale('vi'), Locale('en')],
+          localizationsDelegates: GlobalMaterialLocalizations.delegates,
+          home: ListenableBuilder(
+            listenable: authController,
+            builder: (context, _) {
+              return switch (authController.status) {
+                AuthStatus.initial || AuthStatus.loading => const _SplashPage(),
+                AuthStatus.authenticated || AuthStatus.unauthenticated =>
+                  HomePage(controller: authController),
+              };
+            },
+          ),
+        ),
       ),
     );
   }

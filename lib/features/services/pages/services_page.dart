@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../app/localization/app_strings.dart';
+import '../../../app/theme/coolcare_theme.dart';
 import '../../../core/network/api_client.dart';
 import '../controllers/service_controller.dart';
 import '../models/service_model.dart';
@@ -71,7 +73,7 @@ class _ServicesPageState extends State<ServicesPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: context.appBackground,
       body: SafeArea(
         top: false,
         child: Column(
@@ -92,25 +94,25 @@ class _ServicesPageState extends State<ServicesPage> {
   // ============================================================
 
   Widget _buildHeader() {
-    return const Padding(
-      padding: EdgeInsets.fromLTRB(20, 18, 20, 6),
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 18, 20, 6),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'AC Services',
+            context.tr('acServices'),
             style: TextStyle(
-              color: Color(0xFF183333),
+              color: context.appText,
               fontSize: 22,
               fontWeight: FontWeight.w800,
               letterSpacing: -0.4,
             ),
           ),
-          SizedBox(height: 5),
+          const SizedBox(height: 5),
           Text(
-            'Choose the service that fits your needs.',
+            context.tr('chooseService'),
             style: TextStyle(
-              color: Color(0xFF758686),
+              color: context.appMuted,
               fontSize: 11,
               height: 1.35,
             ),
@@ -133,10 +135,10 @@ class _ServicesPageState extends State<ServicesPage> {
           controller: _searchController,
           onChanged: _onSearchChanged,
           textInputAction: TextInputAction.search,
-          style: const TextStyle(fontSize: 12, color: Color(0xFF183333)),
+          style: TextStyle(fontSize: 12, color: context.appText),
           decoration: InputDecoration(
-            hintText: 'Search services',
-            hintStyle: const TextStyle(color: Color(0xFF9AA7A7), fontSize: 11),
+            hintText: context.tr('searchServices'),
+            hintStyle: TextStyle(color: context.appMuted, fontSize: 11),
             prefixIcon: const Icon(
               Icons.search_rounded,
               size: 19,
@@ -149,11 +151,11 @@ class _ServicesPageState extends State<ServicesPage> {
                   )
                 : null,
             filled: true,
-            fillColor: Colors.white,
+            fillColor: context.appSurface,
             contentPadding: EdgeInsets.zero,
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(11),
-              borderSide: const BorderSide(color: Color(0xFFDDE7E7)),
+              borderSide: BorderSide(color: context.appBorder),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(11),
@@ -185,7 +187,7 @@ class _ServicesPageState extends State<ServicesPage> {
         scrollDirection: Axis.horizontal,
         children: [
           _ServiceChip(
-            label: 'All',
+            label: context.tr('all'),
             selected: _controller.selectedServiceId == null,
             onTap: () {
               _selectService(null);
@@ -249,15 +251,15 @@ class _ServicesPageState extends State<ServicesPage> {
   }
 
   Widget _buildLoadingState() {
-    return const Center(
+    return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          CircularProgressIndicator(color: Color(0xFF109DA0)),
-          SizedBox(height: 12),
+          const CircularProgressIndicator(color: Color(0xFF109DA0)),
+          const SizedBox(height: 12),
           Text(
-            'Loading services...',
-            style: TextStyle(color: Color(0xFF758686), fontSize: 11),
+            context.tr('loadingServices'),
+            style: TextStyle(color: context.appMuted, fontSize: 11),
           ),
         ],
       ),
@@ -277,10 +279,10 @@ class _ServicesPageState extends State<ServicesPage> {
               color: Color(0xFF7B8C8C),
             ),
             const SizedBox(height: 14),
-            const Text(
-              'Unable to load services',
+            Text(
+              context.tr('unableLoadServices'),
               style: TextStyle(
-                color: Color(0xFF183333),
+                color: context.appText,
                 fontSize: 16,
                 fontWeight: FontWeight.w800,
               ),
@@ -295,7 +297,7 @@ class _ServicesPageState extends State<ServicesPage> {
             FilledButton.icon(
               onPressed: _controller.retry,
               icon: const Icon(Icons.refresh_rounded, size: 17),
-              label: const Text('Try Again'),
+              label: Text(context.tr('tryAgain')),
             ),
           ],
         ),
@@ -321,9 +323,11 @@ class _ServicesPageState extends State<ServicesPage> {
             ),
             const SizedBox(height: 14),
             Text(
-              hasFilter ? 'No matching services' : 'No services available',
-              style: const TextStyle(
-                color: Color(0xFF183333),
+              hasFilter
+                  ? context.tr('noMatchingServices')
+                  : context.tr('noServices'),
+              style: TextStyle(
+                color: context.appText,
                 fontSize: 16,
                 fontWeight: FontWeight.w800,
               ),
@@ -331,8 +335,8 @@ class _ServicesPageState extends State<ServicesPage> {
             const SizedBox(height: 7),
             Text(
               hasFilter
-                  ? 'Try another keyword or service.'
-                  : 'There are no active services at the moment.',
+                  ? context.tr('changeSearch')
+                  : context.tr('noActiveServices'),
               textAlign: TextAlign.center,
               style: const TextStyle(color: Color(0xFF758686), fontSize: 11),
             ),
@@ -340,7 +344,7 @@ class _ServicesPageState extends State<ServicesPage> {
               const SizedBox(height: 16),
               OutlinedButton(
                 onPressed: _clearFilters,
-                child: const Text('Clear Filters'),
+                child: Text(context.tr('clearFilters')),
               ),
             ],
           ],
@@ -381,7 +385,7 @@ class _ServicesPageState extends State<ServicesPage> {
   }
 
   Widget _buildListHeader() {
-    String title = 'All Services';
+    String title = context.tr('all');
 
     if (_controller.selectedServiceId != null) {
       for (final service in _controller.allServices) {
@@ -399,8 +403,8 @@ class _ServicesPageState extends State<ServicesPage> {
             title,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              color: Color(0xFF183333),
+            style: TextStyle(
+              color: context.appText,
               fontSize: 13,
               fontWeight: FontWeight.w800,
             ),
@@ -410,8 +414,8 @@ class _ServicesPageState extends State<ServicesPage> {
         Text(
           '${_controller.services.length} '
           '${_controller.services.length == 1 ? 'service' : 'services'}',
-          style: const TextStyle(
-            color: Color(0xFF8A9999),
+          style: TextStyle(
+            color: context.appMuted,
             fontSize: 9,
             fontWeight: FontWeight.w600,
           ),
@@ -446,14 +450,14 @@ class _ServiceChip extends StatelessWidget {
         showCheckmark: false,
         label: Text(label, maxLines: 1),
         labelStyle: TextStyle(
-          color: selected ? Colors.white : const Color(0xFF526666),
+          color: selected ? Colors.white : context.appText,
           fontSize: 9,
           fontWeight: FontWeight.w700,
         ),
         selectedColor: const Color(0xFF109DA0),
-        backgroundColor: Colors.white,
+        backgroundColor: context.appSurface,
         side: BorderSide(
-          color: selected ? const Color(0xFF109DA0) : const Color(0xFFDDE7E7),
+          color: selected ? const Color(0xFF109DA0) : context.appBorder,
         ),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
         visualDensity: VisualDensity.compact,
@@ -482,14 +486,14 @@ class _ServiceCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(11),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.appSurface,
         borderRadius: BorderRadius.circular(11),
-        border: Border.all(color: const Color(0xFFDDE7E7)),
+        border: Border.all(color: context.appBorder),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildIcon(),
+          _buildIcon(context),
 
           const SizedBox(width: 10),
 
@@ -513,8 +517,8 @@ class _ServiceCard extends StatelessWidget {
 
                 Text(
                   service.name,
-                  style: const TextStyle(
-                    color: Color(0xFF183333),
+                  style: TextStyle(
+                    color: context.appText,
                     fontSize: 12,
                     fontWeight: FontWeight.w800,
                     height: 1.2,
@@ -529,8 +533,8 @@ class _ServiceCard extends StatelessWidget {
                     service.description!,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: Color(0xFF788888),
+                    style: TextStyle(
+                      color: context.appMuted,
                       fontSize: 9,
                       height: 1.3,
                     ),
@@ -594,7 +598,7 @@ class _ServiceCard extends StatelessWidget {
     return 'Dịch vụ';
   }
 
-  Widget _buildIcon() {
+  Widget _buildIcon(BuildContext context) {
     final name = service.name.toLowerCase();
 
     IconData icon = Icons.ac_unit_rounded;
@@ -613,7 +617,9 @@ class _ServiceCard extends StatelessWidget {
       width: 38,
       height: 38,
       decoration: BoxDecoration(
-        color: const Color(0xFFEAF8F7),
+        color: context.isDarkMode
+            ? const Color(0xFF173951)
+            : const Color(0xFFEAF8F7),
         borderRadius: BorderRadius.circular(9),
       ),
       child: Icon(icon, color: const Color(0xFF109DA0), size: 20),
@@ -635,17 +641,17 @@ class _PriceBlock extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Starting from',
-          style: TextStyle(color: Color(0xFF8A9999), fontSize: 7),
+        Text(
+          context.tr('startingFrom'),
+          style: TextStyle(color: context.appMuted, fontSize: 7),
         ),
         const SizedBox(height: 2),
         Text(
           _formatPrice(service.basePrice),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: const TextStyle(
-            color: Color(0xFF183333),
+          style: TextStyle(
+            color: context.appText,
             fontSize: 10,
             fontWeight: FontWeight.w800,
           ),
@@ -698,9 +704,9 @@ class _CardActions extends StatelessWidget {
               minimumSize: Size.zero,
               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
             ),
-            child: const Text(
-              'Book Now',
-              style: TextStyle(fontSize: 8, fontWeight: FontWeight.w800),
+            child: Text(
+              context.tr('bookService'),
+              style: const TextStyle(fontSize: 8, fontWeight: FontWeight.w800),
             ),
           ),
         ),
@@ -709,11 +715,11 @@ class _CardActions extends StatelessWidget {
 
         InkWell(
           onTap: onDetails,
-          child: const Padding(
-            padding: EdgeInsets.symmetric(vertical: 7),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 7),
             child: Text(
-              'Details →',
-              style: TextStyle(
+              '${context.tr('serviceDetails')} →',
+              style: const TextStyle(
                 color: Color(0xFF109DA0),
                 fontSize: 8,
                 fontWeight: FontWeight.w800,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../app/localization/app_strings.dart';
 import '../controllers/auth_controller.dart';
 import '../validators/auth_validators.dart';
 import '../widgets/auth_fields.dart';
@@ -49,8 +50,8 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return AuthScaffold(
-      title: 'Welcome back!',
-      subtitle: 'Log in to book services and track your appointments.',
+      title: context.tr('welcomeBack'),
+      subtitle: context.tr('loginSubtitle'),
       child: AutofillGroup(
         child: Form(
           key: _formKey,
@@ -76,8 +77,8 @@ class _LoginPageState extends State<LoginPage> {
                   const SizedBox(height: 16),
                   AuthTextField(
                     controller: _passwordController,
-                    label: 'Password',
-                    hintText: 'Enter password',
+                    label: context.tr('password'),
+                    hintText: context.tr('enterPassword'),
                     icon: Icons.lock_outline_rounded,
                     obscureText: true,
                     textInputAction: TextInputAction.done,
@@ -101,9 +102,9 @@ class _LoginPageState extends State<LoginPage> {
                                 ),
                               );
                             },
-                      child: const Text(
-                        'Forgot password?',
-                        style: TextStyle(fontSize: 11),
+                      child: Text(
+                        context.tr('forgotPassword'),
+                        style: const TextStyle(fontSize: 11),
                       ),
                     ),
                   ),
@@ -111,7 +112,7 @@ class _LoginPageState extends State<LoginPage> {
                   if (widget.controller.errorMessage != null)
                     const SizedBox(height: 14),
                   AuthSubmitButton(
-                    label: 'Log In',
+                    label: context.tr('login'),
                     loading: widget.controller.isBusy,
                     onPressed: _submit,
                   ),
@@ -119,7 +120,7 @@ class _LoginPageState extends State<LoginPage> {
                   const _AuthDivider(),
                   const SizedBox(height: 18),
                   GoogleAuthButton(
-                    label: 'Continue with Google',
+                    label: context.tr('continueGoogle'),
                     loading: widget.controller.isBusy,
                     onPressed: _submitGoogle,
                   ),
@@ -128,9 +129,9 @@ class _LoginPageState extends State<LoginPage> {
                     alignment: WrapAlignment.center,
                     crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
-                      const Text(
-                        "Don't have an account?",
-                        style: TextStyle(fontSize: 12),
+                      Text(
+                        context.tr('noAccount'),
+                        style: const TextStyle(fontSize: 12),
                       ),
                       TextButton(
                         onPressed: widget.controller.isBusy
@@ -145,9 +146,9 @@ class _LoginPageState extends State<LoginPage> {
                                   ),
                                 );
                               },
-                        child: const Text(
-                          'Sign Up',
-                          style: TextStyle(
+                        child: Text(
+                          context.tr('signUp'),
+                          style: const TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w700,
                           ),
@@ -177,9 +178,9 @@ class _ExploreServices extends StatelessWidget {
           onPressed: () => Navigator.of(context).pop('services'),
           iconAlignment: IconAlignment.end,
           icon: const Icon(Icons.north_east_rounded, size: 15),
-          label: const Text(
-            'Explore Services',
-            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+          label: Text(
+            context.tr('exploreServices'),
+            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
           ),
         ),
       ],
@@ -192,14 +193,17 @@ class _AuthDivider extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Row(
+    return Row(
       children: [
-        Expanded(child: Divider()),
+        const Expanded(child: Divider()),
         Padding(
-          padding: EdgeInsets.symmetric(horizontal: 12),
-          child: Text('OR', style: TextStyle(fontSize: 10, color: Colors.grey)),
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          child: Text(
+            context.tr('or'),
+            style: const TextStyle(fontSize: 10, color: Colors.grey),
+          ),
         ),
-        Expanded(child: Divider()),
+        const Expanded(child: Divider()),
       ],
     );
   }

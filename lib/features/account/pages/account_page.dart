@@ -3,14 +3,16 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../../../app/localization/app_strings.dart';
 import '../../../app/theme/coolcare_theme.dart';
 import '../../auth/controllers/auth_controller.dart';
 import '../../auth/models/auth_user.dart';
 import '../../auth/validators/auth_validators.dart';
+import '../../blogs/pages/blog_pages.dart';
 
-String _displayDate(String? value) {
+String _displayDate(String? value, String fallback) {
   final date = DateTime.tryParse(value ?? '');
-  if (date == null) return 'Not updated';
+  if (date == null) return fallback;
   return '${date.day.toString().padLeft(2, '0')}/'
       '${date.month.toString().padLeft(2, '0')}/${date.year}';
 }
@@ -49,10 +51,10 @@ class AccountPage extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Account',
+          Text(
+            context.tr('account'),
             style: TextStyle(
-              color: CoolCareColors.text,
+              color: context.appText,
               fontSize: 22,
               fontWeight: FontWeight.w800,
               letterSpacing: -.45,
@@ -68,7 +70,7 @@ class AccountPage extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.all(13),
               decoration: BoxDecoration(
-                color: const Color(0xFFF8FAFA),
+                color: context.appSoftSurface,
                 borderRadius: BorderRadius.circular(11),
               ),
               child: Row(
@@ -88,8 +90,8 @@ class AccountPage extends StatelessWidget {
                           user.fullName,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            color: CoolCareColors.text,
+                          style: TextStyle(
+                            color: context.appText,
                             fontSize: 13,
                             fontWeight: FontWeight.w800,
                           ),
@@ -109,8 +111,8 @@ class AccountPage extends StatelessWidget {
 
                         const SizedBox(height: 2),
 
-                        const Text(
-                          'View profile  →',
+                        Text(
+                          context.tr('viewProfile'),
                           style: TextStyle(
                             color: CoolCareColors.primary,
                             fontSize: 9,
@@ -128,32 +130,38 @@ class AccountPage extends StatelessWidget {
           const SizedBox(height: 24),
 
           // YOUR SERVICES
-          const _AccountSectionTitle('YOUR SERVICES'),
+          _AccountSectionTitle(context.tr('yourServices')),
 
           // My Addresses
           _AccountRow(
             icon: Icons.location_on_outlined,
-            label: 'My Addresses',
+            label: context.tr('myAddresses'),
             onTap: onViewAddresses,
           ),
 
-          const _AccountRow(
+          _AccountRow(
             icon: Icons.local_offer_outlined,
-            label: 'Available Offers',
+            label: context.tr('availableOffers'),
           ),
 
-          const _AccountRow(
+          _AccountRow(
             icon: Icons.receipt_long_outlined,
-            label: 'Payment History',
+            label: context.tr('paymentHistory'),
           ),
 
-          const _AccountRow(icon: Icons.forum_outlined, label: 'My Complaints'),
+          _AccountRow(
+            icon: Icons.article_outlined,
+            label: context.tr('articles'),
+            onTap: () => Navigator.of(
+              context,
+            ).push(MaterialPageRoute(builder: (_) => const BlogListPage())),
+          ),
 
           const SizedBox(height: 18),
-          const _AccountSectionTitle('SECURITY'),
+          _AccountSectionTitle(context.tr('security')),
           _AccountRow(
             icon: Icons.lock_outline_rounded,
-            label: 'Change Password',
+            label: context.tr('changePassword'),
             onTap: () => Navigator.of(context).push(
               MaterialPageRoute(
                 builder: (_) => ChangePasswordPage(controller: controller),
@@ -163,24 +171,24 @@ class AccountPage extends StatelessWidget {
 
           const SizedBox(height: 20),
           // TECHNICIAN
-          const _AccountSectionTitle('FOR TECHNICIANS'),
+          _AccountSectionTitle(context.tr('forTechnicians')),
 
           const SizedBox(height: 8),
 
           Container(
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-              color: CoolCareColors.surfaceTint,
-              border: Border.all(color: const Color(0xFFC9EDEE)),
+              color: context.appAccentSurface,
+              border: Border.all(color: context.appBorder),
               borderRadius: BorderRadius.circular(11),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Become a CoolCare Technician',
+                Text(
+                  context.tr('becomeTechnician'),
                   style: TextStyle(
-                    color: CoolCareColors.text,
+                    color: context.appText,
                     fontSize: 12,
                     fontWeight: FontWeight.w800,
                   ),
@@ -188,10 +196,10 @@ class AccountPage extends StatelessWidget {
 
                 const SizedBox(height: 5),
 
-                const Text(
-                  'Register as a technician to provide services on the platform.',
+                Text(
+                  context.tr('becomeTechnicianHint'),
                   style: TextStyle(
-                    color: CoolCareColors.mutedText,
+                    color: context.appMuted,
                     fontSize: 9,
                     height: 1.35,
                   ),
@@ -209,9 +217,9 @@ class AccountPage extends StatelessWidget {
                         borderRadius: BorderRadius.circular(7),
                       ),
                     ),
-                    child: const Text(
-                      'Register as Technician',
-                      style: TextStyle(
+                    child: Text(
+                      context.tr('registerTechnician'),
+                      style: const TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.w700,
                       ),
@@ -228,7 +236,7 @@ class AccountPage extends StatelessWidget {
             child: OutlinedButton.icon(
               onPressed: () => _confirmLogout(context),
               icon: const Icon(Icons.logout_rounded, size: 17),
-              label: const Text('Log Out'),
+              label: Text(context.tr('logout')),
               style: OutlinedButton.styleFrom(
                 foregroundColor: CoolCareColors.error,
                 side: BorderSide(
@@ -259,19 +267,19 @@ class AccountPage extends StatelessWidget {
           Icons.error_outline_rounded,
           color: CoolCareColors.error,
         ),
-        title: const Text('Log out of CoolCare?'),
-        content: const Text('You can log in again anytime.'),
+        title: Text(context.tr('logoutConfirmTitle')),
+        content: Text(context.tr('logoutConfirmMessage')),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: const Text('Stay'),
+            child: Text(context.tr('stay')),
           ),
           FilledButton(
             onPressed: () => Navigator.of(dialogContext).pop(true),
             style: FilledButton.styleFrom(
               backgroundColor: CoolCareColors.error,
             ),
-            child: const Text('Log Out'),
+            child: Text(context.tr('logout')),
           ),
         ],
       ),
@@ -296,11 +304,11 @@ class PersonalProfilePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: context.appBackground,
 
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        surfaceTintColor: Colors.white,
+        backgroundColor: context.appSurface,
+        surfaceTintColor: Colors.transparent,
         elevation: 0,
 
         leading: IconButton(
@@ -308,10 +316,10 @@ class PersonalProfilePage extends StatelessWidget {
           icon: const Icon(Icons.arrow_back_rounded),
         ),
 
-        title: const Text(
-          'Personal Profile',
+        title: Text(
+          context.tr('personalProfile'),
           style: TextStyle(
-            color: CoolCareColors.text,
+            color: context.appText,
             fontSize: 17,
             fontWeight: FontWeight.w800,
           ),
@@ -332,8 +340,8 @@ class PersonalProfilePage extends StatelessWidget {
               const SizedBox(height: 14),
               Text(
                 user.fullName,
-                style: const TextStyle(
-                  color: CoolCareColors.text,
+                style: TextStyle(
+                  color: context.appText,
                   fontSize: 18,
                   fontWeight: FontWeight.w800,
                 ),
@@ -341,34 +349,37 @@ class PersonalProfilePage extends StatelessWidget {
 
               const SizedBox(height: 3),
 
-              const Text(
-                'Customer',
-                style: TextStyle(color: CoolCareColors.mutedText, fontSize: 13),
+              Text(
+                context.tr('customer'),
+                style: TextStyle(color: context.appMuted, fontSize: 13),
               ),
               const SizedBox(height: 34),
-              const _ProfileSectionTitle('Personal Info'),
-              _ProfileField(label: 'Full Name', value: user.fullName),
+              _ProfileSectionTitle(context.tr('personalInfo')),
               _ProfileField(
-                label: 'Date of Birth',
-                value: _displayDate(user.dateOfBirth),
+                label: context.tr('fullName'),
+                value: user.fullName,
               ),
               _ProfileField(
-                label: 'Gender',
+                label: context.tr('dateOfBirth'),
+                value: _displayDate(user.dateOfBirth, context.tr('notUpdated')),
+              ),
+              _ProfileField(
+                label: context.tr('gender'),
                 value: switch (user.gender) {
-                  'MALE' => 'Male',
-                  'FEMALE' => 'Female',
-                  'OTHER' => 'Other',
-                  _ => 'Not updated',
+                  'MALE' => context.tr('male'),
+                  'FEMALE' => context.tr('female'),
+                  'OTHER' => context.tr('other'),
+                  _ => context.tr('notUpdated'),
                 },
               ),
               const SizedBox(height: 26),
-              const _ProfileSectionTitle('Contact Info'),
+              _ProfileSectionTitle(context.tr('contactInfo')),
               _ProfileField(label: 'Email', value: user.email),
               _ProfileField(
-                label: 'Phone Number',
+                label: context.tr('phoneNumber'),
                 value: user.phone?.trim().isNotEmpty == true
                     ? user.phone!
-                    : 'Not updated',
+                    : context.tr('notUpdated'),
               ),
               const SizedBox(height: 32),
               SizedBox(
@@ -376,7 +387,7 @@ class PersonalProfilePage extends StatelessWidget {
                 child: FilledButton.icon(
                   onPressed: () => _editProfile(context),
                   icon: const Icon(Icons.edit_outlined, size: 16),
-                  label: const Text('Edit Profile'),
+                  label: Text(context.tr('editProfile')),
                   style: FilledButton.styleFrom(
                     minimumSize: const Size.fromHeight(52),
                   ),
@@ -388,7 +399,7 @@ class PersonalProfilePage extends StatelessWidget {
                 child: OutlinedButton.icon(
                   onPressed: () => _changePassword(context),
                   icon: const Icon(Icons.lock_outline),
-                  label: const Text('Change Password'),
+                  label: Text(context.tr('changePassword')),
                   style: OutlinedButton.styleFrom(
                     minimumSize: const Size.fromHeight(52),
                   ),
@@ -458,16 +469,19 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
   String? _newPasswordError(String? value) {
     final password = value ?? '';
     if (password.length < 8) {
-      return 'Password must contain at least 8 characters.';
+      return context.tr('passwordMinLength');
+    }
+    if (password.length > 72) {
+      return context.tr('passwordMaxLength');
     }
     if (!RegExp(r'[A-Z]').hasMatch(password) ||
         !RegExp(r'[a-z]').hasMatch(password) ||
         !RegExp(r'\d').hasMatch(password) ||
         !RegExp(r'[^A-Za-z0-9]').hasMatch(password)) {
-      return 'Include upper/lowercase letters, a number and a special character.';
+      return context.tr('passwordComposition');
     }
     if (password == _current.text) {
-      return 'New password must differ from your current password.';
+      return context.tr('passwordMustDiffer');
     }
     return null;
   }
@@ -487,12 +501,13 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
     if (!success) {
       setState(
         () => _error =
-            widget.controller.errorMessage ?? 'Unable to update password.',
+            widget.controller.errorMessage ??
+            context.tr('unableUpdatePassword'),
       );
       return;
     }
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Password updated successfully.')),
+      SnackBar(content: Text(context.tr('passwordUpdatedSuccessfully'))),
     );
     Navigator.of(context).pop();
   }
@@ -513,36 +528,36 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
     contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
     border: OutlineInputBorder(
       borderRadius: BorderRadius.circular(8),
-      borderSide: const BorderSide(color: Color(0xFFDCE5E7)),
+      borderSide: BorderSide(color: context.appBorder),
     ),
     enabledBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(8),
-      borderSide: const BorderSide(color: Color(0xFFDCE5E7)),
+      borderSide: BorderSide(color: context.appBorder),
     ),
   );
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    backgroundColor: Colors.white,
+    backgroundColor: context.appBackground,
     appBar: AppBar(
-      backgroundColor: Colors.white,
-      surfaceTintColor: Colors.white,
+      backgroundColor: context.appSurface,
+      surfaceTintColor: Colors.transparent,
       elevation: 0,
       leading: IconButton(
         onPressed: () => Navigator.pop(context),
         icon: const Icon(Icons.arrow_back_rounded),
       ),
-      title: const Text(
-        'Change Password',
+      title: Text(
+        context.tr('changePassword'),
         style: TextStyle(
-          color: CoolCareColors.text,
+          color: context.appText,
           fontSize: 18,
           fontWeight: FontWeight.w800,
         ),
       ),
-      bottom: const PreferredSize(
-        preferredSize: Size.fromHeight(1),
-        child: Divider(height: 1, color: CoolCareColors.border),
+      bottom: PreferredSize(
+        preferredSize: const Size.fromHeight(1),
+        child: Divider(height: 1, color: context.appBorder),
       ),
     ),
     body: SafeArea(
@@ -557,96 +572,101 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Create a new password',
+                    Text(
+                      context.tr('createNewPasswordHeading'),
                       style: TextStyle(
-                        color: CoolCareColors.text,
+                        color: context.appText,
                         fontSize: 20,
                         fontWeight: FontWeight.w800,
                       ),
                     ),
                     const SizedBox(height: 6),
-                    const Text(
-                      "Use a strong password you haven't used before to keep your CoolCare account secure.",
+                    Text(
+                      context.tr('strongPasswordHint'),
                       style: TextStyle(
-                        color: CoolCareColors.mutedText,
+                        color: context.appMuted,
                         fontSize: 12,
                         height: 1.45,
                       ),
                     ),
                     const SizedBox(height: 24),
-                    const _PasswordLabel('Current password'),
+                    _PasswordLabel(context.tr('currentPassword')),
                     TextFormField(
                       controller: _current,
                       obscureText: !_showCurrent,
                       decoration: _passwordDecoration(
-                        'Enter current password',
+                        context.tr('enterPassword'),
                         _showCurrent,
                         () => setState(() => _showCurrent = !_showCurrent),
                       ),
                       validator: (value) => (value == null || value.isEmpty)
-                          ? 'Please enter your current password.'
+                          ? context.tr('requiredCurrentPassword')
                           : null,
                     ),
                     const SizedBox(height: 18),
-                    const _PasswordLabel('New password'),
+                    _PasswordLabel(context.tr('newPassword')),
                     TextFormField(
                       controller: _next,
                       obscureText: !_showNext,
                       decoration: _passwordDecoration(
-                        'Enter new password',
+                        context.tr('newPassword'),
                         _showNext,
                         () => setState(() => _showNext = !_showNext),
                       ),
                       validator: _newPasswordError,
                     ),
                     const SizedBox(height: 18),
-                    const _PasswordLabel('Confirm new password'),
+                    _PasswordLabel(context.tr('confirmNewPassword')),
                     TextFormField(
                       controller: _confirm,
                       obscureText: !_showConfirm,
                       decoration: _passwordDecoration(
-                        'Re-enter new password',
+                        context.tr('reenterPassword'),
                         _showConfirm,
                         () => setState(() => _showConfirm = !_showConfirm),
                       ),
-                      validator: (value) => value != _next.text
-                          ? 'Passwords do not match.'
-                          : null,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return context.tr('requiredConfirmPassword');
+                        }
+                        return value != _next.text
+                            ? context.tr('passwordMismatch')
+                            : null;
+                      },
                     ),
                     const SizedBox(height: 22),
                     Container(
                       width: double.infinity,
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFF7FAFA),
+                        color: context.appSoftSurface,
                         borderRadius: BorderRadius.circular(9),
                       ),
-                      child: const Column(
+                      child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Row(
                             children: [
-                              Icon(
+                              const Icon(
                                 Icons.shield_outlined,
                                 color: CoolCareColors.primary,
                                 size: 18,
                               ),
-                              SizedBox(width: 8),
+                              const SizedBox(width: 8),
                               Text(
-                                'Password requirements',
-                                style: TextStyle(
+                                context.tr('passwordRequirements'),
+                                style: const TextStyle(
                                   fontSize: 13,
                                   fontWeight: FontWeight.w800,
                                 ),
                               ),
                             ],
                           ),
-                          SizedBox(height: 10),
+                          const SizedBox(height: 10),
                           Text(
-                            '• At least 8 characters\n• Include an uppercase letter and a number\n• Different from your current password',
+                            context.tr('passwordRequirementDetails'),
                             style: TextStyle(
-                              color: CoolCareColors.mutedText,
+                              color: context.appMuted,
                               fontSize: 12,
                               height: 1.65,
                             ),
@@ -671,9 +691,9 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
             ),
             Container(
               padding: const EdgeInsets.fromLTRB(24, 14, 24, 12),
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                border: Border(top: BorderSide(color: CoolCareColors.border)),
+              decoration: BoxDecoration(
+                color: context.appSurface,
+                border: Border(top: BorderSide(color: context.appBorder)),
               ),
               child: Column(
                 children: [
@@ -688,7 +708,9 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                         ),
                       ),
                       child: Text(
-                        _saving ? 'Updating...' : 'Update Password',
+                        _saving
+                            ? context.tr('updating')
+                            : context.tr('updatePassword'),
                         style: const TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w800,
@@ -698,7 +720,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                   ),
                   TextButton(
                     onPressed: () => Navigator.pop(context),
-                    child: const Text('Cancel'),
+                    child: Text(context.tr('cancel')),
                   ),
                 ],
               ),
@@ -718,8 +740,8 @@ class _PasswordLabel extends StatelessWidget {
     padding: const EdgeInsets.only(bottom: 8),
     child: Text(
       text,
-      style: const TextStyle(
-        color: CoolCareColors.text,
+      style: TextStyle(
+        color: context.appText,
         fontSize: 12,
         fontWeight: FontWeight.w700,
       ),
@@ -788,7 +810,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
   Future<void> _showAvatarOptions() async {
     await showModalBottomSheet<void>(
       context: context,
-      backgroundColor: Colors.white,
+      backgroundColor: context.appSurface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
       ),
@@ -808,21 +830,21 @@ class _EditProfilePageState extends State<EditProfilePage> {
             ),
             const SizedBox(height: 12),
             _AvatarOption(
-              label: 'Take Photo',
+              label: context.tr('takePhoto'),
               onTap: () {
                 Navigator.pop(sheetContext);
                 _pickAvatar(ImageSource.camera);
               },
             ),
             _AvatarOption(
-              label: 'Choose from Library',
+              label: context.tr('chooseFromLibrary'),
               onTap: () {
                 Navigator.pop(sheetContext);
                 _pickAvatar(ImageSource.gallery);
               },
             ),
             _AvatarOption(
-              label: 'Remove Current Photo',
+              label: context.tr('removeCurrentPhoto'),
               destructive: true,
               onTap: () {
                 setState(() {
@@ -834,7 +856,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
             ),
             const Divider(height: 1, color: CoolCareColors.border),
             _AvatarOption(
-              label: 'Cancel',
+              label: context.tr('cancel'),
               onTap: () => Navigator.pop(sheetContext),
             ),
           ],
@@ -909,9 +931,13 @@ class _EditProfilePageState extends State<EditProfilePage> {
     floatingLabelBehavior: FloatingLabelBehavior.always,
     contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
     filled: true,
-    fillColor: readOnly ? const Color(0xFFEAF8FA) : Colors.white,
-    labelStyle: const TextStyle(color: CoolCareColors.mutedText, fontSize: 12),
-    hintStyle: const TextStyle(color: Color(0xFFABB4B8), fontSize: 14),
+    fillColor: readOnly
+        ? CoolCareColors.primary.withValues(
+            alpha: context.isDarkMode ? .14 : .08,
+          )
+        : context.appSoftSurface,
+    labelStyle: TextStyle(color: context.appMuted, fontSize: 12),
+    hintStyle: TextStyle(color: context.appMuted, fontSize: 14),
     suffixIcon: showIcon
         ? Icon(icon, color: CoolCareColors.mutedText, size: 19)
         : null,
@@ -928,19 +954,19 @@ class _EditProfilePageState extends State<EditProfilePage> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    backgroundColor: Colors.white,
+    backgroundColor: context.appBackground,
     appBar: AppBar(
-      backgroundColor: Colors.white,
-      surfaceTintColor: Colors.white,
+      backgroundColor: context.appSurface,
+      surfaceTintColor: Colors.transparent,
       elevation: 0,
       leading: IconButton(
         onPressed: () => Navigator.pop(context),
         icon: const Icon(Icons.arrow_back_rounded),
       ),
-      title: const Text(
-        'Edit Profile',
+      title: Text(
+        context.tr('editProfile'),
         style: TextStyle(
-          color: CoolCareColors.text,
+          color: context.appText,
           fontSize: 17,
           fontWeight: FontWeight.w800,
         ),
@@ -970,13 +996,13 @@ class _EditProfilePageState extends State<EditProfilePage> {
                               ? widget.user.avatarUrl
                               : null,
                         ),
-                        const Positioned(
+                        Positioned(
                           right: -2,
                           bottom: -2,
                           child: CircleAvatar(
                             radius: 13,
-                            backgroundColor: Colors.white,
-                            child: CircleAvatar(
+                            backgroundColor: context.appSurface,
+                            child: const CircleAvatar(
                               radius: 10,
                               backgroundColor: CoolCareColors.primary,
                               child: Icon(
@@ -990,9 +1016,9 @@ class _EditProfilePageState extends State<EditProfilePage> {
                       ],
                     ),
                     const SizedBox(height: 8),
-                    const Text(
-                      'Change Photo',
-                      style: TextStyle(
+                    Text(
+                      context.tr('changePhoto'),
+                      style: const TextStyle(
                         color: CoolCareColors.primary,
                         fontSize: 13,
                         fontWeight: FontWeight.w700,
@@ -1003,12 +1029,16 @@ class _EditProfilePageState extends State<EditProfilePage> {
               ),
             ),
             const SizedBox(height: 24),
-            const _ProfileSectionTitle('Personal Info'),
+            _ProfileSectionTitle(context.tr('personalInfo')),
             TextField(
               controller: _name,
+              maxLength: 100,
               onChanged: (_) => setState(() {}),
               textCapitalization: TextCapitalization.words,
-              decoration: _input('Full name', Icons.person_outline),
+              decoration: _input(
+                context.tr('fullName'),
+                Icons.person_outline,
+              ).copyWith(counterText: ''),
             ),
             const SizedBox(height: 20),
             InkWell(
@@ -1023,18 +1053,18 @@ class _EditProfilePageState extends State<EditProfilePage> {
               },
               child: InputDecorator(
                 decoration: _input(
-                  'Date of birth',
+                  context.tr('dateOfBirth'),
                   Icons.calendar_today_outlined,
                   showIcon: true,
                 ),
                 child: Text(
                   _birthDate == null
-                      ? 'Select date of birth'
+                      ? context.tr('selectBirthDate')
                       : '${_birthDate!.day.toString().padLeft(2, '0')}/${_birthDate!.month.toString().padLeft(2, '0')}/${_birthDate!.year}',
                   style: TextStyle(
                     color: _birthDate == null
-                        ? const Color(0xFFABB4B8)
-                        : CoolCareColors.text,
+                        ? context.appMuted
+                        : context.appText,
                     fontSize: 14,
                   ),
                 ),
@@ -1043,20 +1073,32 @@ class _EditProfilePageState extends State<EditProfilePage> {
             const SizedBox(height: 20),
             DropdownButtonFormField<String>(
               initialValue: _gender,
-              hint: const Text(
-                'Select gender',
-                style: TextStyle(color: Color(0xFFABB4B8), fontSize: 14),
+              hint: Text(
+                context.tr('selectGender'),
+                style: TextStyle(color: context.appMuted, fontSize: 14),
               ),
-              decoration: _input('Gender', Icons.keyboard_arrow_down_rounded),
-              items: const [
-                DropdownMenuItem(value: 'MALE', child: Text('Male')),
-                DropdownMenuItem(value: 'FEMALE', child: Text('Female')),
-                DropdownMenuItem(value: 'OTHER', child: Text('Other')),
+              decoration: _input(
+                context.tr('gender'),
+                Icons.keyboard_arrow_down_rounded,
+              ),
+              items: [
+                DropdownMenuItem(
+                  value: 'MALE',
+                  child: Text(context.tr('male')),
+                ),
+                DropdownMenuItem(
+                  value: 'FEMALE',
+                  child: Text(context.tr('female')),
+                ),
+                DropdownMenuItem(
+                  value: 'OTHER',
+                  child: Text(context.tr('other')),
+                ),
               ],
               onChanged: (value) => setState(() => _gender = value),
             ),
             const SizedBox(height: 24),
-            const _ProfileSectionTitle('Contact Info'),
+            _ProfileSectionTitle(context.tr('contactInfo')),
             TextField(
               enabled: false,
               controller: _email,
@@ -1067,18 +1109,18 @@ class _EditProfilePageState extends State<EditProfilePage> {
               controller: _phone,
               keyboardType: TextInputType.phone,
               decoration: _input(
-                'Phone number',
+                context.tr('phoneNumber'),
                 Icons.phone_outlined,
                 showIcon: true,
-                hintText: 'Enter phone number',
+                hintText: context.tr('enterPhone'),
               ),
             ),
-            const Padding(
+            Padding(
               padding: EdgeInsets.only(top: 9),
               child: Text(
-                'Profile changes do not affect contact info on existing bookings.',
+                context.tr('existingBookingContactNote'),
                 style: TextStyle(
-                  color: CoolCareColors.mutedText,
+                  color: context.appMuted,
                   fontSize: 11,
                   height: 1.35,
                 ),
@@ -1107,7 +1149,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                   ),
                 ),
                 child: Text(
-                  _saving ? 'Saving...' : 'Save Changes',
+                  context.tr(_saving ? 'saving' : 'saveChanges'),
                   style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
@@ -1237,8 +1279,8 @@ class _AccountSectionTitle extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 5),
       child: Text(
         text,
-        style: const TextStyle(
-          color: CoolCareColors.mutedText,
+        style: TextStyle(
+          color: context.appMuted,
           fontSize: 9,
           fontWeight: FontWeight.w700,
           letterSpacing: .25,
@@ -1261,8 +1303,8 @@ class _AccountRow extends StatelessWidget {
       onTap: onTap,
       child: Container(
         height: 45,
-        decoration: const BoxDecoration(
-          border: Border(bottom: BorderSide(color: CoolCareColors.border)),
+        decoration: BoxDecoration(
+          border: Border(bottom: BorderSide(color: context.appBorder)),
         ),
         child: Row(
           children: [
@@ -1271,15 +1313,12 @@ class _AccountRow extends StatelessWidget {
             Expanded(
               child: Text(
                 label,
-                style: const TextStyle(
-                  color: CoolCareColors.text,
-                  fontSize: 11,
-                ),
+                style: TextStyle(color: context.appText, fontSize: 11),
               ),
             ),
-            const Icon(
+            Icon(
               Icons.chevron_right_rounded,
-              color: CoolCareColors.mutedText,
+              color: context.appMuted,
               size: 18,
             ),
           ],
@@ -1303,8 +1342,8 @@ class _ProfileSectionTitle extends StatelessWidget {
         padding: const EdgeInsets.only(bottom: 5),
         child: Text(
           text,
-          style: const TextStyle(
-            color: CoolCareColors.mutedText,
+          style: TextStyle(
+            color: context.appMuted,
             fontSize: 14,
             fontWeight: FontWeight.w700,
           ),
@@ -1326,24 +1365,18 @@ class _ProfileField extends StatelessWidget {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 11),
-      decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: CoolCareColors.border)),
+      decoration: BoxDecoration(
+        border: Border(bottom: BorderSide(color: context.appBorder)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            label,
-            style: const TextStyle(
-              color: CoolCareColors.mutedText,
-              fontSize: 12,
-            ),
-          ),
+          Text(label, style: TextStyle(color: context.appMuted, fontSize: 12)),
           const SizedBox(height: 6),
           Text(
             value,
-            style: const TextStyle(
-              color: CoolCareColors.text,
+            style: TextStyle(
+              color: context.appText,
               fontSize: 14,
               fontWeight: FontWeight.w600,
             ),

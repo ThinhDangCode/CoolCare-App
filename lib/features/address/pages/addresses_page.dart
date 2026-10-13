@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../app/localization/app_strings.dart';
+import '../../../app/theme/coolcare_theme.dart';
 import '../../../core/network/api_client.dart';
 import '../controllers/address_controller.dart';
 import '../models/address_model.dart';
@@ -74,8 +76,8 @@ class _AddressesPageState extends State<AddressesPage> {
       barrierColor: Colors.black.withValues(alpha: 0.48),
       builder: (dialogContext) {
         return Dialog(
-          backgroundColor: Colors.white,
-          surfaceTintColor: Colors.white,
+          backgroundColor: Theme.of(dialogContext).colorScheme.surface,
+          surfaceTintColor: Colors.transparent,
           insetPadding: const EdgeInsets.symmetric(horizontal: 40),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
@@ -194,9 +196,15 @@ class _AddressesPageState extends State<AddressesPage> {
                       Navigator.of(dialogContext).pop(false);
                     },
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: _text,
-                      backgroundColor: Colors.white,
-                      side: const BorderSide(color: _border),
+                      foregroundColor: Theme.of(
+                        dialogContext,
+                      ).colorScheme.onSurface,
+                      backgroundColor: Theme.of(
+                        dialogContext,
+                      ).colorScheme.surface,
+                      side: BorderSide(
+                        color: Theme.of(dialogContext).dividerColor,
+                      ),
                       elevation: 0,
                       padding: EdgeInsets.zero,
                       shape: RoundedRectangleBorder(
@@ -331,31 +339,31 @@ class _AddressesPageState extends State<AddressesPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
 
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        surfaceTintColor: Colors.white,
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        surfaceTintColor: Colors.transparent,
         elevation: 0,
         scrolledUnderElevation: 0,
         titleSpacing: 0,
-        title: const Column(
+        title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              'My Addresses',
+              context.tr('myAddresses'),
               style: TextStyle(
-                color: _text,
+                color: context.appText,
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
               ),
             ),
-            SizedBox(height: 1),
+            const SizedBox(height: 1),
             Text(
-              'Manage addresses for faster booking',
+              context.tr('manageAddresses'),
               style: TextStyle(
-                color: _muted,
+                color: context.appMuted,
                 fontSize: 9,
                 fontWeight: FontWeight.w400,
               ),
@@ -371,16 +379,16 @@ class _AddressesPageState extends State<AddressesPage> {
           : SafeArea(
               top: false,
               child: Container(
-                color: Colors.white,
+                color: context.appSurface,
                 padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
                 child: SizedBox(
                   height: 44,
                   child: ElevatedButton.icon(
                     onPressed: _openAddAddress,
                     icon: const Icon(Icons.add, size: 16),
-                    label: const Text(
-                      'Add New Address',
-                      style: TextStyle(
+                    label: Text(
+                      context.tr('addNewAddress'),
+                      style: const TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.w700,
                       ),
@@ -424,10 +432,10 @@ class _AddressesPageState extends State<AddressesPage> {
         physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 20),
         children: [
-          const Text(
-            'YOUR ADDRESSES',
+          Text(
+            context.tr('yourAddresses'),
             style: TextStyle(
-              color: _muted,
+              color: context.appMuted,
               fontSize: 9,
               fontWeight: FontWeight.w700,
               letterSpacing: 0.7,
@@ -468,7 +476,7 @@ class _AddressesPageState extends State<AddressesPage> {
           height: 10,
           margin: const EdgeInsets.only(bottom: 14),
           decoration: BoxDecoration(
-            color: const Color(0xFFF0F3F4),
+            color: context.appSoftSurface,
             borderRadius: BorderRadius.circular(4),
           ),
         ),
@@ -478,7 +486,7 @@ class _AddressesPageState extends State<AddressesPage> {
             height: 115,
             margin: const EdgeInsets.only(bottom: 12),
             decoration: BoxDecoration(
-              color: const Color(0xFFF2F5F5),
+              color: context.appSoftSurface,
               borderRadius: BorderRadius.circular(10),
             ),
           ),
@@ -501,8 +509,8 @@ class _AddressesPageState extends State<AddressesPage> {
             Container(
               width: 58,
               height: 58,
-              decoration: const BoxDecoration(
-                color: Color(0xFFE9F7F7),
+              decoration: BoxDecoration(
+                color: context.appAccentSurface,
                 shape: BoxShape.circle,
               ),
               child: const Icon(
@@ -514,10 +522,10 @@ class _AddressesPageState extends State<AddressesPage> {
 
             const SizedBox(height: 16),
 
-            const Text(
-              'No Addresses Yet',
+            Text(
+              context.tr('noAddresses'),
               style: TextStyle(
-                color: _text,
+                color: context.appText,
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
               ),
@@ -525,10 +533,14 @@ class _AddressesPageState extends State<AddressesPage> {
 
             const SizedBox(height: 7),
 
-            const Text(
-              'Add an address so technicians know where to provide your service.',
+            Text(
+              context.tr('noAddressesHint'),
               textAlign: TextAlign.center,
-              style: TextStyle(color: _muted, fontSize: 11, height: 1.4),
+              style: TextStyle(
+                color: context.appMuted,
+                fontSize: 11,
+                height: 1.4,
+              ),
             ),
 
             const SizedBox(height: 20),
@@ -539,9 +551,12 @@ class _AddressesPageState extends State<AddressesPage> {
               child: ElevatedButton.icon(
                 onPressed: _openAddAddress,
                 icon: const Icon(Icons.add, size: 17),
-                label: const Text(
-                  'Add New Address',
-                  style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700),
+                label: Text(
+                  context.tr('addNewAddress'),
+                  style: const TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: _primary,
@@ -582,10 +597,10 @@ class _AddressesPageState extends State<AddressesPage> {
 
             const SizedBox(height: 14),
 
-            const Text(
-              'Unable to load address list',
+            Text(
+              context.tr('unableLoadAddresses'),
               style: TextStyle(
-                color: _text,
+                color: context.appText,
                 fontSize: 15,
                 fontWeight: FontWeight.w700,
               ),
@@ -597,7 +612,11 @@ class _AddressesPageState extends State<AddressesPage> {
               _controller.errorMessage ??
                   'Something went wrong. Please try again.',
               textAlign: TextAlign.center,
-              style: const TextStyle(color: _muted, fontSize: 11, height: 1.4),
+              style: TextStyle(
+                color: context.appMuted,
+                fontSize: 11,
+                height: 1.4,
+              ),
             ),
 
             const SizedBox(height: 18),
@@ -615,9 +634,12 @@ class _AddressesPageState extends State<AddressesPage> {
                     borderRadius: BorderRadius.circular(7),
                   ),
                 ),
-                child: const Text(
-                  'Try Again',
-                  style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700),
+                child: Text(
+                  context.tr('tryAgain'),
+                  style: const TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
             ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../../app/localization/app_strings.dart';
 import '../controllers/auth_controller.dart';
 import '../validators/auth_validators.dart';
 import '../widgets/auth_fields.dart';
@@ -42,19 +43,17 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
   }
 
   String get _title => switch (_step) {
-    _ResetStep.email => 'Forgot Password?',
-    _ResetStep.otp => 'Email Verification',
-    _ResetStep.password => 'Create New Password',
-    _ResetStep.success => 'Password Updated',
+    _ResetStep.email => context.tr('forgotPasswordTitle'),
+    _ResetStep.otp => context.tr('emailVerification'),
+    _ResetStep.password => context.tr('createNewPassword'),
+    _ResetStep.success => context.tr('passwordUpdated'),
   };
 
   String get _subtitle => switch (_step) {
-    _ResetStep.email =>
-      "Enter the email of your password account and we'll send a 6-digit reset code. Google-only accounts must continue with Google.",
-    _ResetStep.otp =>
-      'A 6-digit verification code has been sent to your email address.',
-    _ResetStep.password => 'Enter your new password below.',
-    _ResetStep.success => 'You can now log in with your new password.',
+    _ResetStep.email => context.tr('resetEmailHint'),
+    _ResetStep.otp => context.tr('otpSentHint'),
+    _ResetStep.password => context.tr('newPasswordHint'),
+    _ResetStep.success => context.tr('passwordUpdatedHint'),
   };
 
   Future<void> _requestOtp() async {
@@ -166,7 +165,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
         AuthErrorBanner(message: widget.controller.errorMessage),
         if (widget.controller.errorMessage != null) const SizedBox(height: 14),
         AuthSubmitButton(
-          label: 'Send Code',
+          label: context.tr('sendCode'),
           loading: widget.controller.isBusy,
           onPressed: _requestOtp,
         ),
@@ -178,9 +177,9 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const Text(
-          'Verification Code',
-          style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+        Text(
+          context.tr('verificationCode'),
+          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
         ),
         const SizedBox(height: 9),
         _OtpInput(controller: _otpController, onCompleted: _verifyOtp),
@@ -188,19 +187,22 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
         AuthErrorBanner(message: widget.controller.errorMessage),
         if (widget.controller.errorMessage != null) const SizedBox(height: 14),
         AuthSubmitButton(
-          label: 'Verify Code',
+          label: context.tr('verifyCode'),
           loading: widget.controller.isBusy,
           onPressed: _verifyOtp,
         ),
         const SizedBox(height: 14),
-        const Text(
-          "Didn't receive the code?",
+        Text(
+          context.tr('noCode'),
           textAlign: TextAlign.center,
           style: TextStyle(fontSize: 11),
         ),
         TextButton(
           onPressed: widget.controller.isBusy ? null : _resendOtp,
-          child: const Text('Resend code', style: TextStyle(fontSize: 11)),
+          child: Text(
+            context.tr('resendCode'),
+            style: const TextStyle(fontSize: 11),
+          ),
         ),
       ],
     );
@@ -212,8 +214,8 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
       children: [
         AuthTextField(
           controller: _passwordController,
-          label: 'New Password',
-          hintText: 'Your new password',
+          label: context.tr('newPassword'),
+          hintText: context.tr('newPasswordHint'),
           icon: Icons.lock_outline_rounded,
           obscureText: true,
           textInputAction: TextInputAction.next,
@@ -222,8 +224,8 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
         const SizedBox(height: 14),
         AuthTextField(
           controller: _confirmPasswordController,
-          label: 'Confirm Password',
-          hintText: 'Confirm Password',
+          label: context.tr('confirmPassword'),
+          hintText: context.tr('confirmPassword'),
           icon: Icons.lock_reset_rounded,
           obscureText: true,
           textInputAction: TextInputAction.done,
@@ -235,7 +237,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
         AuthErrorBanner(message: widget.controller.errorMessage),
         if (widget.controller.errorMessage != null) const SizedBox(height: 14),
         AuthSubmitButton(
-          label: 'Reset Password',
+          label: context.tr('resetPassword'),
           loading: widget.controller.isBusy,
           onPressed: _resetPassword,
         ),
@@ -252,13 +254,13 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
           size: 76,
         ),
         const SizedBox(height: 20),
-        const Text('Your password has been updated.'),
+        Text(context.tr('passwordUpdatedSuccess')),
         const SizedBox(height: 24),
         SizedBox(
           width: double.infinity,
           child: ElevatedButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Back to Login'),
+            child: Text(context.tr('backToLogin')),
           ),
         ),
       ],

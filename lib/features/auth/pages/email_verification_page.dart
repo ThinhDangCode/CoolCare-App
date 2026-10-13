@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../../app/localization/app_strings.dart';
 import '../controllers/auth_controller.dart';
 import '../validators/auth_validators.dart';
 import '../widgets/auth_fields.dart';
@@ -74,8 +75,8 @@ class _EmailVerificationPageState extends State<EmailVerificationPage> {
       child: AuthScaffold(
         showBackButton: true,
         onBack: _backToRegister,
-        title: 'Verify your email',
-        subtitle: 'Enter the 6-digit code sent to ${widget.email}.',
+        title: context.tr('verifyEmail'),
+        subtitle: "${context.tr('enterCodeSentTo')} ${widget.email}.",
         child: Form(
           key: _formKey,
           child: ListenableBuilder(
@@ -85,8 +86,8 @@ class _EmailVerificationPageState extends State<EmailVerificationPage> {
               children: [
                 AuthTextField(
                   controller: _otpController,
-                  label: 'Verification code',
-                  hintText: '6-digit code',
+                  label: context.tr('verificationCode'),
+                  hintText: context.tr('sixDigitCode'),
                   icon: Icons.verified_user_outlined,
                   keyboardType: TextInputType.number,
                   textInputAction: TextInputAction.done,
@@ -102,13 +103,13 @@ class _EmailVerificationPageState extends State<EmailVerificationPage> {
                 if (widget.controller.errorMessage != null)
                   const SizedBox(height: 14),
                 AuthSubmitButton(
-                  label: 'Verify email',
+                  label: context.tr('verifyEmail'),
                   loading: widget.controller.isBusy,
                   onPressed: _verify,
                 ),
                 TextButton(
                   onPressed: widget.controller.isBusy ? null : _resend,
-                  child: const Text('Resend code'),
+                  child: Text(context.tr('resendCode')),
                 ),
               ],
             ),

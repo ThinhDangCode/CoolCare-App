@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'app/coolcare_app.dart';
+import 'app/preferences/app_preferences_controller.dart';
 import 'core/network/api_client.dart';
 import 'core/network/cloudinary_image_uploader.dart';
 import 'features/auth/controllers/auth_controller.dart';
@@ -18,6 +19,13 @@ Future<void> main() async {
     repository,
     imageUploader: CloudinaryImageUploader.fromEnvironment(),
   )..initialize();
+  final preferencesController = AppPreferencesController();
+  await preferencesController.load();
 
-  runApp(CoolCareApp(authController: authController));
+  runApp(
+    CoolCareApp(
+      authController: authController,
+      preferencesController: preferencesController,
+    ),
+  );
 }
