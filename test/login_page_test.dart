@@ -13,12 +13,12 @@ void main() {
     await controller.initialize();
     await tester.pumpWidget(CoolCareApp(authController: controller));
 
-    expect(find.textContaining('Cool comfort, every'), findsOneWidget);
+    expect(find.textContaining('Mát lạnh mỗi ngày'), findsOneWidget);
     expect(tester.takeException(), isNull);
-    await tester.tap(find.text('Log In'));
+    await tester.tap(find.text('Đăng nhập'));
     await tester.pumpAndSettle();
-    expect(find.text('Welcome back!'), findsOneWidget);
-    await tester.tap(find.text('Log In'));
+    expect(find.text('Chào mừng trở lại!'), findsOneWidget);
+    await tester.tap(find.text('Đăng nhập'));
     await tester.pump();
 
     expect(find.text('Vui lòng nhập email.'), findsOneWidget);
@@ -32,10 +32,10 @@ void main() {
     await controller.initialize();
     await tester.pumpWidget(CoolCareApp(authController: controller));
 
-    await tester.tap(find.text('Explore Services'));
+    await tester.tap(find.text('Khám phá dịch vụ'));
     await tester.pumpAndSettle();
 
-    expect(find.text('AC Services'), findsOneWidget);
+    expect(find.text('Dịch vụ máy lạnh'), findsOneWidget);
     expect(find.byType(TextField), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
@@ -59,13 +59,13 @@ void main() {
     await controller.initialize();
     await tester.pumpWidget(CoolCareApp(authController: controller));
 
-    await tester.tap(find.text('Account'));
+    await tester.tap(find.text('Tài khoản'));
     await tester.pumpAndSettle();
     expect(find.text('Nguyễn Văn A'), findsOneWidget);
 
-    await tester.tap(find.text('View profile  →'));
+    await tester.tap(find.text('Xem hồ sơ →'));
     await tester.pumpAndSettle();
-    expect(find.text('Personal Profile'), findsOneWidget);
+    expect(find.text('Hồ sơ cá nhân'), findsOneWidget);
     expect(find.text('nguyenvana@gmail.com'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });

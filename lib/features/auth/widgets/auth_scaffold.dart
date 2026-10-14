@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../app/localization/app_strings.dart';
 import '../../../app/theme/coolcare_theme.dart';
 
 class AuthScaffold extends StatelessWidget {
@@ -7,7 +8,7 @@ class AuthScaffold extends StatelessWidget {
     required this.title,
     required this.subtitle,
     required this.child,
-    this.eyebrow = 'HOME AC CARE SERVICE',
+    this.eyebrow,
     this.showBackButton = false,
     this.onBack,
     super.key,
@@ -15,7 +16,7 @@ class AuthScaffold extends StatelessWidget {
 
   final String title;
   final String subtitle;
-  final String eyebrow;
+  final String? eyebrow;
   final Widget child;
   final bool showBackButton;
   final VoidCallback? onBack;
@@ -23,7 +24,7 @@ class AuthScaffold extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: context.appBackground,
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
@@ -67,7 +68,7 @@ class AuthScaffold extends StatelessWidget {
                         ),
                         const SizedBox(height: 34),
                         Text(
-                          eyebrow,
+                          eyebrow ?? context.tr('homeCareService'),
                           style: const TextStyle(
                             color: CoolCareColors.primary,
                             fontSize: 10,
@@ -109,7 +110,7 @@ class _Wordmark extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Text.rich(
+    return Text.rich(
       TextSpan(
         text: 'Cool',
         children: [
@@ -120,7 +121,7 @@ class _Wordmark extends StatelessWidget {
         ],
       ),
       style: TextStyle(
-        color: CoolCareColors.text,
+        color: context.appText,
         fontSize: 20,
         fontWeight: FontWeight.w800,
         letterSpacing: -.5,
@@ -134,17 +135,17 @@ class _Footer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Column(
+    return Column(
       children: [
         Text(
-          'Cool comfort, every day.',
+          context.tr('coolComfort'),
           textAlign: TextAlign.center,
-          style: TextStyle(color: CoolCareColors.mutedText, fontSize: 11),
+          style: TextStyle(color: context.appMuted, fontSize: 11),
         ),
-        SizedBox(height: 10),
+        const SizedBox(height: 10),
         SizedBox(
           width: 118,
-          child: Divider(height: 1, color: CoolCareColors.border),
+          child: Divider(height: 1, color: context.appBorder),
         ),
       ],
     );

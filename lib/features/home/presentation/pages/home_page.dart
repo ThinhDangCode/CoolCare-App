@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 
 import '../../../../app/theme/coolcare_theme.dart';
+import '../../../../app/localization/app_strings.dart';
+import '../../../../app/preferences/preference_actions.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../account/pages/account_page.dart';
 import '../../../address/pages/addresses_page.dart';
 import '../../../auth/controllers/auth_controller.dart';
 import '../../../auth/pages/login_page.dart';
+import '../../../blogs/pages/blog_pages.dart';
+import '../../../reviews/pages/review_pages.dart';
 import '../../../services/controllers/service_controller.dart';
 import '../../../services/models/service_model.dart';
 import '../../../services/pages/service_detail_page.dart';
@@ -76,7 +80,7 @@ class _HomePageState extends State<HomePage> {
 
       case 2:
         if (widget.controller.status == AuthStatus.authenticated) {
-          return const _BookingsPage();
+          return const CustomerActivityPage();
         }
 
         return _RestrictedPage(onLogin: () => _openLogin(context));
@@ -110,7 +114,7 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: context.appBackground,
       body: SafeArea(
         bottom: false,
         child: Center(
@@ -135,7 +139,6 @@ class _HomePageState extends State<HomePage> {
     );
   }
 }
-
 // ============================================================
 // HEADER
 // ============================================================
@@ -151,18 +154,20 @@ class _HomeHeader extends StatelessWidget {
     return Container(
       height: 58,
       padding: const EdgeInsets.symmetric(horizontal: 18),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        border: Border(bottom: BorderSide(color: Color(0xFFE8EEEE))),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        border: Border(
+          bottom: BorderSide(color: Theme.of(context).dividerColor),
+        ),
       ),
       child: Row(
         children: [
-          const Text.rich(
+          Text.rich(
             TextSpan(
               children: [
                 TextSpan(
                   text: 'Cool',
-                  style: TextStyle(color: CoolCareColors.text),
+                  style: TextStyle(color: context.appText),
                 ),
                 TextSpan(
                   text: 'Care',
@@ -170,13 +175,14 @@ class _HomeHeader extends StatelessWidget {
                 ),
               ],
             ),
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w800,
               letterSpacing: -0.5,
             ),
           ),
           const Spacer(),
+          const PreferenceActions(),
           ListenableBuilder(
             listenable: controller,
             builder: (context, _) {
@@ -209,9 +215,12 @@ class _HomeHeader extends StatelessWidget {
                     vertical: 6,
                   ),
                 ),
-                label: const Text(
-                  'Log In',
-                  style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700),
+                label: Text(
+                  context.tr('login'),
+                  style: const TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
                 icon: const Icon(Icons.north_east_rounded, size: 12),
               );
@@ -285,34 +294,45 @@ class _HomeBodyState extends State<_HomeBody> {
           children: [
             _HeroCard(onExploreServices: widget.onExploreServices),
             const SizedBox(height: 20),
-            const _SectionTitle('How can we help?'),
+            _SectionTitle(context.tr('howCanWeHelp')),
             const SizedBox(height: 12),
             _buildServices(),
             const SizedBox(height: 22),
-            const _SectionTitle('Booking made simple'),
+            _SectionTitle(context.tr('bookingMadeSimple')),
             const SizedBox(height: 12),
-            const Row(
+            Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Expanded(
-                  child: _BookingStep(number: '01', label: 'Choose service'),
+                  child: _BookingStep(
+                    number: '01',
+                    label: context.tr('chooseServiceStep'),
+                  ),
                 ),
                 SizedBox(width: 12),
                 Expanded(
-                  child: _BookingStep(number: '02', label: 'Schedule'),
+                  child: _BookingStep(
+                    number: '02',
+                    label: context.tr('scheduleStep'),
+                  ),
                 ),
                 SizedBox(width: 12),
                 Expanded(
-                  child: _BookingStep(number: '03', label: 'Choose technician'),
+                  child: _BookingStep(
+                    number: '03',
+                    label: context.tr('chooseTechnicianStep'),
+                  ),
                 ),
               ],
             ),
             const SizedBox(height: 22),
             Row(
               children: [
-                const Expanded(child: _SectionTitle('AC Care')),
+                Expanded(child: _SectionTitle(context.tr('acCare'))),
                 TextButton(
-                  onPressed: widget.onExploreServices,
+                  onPressed: () => Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const BlogListPage()),
+                  ),
                   style: TextButton.styleFrom(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 4,
@@ -321,9 +341,9 @@ class _HomeBodyState extends State<_HomeBody> {
                     minimumSize: const Size(0, 28),
                     tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   ),
-                  child: const Text(
-                    'See more  →',
-                    style: TextStyle(
+                  child: Text(
+                    context.tr('seeMore'),
+                    style: const TextStyle(
                       color: CoolCareColors.primaryDark,
                       fontSize: 10,
                       fontWeight: FontWeight.w700,
@@ -365,11 +385,11 @@ class _HomeBodyState extends State<_HomeBody> {
         ),
         child: Column(
           children: [
-            const Text(
-              'Unable to load services',
+            Text(
+              context.tr('unableLoadServices'),
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: CoolCareColors.text,
+                color: context.appText,
                 fontSize: 11,
                 fontWeight: FontWeight.w700,
               ),
@@ -377,7 +397,7 @@ class _HomeBodyState extends State<_HomeBody> {
             const SizedBox(height: 4),
             TextButton(
               onPressed: _serviceController.retry,
-              child: const Text('Try Again'),
+              child: Text(context.tr('tryAgain')),
             ),
           ],
         ),
@@ -387,11 +407,11 @@ class _HomeBodyState extends State<_HomeBody> {
     final services = _serviceController.allServices.take(4).toList();
 
     if (services.isEmpty) {
-      return const SizedBox(
+      return SizedBox(
         width: double.infinity,
         child: Text(
-          'No services available.',
-          style: TextStyle(color: CoolCareColors.mutedText, fontSize: 11),
+          context.tr('noServices'),
+          style: TextStyle(color: context.appMuted, fontSize: 11),
         ),
       );
     }
@@ -456,7 +476,9 @@ class _HeroCard extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(16, 16, 14, 16),
       decoration: BoxDecoration(
-        color: CoolCareColors.surfaceTint,
+        color: context.isDarkMode
+            ? CoolCareColors.primary.withValues(alpha: .12)
+            : CoolCareColors.surfaceTint,
         borderRadius: BorderRadius.circular(14),
       ),
       child: Row(
@@ -465,8 +487,8 @@ class _HeroCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'HOME AC CARE SERVICE',
+                Text(
+                  context.tr('homeCareService'),
                   style: TextStyle(
                     color: CoolCareColors.primaryDark,
                     fontSize: 8,
@@ -475,11 +497,10 @@ class _HeroCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 8),
-                const Text(
-                  'Cool comfort, every day.\n'
-                  'Peace of mind, always.',
+                Text(
+                  context.tr('heroTitle'),
                   style: TextStyle(
-                    color: CoolCareColors.text,
+                    color: context.appText,
                     fontSize: 18,
                     height: 1.08,
                     fontWeight: FontWeight.w800,
@@ -487,11 +508,10 @@ class _HeroCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 8),
-                const Text(
-                  'Find the right service,\n'
-                  'book at your convenience.',
+                Text(
+                  context.tr('heroSubtitle'),
                   style: TextStyle(
-                    color: CoolCareColors.mutedText,
+                    color: context.appMuted,
                     fontSize: 10,
                     height: 1.35,
                   ),
@@ -509,9 +529,9 @@ class _HeroCard extends StatelessWidget {
                         borderRadius: BorderRadius.circular(7),
                       ),
                     ),
-                    label: const Text(
-                      'Explore Services',
-                      style: TextStyle(
+                    label: Text(
+                      context.tr('exploreServices'),
+                      style: const TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.w700,
                       ),
@@ -549,8 +569,8 @@ class _SectionTitle extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       text,
-      style: const TextStyle(
-        color: CoolCareColors.text,
+      style: TextStyle(
+        color: context.appText,
         fontSize: 12,
         fontWeight: FontWeight.w800,
       ),
@@ -585,7 +605,7 @@ class _ServiceShortcut extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(13),
-            border: Border.all(color: CoolCareColors.border),
+            border: Border.all(color: context.appBorder),
           ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -605,8 +625,8 @@ class _ServiceShortcut extends StatelessWidget {
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 textAlign: TextAlign.center,
-                style: const TextStyle(
-                  color: CoolCareColors.text,
+                style: TextStyle(
+                  color: context.appText,
                   fontSize: 9.5,
                   height: 1.25,
                   fontWeight: FontWeight.w600,
@@ -647,11 +667,7 @@ class _BookingStep extends StatelessWidget {
         Text(
           label,
           maxLines: 2,
-          style: const TextStyle(
-            color: CoolCareColors.mutedText,
-            fontSize: 9,
-            height: 1.25,
-          ),
+          style: TextStyle(color: context.appMuted, fontSize: 9, height: 1.25),
         ),
       ],
     );
@@ -667,67 +683,73 @@ class _CareArticle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(11),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border.all(color: CoolCareColors.border),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 58,
-            height: 58,
-            decoration: BoxDecoration(
-              color: CoolCareColors.surfaceTint,
-              borderRadius: BorderRadius.circular(10),
+    return InkWell(
+      onTap: () => Navigator.of(
+        context,
+      ).push(MaterialPageRoute(builder: (_) => const BlogListPage())),
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(11),
+        decoration: BoxDecoration(
+          color: context.appSurface,
+          border: Border.all(color: context.appBorder),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 58,
+              height: 58,
+              decoration: BoxDecoration(
+                color: CoolCareColors.surfaceTint,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Icon(
+                Icons.ac_unit_rounded,
+                color: CoolCareColors.primary,
+                size: 27,
+              ),
             ),
-            child: const Icon(
-              Icons.ac_unit_rounded,
-              color: CoolCareColors.primary,
-              size: 27,
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    context.tr('tipsAndTricks'),
+                    style: TextStyle(
+                      color: CoolCareColors.primary,
+                      fontSize: 7.5,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: .4,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    context.tr('cleanAcQuestion'),
+                    maxLines: 2,
+                    style: TextStyle(
+                      color: context.appText,
+                      fontSize: 10.5,
+                      height: 1.25,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 5),
+                  Text(
+                    context.tr('readArticle'),
+                    style: const TextStyle(
+                      color: CoolCareColors.primary,
+                      fontSize: 8.5,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-          const SizedBox(width: 12),
-          const Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'TIPS & TRICKS',
-                  style: TextStyle(
-                    color: CoolCareColors.primary,
-                    fontSize: 7.5,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: .4,
-                  ),
-                ),
-                SizedBox(height: 4),
-                Text(
-                  'When should you clean your AC?',
-                  maxLines: 2,
-                  style: TextStyle(
-                    color: CoolCareColors.text,
-                    fontSize: 10.5,
-                    height: 1.25,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                SizedBox(height: 5),
-                Text(
-                  'Read article  →',
-                  style: TextStyle(
-                    color: CoolCareColors.primary,
-                    fontSize: 8.5,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -757,28 +779,28 @@ class _HomeNavigation extends StatelessWidget {
           _NavItem(
             icon: Icons.home_outlined,
             selectedIcon: Icons.home_rounded,
-            label: 'Home',
+            label: context.tr('home'),
             selected: selectedIndex == 0,
             onTap: () => onSelected(0),
           ),
           _NavItem(
             icon: Icons.grid_view_outlined,
             selectedIcon: Icons.grid_view_rounded,
-            label: 'Services',
+            label: context.tr('services'),
             selected: selectedIndex == 1,
             onTap: () => onSelected(1),
           ),
           _NavItem(
             icon: Icons.shopping_bag_outlined,
             selectedIcon: Icons.shopping_bag_rounded,
-            label: 'My Bookings',
+            label: context.tr('myBookings'),
             selected: selectedIndex == 2,
             onTap: () => onSelected(2),
           ),
           _NavItem(
             icon: Icons.person_outline_rounded,
             selectedIcon: Icons.person_rounded,
-            label: 'Account',
+            label: context.tr('account'),
             selected: selectedIndex == 3,
             onTap: () => onSelected(3),
           ),
@@ -884,21 +906,21 @@ class _RestrictedPage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 18),
-            const Text(
-              'Sign in to continue',
+            Text(
+              context.tr('signInToContinue'),
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: CoolCareColors.text,
+                color: context.appText,
                 fontSize: 18,
                 fontWeight: FontWeight.w800,
               ),
             ),
             const SizedBox(height: 8),
-            const Text(
-              'Log in to view your bookings and manage your CoolCare account.',
+            Text(
+              context.tr('signInRequiredHint'),
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: CoolCareColors.mutedText,
+                color: context.appMuted,
                 fontSize: 11,
                 height: 1.4,
               ),
@@ -909,75 +931,11 @@ class _RestrictedPage extends StatelessWidget {
               height: 42,
               child: FilledButton(
                 onPressed: onLogin,
-                child: const Text('Log In'),
+                child: Text(context.tr('login')),
               ),
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-// ============================================================
-// BOOKINGS
-// ============================================================
-
-class _BookingsPage extends StatelessWidget {
-  const _BookingsPage();
-
-  @override
-  Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(18, 20, 18, 28),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'My Bookings',
-            style: TextStyle(
-              color: CoolCareColors.text,
-              fontSize: 21,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-          const SizedBox(height: 18),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 42),
-            decoration: BoxDecoration(
-              color: CoolCareColors.surfaceTint,
-              borderRadius: BorderRadius.circular(14),
-            ),
-            child: const Column(
-              children: [
-                Icon(
-                  Icons.calendar_month_outlined,
-                  color: CoolCareColors.primary,
-                  size: 38,
-                ),
-                SizedBox(height: 12),
-                Text(
-                  'No active bookings',
-                  style: TextStyle(
-                    color: CoolCareColors.text,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-                SizedBox(height: 6),
-                Text(
-                  'Your upcoming services will appear here.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: CoolCareColors.mutedText,
-                    fontSize: 10,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
       ),
     );
   }

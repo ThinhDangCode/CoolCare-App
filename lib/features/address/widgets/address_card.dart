@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../app/localization/app_strings.dart';
+import '../../../app/theme/coolcare_theme.dart';
 import '../models/address_model.dart';
 
 class AddressCard extends StatelessWidget {
@@ -17,46 +19,29 @@ class AddressCard extends StatelessWidget {
   final VoidCallback onDelete;
   final VoidCallback onSetDefault;
 
-  static const Color _primary =
-  Color(0xFF078B96);
-
-  static const Color _text =
-  Color(0xFF17333A);
-
-  static const Color _muted =
-  Color(0xFF718087);
+  static const Color _primary = Color(0xFF078B96);
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin:
-      const EdgeInsets.only(bottom: 12),
-      padding:
-      const EdgeInsets.all(14),
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius:
-        BorderRadius.circular(10),
-        border: Border.all(
-          color:
-          const Color(0xFFE1E8EA),
-        ),
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: Theme.of(context).dividerColor),
       ),
       child: Column(
-        crossAxisAlignment:
-        CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            crossAxisAlignment:
-            CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
                 width: 32,
                 height: 32,
-                decoration:
-                const BoxDecoration(
-                  color:
-                  Color(0xFFE9F7F7),
+                decoration: BoxDecoration(
+                  color: context.appAccentSurface,
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(
@@ -70,85 +55,56 @@ class AddressCard extends StatelessWidget {
 
               Expanded(
                 child: Column(
-                  crossAxisAlignment:
-                  CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
                       children: [
                         Expanded(
                           child: Text(
-                            address
-                                .recipientName,
-                            style:
-                            const TextStyle(
-                              color: _text,
+                            address.recipientName,
+                            style: TextStyle(
+                              color: context.appText,
                               fontSize: 13,
-                              fontWeight:
-                              FontWeight.w700,
+                              fontWeight: FontWeight.w700,
                             ),
                           ),
                         ),
 
-                        if (address
-                            .isDefault)
+                        if (address.isDefault)
                           Container(
-                            padding:
-                            const EdgeInsets
-                                .symmetric(
+                            padding: const EdgeInsets.symmetric(
                               horizontal: 7,
                               vertical: 3,
                             ),
-                            decoration:
-                            BoxDecoration(
-                              color:
-                              const Color(
-                                0xFFE9F7F7,
-                              ),
-                              borderRadius:
-                              BorderRadius
-                                  .circular(
-                                10,
-                              ),
+                            decoration: BoxDecoration(
+                              color: context.appAccentSurface,
+                              borderRadius: BorderRadius.circular(10),
                             ),
-                            child:
-                            const Text(
-                              'DEFAULT',
-                              style:
-                              TextStyle(
-                                color:
-                                _primary,
+                            child: Text(
+                              context.tr('defaultLabel'),
+                              style: const TextStyle(
+                                color: _primary,
                                 fontSize: 8,
-                                fontWeight:
-                                FontWeight
-                                    .w700,
+                                fontWeight: FontWeight.w700,
                               ),
                             ),
                           ),
                       ],
                     ),
 
-                    const SizedBox(
-                      height: 4,
-                    ),
+                    const SizedBox(height: 4),
 
                     Text(
                       address.phone,
-                      style:
-                      const TextStyle(
-                        color: _muted,
-                        fontSize: 11,
-                      ),
+                      style: TextStyle(color: context.appMuted, fontSize: 11),
                     ),
 
-                    const SizedBox(
-                      height: 4,
-                    ),
+                    const SizedBox(height: 4),
 
                     Text(
                       address.fullAddress,
-                      style:
-                      const TextStyle(
-                        color: _muted,
+                      style: TextStyle(
+                        color: context.appMuted,
                         fontSize: 11,
                         height: 1.4,
                       ),
@@ -161,32 +117,24 @@ class AddressCard extends StatelessWidget {
 
           const SizedBox(height: 12),
 
-          const Divider(
-            height: 1,
-            color: Color(0xFFE1E8EA),
-          ),
+          Divider(height: 1, color: context.appBorder),
 
           const SizedBox(height: 10),
 
           Row(
             children: [
               _AddressAction(
-                icon:
-                Icons.edit_outlined,
-                label: 'Edit',
+                icon: Icons.edit_outlined,
+                label: context.tr('edit'),
                 onTap: onEdit,
               ),
 
               const SizedBox(width: 20),
 
               _AddressAction(
-                icon:
-                Icons.delete_outline,
-                label: 'Delete',
-                color:
-                const Color(
-                  0xFFB42318,
-                ),
+                icon: Icons.delete_outline,
+                label: context.tr('delete'),
+                color: const Color(0xFFB42318),
                 onTap: onDelete,
               ),
 
@@ -194,15 +142,13 @@ class AddressCard extends StatelessWidget {
 
               if (!address.isDefault)
                 TextButton(
-                  onPressed:
-                  onSetDefault,
-                  child: const Text(
-                    'Set as Default',
-                    style: TextStyle(
+                  onPressed: onSetDefault,
+                  child: Text(
+                    context.tr('setAsDefault'),
+                    style: const TextStyle(
                       color: _primary,
                       fontSize: 10,
-                      fontWeight:
-                      FontWeight.w600,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),
@@ -214,14 +160,12 @@ class AddressCard extends StatelessWidget {
   }
 }
 
-class _AddressAction
-    extends StatelessWidget {
+class _AddressAction extends StatelessWidget {
   const _AddressAction({
     required this.icon,
     required this.label,
     required this.onTap,
-    this.color =
-    const Color(0xFF078B96),
+    this.color = const Color(0xFF078B96),
   });
 
   final IconData icon;
@@ -233,28 +177,19 @@ class _AddressAction
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
-      borderRadius:
-      BorderRadius.circular(6),
+      borderRadius: BorderRadius.circular(6),
       child: Padding(
-        padding:
-        const EdgeInsets.symmetric(
-          vertical: 4,
-        ),
+        padding: const EdgeInsets.symmetric(vertical: 4),
         child: Row(
           children: [
-            Icon(
-              icon,
-              size: 15,
-              color: color,
-            ),
+            Icon(icon, size: 15, color: color),
             const SizedBox(width: 4),
             Text(
               label,
               style: TextStyle(
                 color: color,
                 fontSize: 10,
-                fontWeight:
-                FontWeight.w600,
+                fontWeight: FontWeight.w600,
               ),
             ),
           ],

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../app/localization/app_strings.dart';
 import '../controllers/auth_controller.dart';
 import '../validators/auth_validators.dart';
 import '../widgets/auth_fields.dart';
@@ -76,8 +77,8 @@ class _RegisterPageState extends State<RegisterPage> {
       child: AuthScaffold(
         showBackButton: true,
         onBack: _backToLogin,
-        title: 'Create CoolCare Account',
-        subtitle: 'Sign up to book services and track your appointments.',
+        title: context.tr('createAccountTitle'),
+        subtitle: context.tr('registerSubtitle'),
         child: AutofillGroup(
           child: Form(
             key: _formKey,
@@ -89,8 +90,8 @@ class _RegisterPageState extends State<RegisterPage> {
                   children: [
                     AuthTextField(
                       controller: _fullNameController,
-                      label: 'Full Name',
-                      hintText: 'Enter full name',
+                      label: context.tr('fullName'),
+                      hintText: context.tr('enterFullName'),
                       icon: Icons.person_outline_rounded,
                       textInputAction: TextInputAction.next,
                       autofillHints: const [AutofillHints.name],
@@ -113,8 +114,8 @@ class _RegisterPageState extends State<RegisterPage> {
                     const SizedBox(height: 14),
                     AuthTextField(
                       controller: _passwordController,
-                      label: 'Password',
-                      hintText: 'Create Password',
+                      label: context.tr('password'),
+                      hintText: context.tr('createPassword'),
                       icon: Icons.lock_outline_rounded,
                       obscureText: true,
                       textInputAction: TextInputAction.next,
@@ -124,8 +125,8 @@ class _RegisterPageState extends State<RegisterPage> {
                     const SizedBox(height: 14),
                     AuthTextField(
                       controller: _confirmPasswordController,
-                      label: 'Confirm Password',
-                      hintText: 'Re-enter password',
+                      label: context.tr('confirmPassword'),
+                      hintText: context.tr('reenterPassword'),
                       icon: Icons.lock_reset_rounded,
                       obscureText: true,
                       textInputAction: TextInputAction.done,
@@ -140,7 +141,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     if (widget.controller.errorMessage != null)
                       const SizedBox(height: 14),
                     AuthSubmitButton(
-                      label: 'Create Account',
+                      label: context.tr('createAccount'),
                       loading: widget.controller.isBusy,
                       onPressed: _submit,
                     ),
@@ -148,14 +149,14 @@ class _RegisterPageState extends State<RegisterPage> {
                     const _AuthDivider(),
                     const SizedBox(height: 18),
                     GoogleAuthButton(
-                      label: 'Sign up with Google',
+                      label: context.tr('signupGoogle'),
                       loading: widget.controller.isBusy,
                       onPressed: _submitGoogle,
                     ),
                     const SizedBox(height: 12),
                     TextButton(
                       onPressed: widget.controller.isBusy ? null : _backToLogin,
-                      child: const Text('Already have an account? Log In'),
+                      child: Text(context.tr('alreadyAccount')),
                     ),
                   ],
                 );
@@ -173,14 +174,17 @@ class _AuthDivider extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Row(
+    return Row(
       children: [
-        Expanded(child: Divider()),
+        const Expanded(child: Divider()),
         Padding(
-          padding: EdgeInsets.symmetric(horizontal: 12),
-          child: Text('OR', style: TextStyle(fontSize: 10, color: Colors.grey)),
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          child: Text(
+            context.tr('or'),
+            style: const TextStyle(fontSize: 10, color: Colors.grey),
+          ),
         ),
-        Expanded(child: Divider()),
+        const Expanded(child: Divider()),
       ],
     );
   }

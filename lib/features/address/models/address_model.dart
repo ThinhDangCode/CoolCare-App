@@ -24,24 +24,16 @@ class AddressModel {
   final bool isDefault;
 
   // FROM JSON
-  factory AddressModel.fromJson(
-      Map<String, dynamic> json,
-      ) {
+  factory AddressModel.fromJson(Map<String, dynamic> json) {
     return AddressModel(
       id: json['id']?.toString() ?? '',
-      recipientName:
-      json['recipient_name']?.toString() ?? '',
+      recipientName: json['recipient_name']?.toString() ?? '',
       phone: json['phone']?.toString() ?? '',
-      addressLine:
-      json['address_line']?.toString() ?? '',
+      addressLine: json['address_line']?.toString() ?? '',
       ward: json['ward']?.toString() ?? '',
       city: json['city']?.toString() ?? '',
-      latitude: _toDouble(
-        json['latitude'],
-      ),
-      longitude: _toDouble(
-        json['longitude'],
-      ),
+      latitude: _toDouble(json['latitude']),
+      longitude: _toDouble(json['longitude']),
       isDefault: json['is_default'] == true,
     );
   }
@@ -52,9 +44,7 @@ class AddressModel {
   }
 
   // DOUBLE CONVERTER
-  static double? _toDouble(
-      dynamic value,
-      ) {
+  static double? _toDouble(dynamic value) {
     if (value == null) {
       return null;
     }
@@ -63,8 +53,6 @@ class AddressModel {
       return value.toDouble();
     }
 
-    return double.tryParse(
-      value.toString(),
-    );
+    return double.tryParse(value.toString());
   }
 }

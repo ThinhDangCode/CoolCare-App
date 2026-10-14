@@ -6,11 +6,10 @@ import '../models/service_category_model.dart';
 import '../models/service_model.dart';
 
 class ServiceController extends ChangeNotifier {
-  ServiceController({
-    required ApiClient apiClient,
-  }) : _apiClient = apiClient;
+  ServiceController({required ApiClient apiClient}) : _apiClient = apiClient;
 
   final ApiClient _apiClient;
+  bool _disposed = false;
 
   // ============================================================
   // DATA
@@ -18,8 +17,7 @@ class ServiceController extends ChangeNotifier {
 
   final List<ServiceModel> _allServices = [];
 
-  List<ServiceModel> get allServices =>
-      List.unmodifiable(_allServices);
+  List<ServiceModel> get allServices => List.unmodifiable(_allServices);
 
   List<ServiceModel> services = [];
 
@@ -55,29 +53,33 @@ class ServiceController extends ChangeNotifier {
     isLoading = true;
     errorMessage = null;
 
-    notifyListeners();
+    _notifyIfMounted();
 
     try {
       await _loadServicesFromApi();
+      if (_disposed) return;
 
       // Category không phải dữ liệu chính của UI Service,
       // nên nếu API category lỗi vẫn cho phép service hiển thị.
       try {
         await _loadCategoriesFromApi();
+        if (_disposed) return;
       } catch (error) {
+        if (_disposed) return;
         categories = [];
 
-        debugPrint(
-          'Unable to load service categories: $error',
-        );
+        debugPrint('Unable to load service categories: $error');
       }
 
       _applyFilters();
     } catch (error) {
+      if (_disposed) return;
       errorMessage = _cleanErrorMessage(error);
     } finally {
-      isLoading = false;
-      notifyListeners();
+      if (!_disposed) {
+        isLoading = false;
+        _notifyIfMounted();
+      }
     }
   }
 
@@ -86,27 +88,22 @@ class ServiceController extends ChangeNotifier {
   // ============================================================
 
   Future<void> _loadServicesFromApi() async {
-    final response = await _apiClient.get(
-      ApiEndpoints.services,
-    );
+    final response = await _apiClient.get(ApiEndpoints.services);
+    if (_disposed) return;
 
     final jsonList = _extractList(response);
 
     final loadedServices = jsonList
         .whereType<Map<String, dynamic>>()
         .map(ServiceModel.fromJson)
-        .where(
-          (service) => service.isActive,
-    )
+        .where((service) => service.isActive)
         .toList();
 
     _allServices
       ..clear()
       ..addAll(loadedServices);
 
-    services = List<ServiceModel>.from(
-      _allServices,
-    );
+    services = List<ServiceModel>.from(_allServices);
   }
 
   // ============================================================
@@ -114,18 +111,15 @@ class ServiceController extends ChangeNotifier {
   // ============================================================
 
   Future<void> _loadCategoriesFromApi() async {
-    final response = await _apiClient.get(
-      ApiEndpoints.serviceCategories,
-    );
+    final response = await _apiClient.get(ApiEndpoints.serviceCategories);
+    if (_disposed) return;
 
     final jsonList = _extractList(response);
 
     categories = jsonList
         .whereType<Map<String, dynamic>>()
         .map(ServiceCategoryModel.fromJson)
-        .where(
-          (category) => category.isActive,
-    )
+        .where((category) => category.isActive)
         .toList();
   }
 
@@ -149,7 +143,7 @@ class ServiceController extends ChangeNotifier {
     }
 
     _applyFilters();
-    notifyListeners();
+    _notifyIfMounted();
   }
 
   // ============================================================
@@ -164,7 +158,7 @@ class ServiceController extends ChangeNotifier {
     searchKeyword = '';
 
     _applyFilters();
-    notifyListeners();
+    _notifyIfMounted();
   }
 
   // ============================================================
@@ -175,11 +169,9 @@ class ServiceController extends ChangeNotifier {
     searchKeyword = '';
     selectedServiceId = null;
 
-    services = List<ServiceModel>.from(
-      _allServices,
-    );
+    services = List<ServiceModel>.from(_allServices);
 
-    notifyListeners();
+    _notifyIfMounted();
   }
 
   // ============================================================
@@ -193,24 +185,17 @@ class ServiceController extends ChangeNotifier {
       final keyword = _normalizeText(searchKeyword);
 
       result = result.where((service) {
-        final normalizedName =
-        _normalizeText(service.name);
+        final normalizedName = _normalizeText(service.name);
 
         final words = normalizedName
             .split(RegExp(r'[\s/]+'))
             .where((word) => word.isNotEmpty);
 
         // Search theo đầu mỗi từ trong tên service
-        return words.any(
-              (word) => word.startsWith(keyword),
-        );
+        return words.any((word) => word.startsWith(keyword));
       });
-    } else if (selectedServiceId != null &&
-        selectedServiceId!.isNotEmpty) {
-      result = result.where(
-            (service) =>
-        service.id == selectedServiceId,
-      );
+    } else if (selectedServiceId != null && selectedServiceId!.isNotEmpty) {
+      result = result.where((service) => service.id == selectedServiceId);
     }
 
     services = result.toList();
@@ -221,12 +206,9 @@ class ServiceController extends ChangeNotifier {
   // ============================================================
 
   String _normalizeText(String value) {
-    var text = value
-        .toLowerCase()
-        .trim();
+    var text = value.toLowerCase().trim();
 
-    const replacements =
-    <String, String>{
+    const replacements = <String, String>{
       // a
       'à': 'a',
       'á': 'a',
@@ -309,20 +291,12 @@ class ServiceController extends ChangeNotifier {
       'đ': 'd',
     };
 
-    replacements.forEach(
-          (from, to) {
-        text = text.replaceAll(
-          from,
-          to,
-        );
-      },
-    );
+    replacements.forEach((from, to) {
+      text = text.replaceAll(from, to);
+    });
 
     // Nhiều khoảng trắng -> 1 khoảng trắng.
-    text = text.replaceAll(
-      RegExp(r'\s+'),
-      ' ',
-    );
+    text = text.replaceAll(RegExp(r'\s+'), ' ');
 
     return text;
   }
@@ -331,9 +305,7 @@ class ServiceController extends ChangeNotifier {
   // SERVICE DETAIL
   // ============================================================
 
-  Future<void> loadServiceDetail(
-      String serviceId,
-      ) async {
+  Future<void> loadServiceDetail(String serviceId) async {
     final cleanId = serviceId.trim();
 
     selectedService = null;
@@ -341,121 +313,90 @@ class ServiceController extends ChangeNotifier {
     detailErrorMessage = null;
 
     if (cleanId.isEmpty) {
-      detailErrorMessage =
-      'Mã dịch vụ không hợp lệ.';
+      detailErrorMessage = 'Mã dịch vụ không hợp lệ.';
 
-      notifyListeners();
+      _notifyIfMounted();
       return;
     }
 
     isDetailLoading = true;
-    notifyListeners();
+    _notifyIfMounted();
 
     try {
-      final response =
-      await _apiClient.get(
-        ApiEndpoints.serviceDetail(
-          cleanId,
-        ),
+      final response = await _apiClient.get(
+        ApiEndpoints.serviceDetail(cleanId),
       );
+      if (_disposed) return;
 
-      final data =
-      _extractObject(response);
+      final data = _extractObject(response);
 
       if (data == null) {
-        detailErrorMessage =
-        'Không tìm thấy dịch vụ.';
+        detailErrorMessage = 'Không tìm thấy dịch vụ.';
         return;
       }
 
-      final service =
-      ServiceModel.fromJson(data);
+      final service = ServiceModel.fromJson(data);
 
       if (!service.isActive) {
-        detailErrorMessage =
-        'Dịch vụ này hiện không khả dụng.';
+        detailErrorMessage = 'Dịch vụ này hiện không khả dụng.';
         return;
       }
 
       selectedService = service;
-
-      await _loadServiceReviews(
-        cleanId,
-      );
     } catch (error) {
-      detailErrorMessage =
-          _cleanErrorMessage(error);
+      if (_disposed) return;
+      detailErrorMessage = _cleanErrorMessage(error);
     } finally {
-      isDetailLoading = false;
-      notifyListeners();
+      if (!_disposed) {
+        isDetailLoading = false;
+        _notifyIfMounted();
+      }
     }
   }
 
-  // ============================================================
-  // REVIEWS
-  // ============================================================
+  void _notifyIfMounted() {
+    if (!_disposed) notifyListeners();
+  }
 
-  Future<void> _loadServiceReviews(
-      String serviceId,
-      ) async {
-    try {
-      final response =
-      await _apiClient.get(
-        ApiEndpoints.serviceReviews(
-          serviceId,
-        ),
-      );
-
-      final jsonList =
-      _extractList(response);
-
-      reviews = jsonList
-          .whereType<
-          Map<String, dynamic>>()
-          .toList();
-    } catch (error) {
-      reviews = [];
-
-      debugPrint(
-        'Unable to load service reviews: $error',
-      );
-    }
+  @override
+  void dispose() {
+    _disposed = true;
+    super.dispose();
   }
 
   // ============================================================
   // EXTRACT LIST
   // ============================================================
 
-  List<dynamic> _extractList(
-      dynamic response,
-      ) {
+  List<dynamic> _extractList(dynamic response) {
     if (response is List) {
       return response;
     }
 
-    if (response
-    is Map<String, dynamic>) {
+    if (response is Map<String, dynamic>) {
       if (response['data'] is List) {
-        return response['data']
-        as List<dynamic>;
+        return response['data'] as List<dynamic>;
       }
 
-      if (response['services']
-      is List) {
-        return response['services']
-        as List<dynamic>;
+      final data = response['data'];
+      if (data is Map<String, dynamic> && data['items'] is List) {
+        return data['items'] as List<dynamic>;
       }
 
-      if (response['categories']
-      is List) {
-        return response['categories']
-        as List<dynamic>;
+      if (response['items'] is List) {
+        return response['items'] as List<dynamic>;
       }
 
-      if (response['reviews']
-      is List) {
-        return response['reviews']
-        as List<dynamic>;
+      if (response['services'] is List) {
+        return response['services'] as List<dynamic>;
+      }
+
+      if (response['categories'] is List) {
+        return response['categories'] as List<dynamic>;
+      }
+
+      if (response['reviews'] is List) {
+        return response['reviews'] as List<dynamic>;
       }
     }
 
@@ -466,21 +407,14 @@ class ServiceController extends ChangeNotifier {
   // EXTRACT OBJECT
   // ============================================================
 
-  Map<String, dynamic>? _extractObject(
-      dynamic response,
-      ) {
-    if (response
-    is Map<String, dynamic>) {
-      if (response['data']
-      is Map<String, dynamic>) {
-        return response['data']
-        as Map<String, dynamic>;
+  Map<String, dynamic>? _extractObject(dynamic response) {
+    if (response is Map<String, dynamic>) {
+      if (response['data'] is Map<String, dynamic>) {
+        return response['data'] as Map<String, dynamic>;
       }
 
-      if (response['service']
-      is Map<String, dynamic>) {
-        return response['service']
-        as Map<String, dynamic>;
+      if (response['service'] is Map<String, dynamic>) {
+        return response['service'] as Map<String, dynamic>;
       }
 
       if (response.containsKey('id')) {
@@ -495,15 +429,7 @@ class ServiceController extends ChangeNotifier {
   // ERROR MESSAGE
   // ============================================================
 
-  String _cleanErrorMessage(
-      Object error,
-      ) {
-    return error
-        .toString()
-        .replaceFirst(
-      'Exception: ',
-      '',
-    )
-        .trim();
+  String _cleanErrorMessage(Object error) {
+    return error.toString().replaceFirst('Exception: ', '').trim();
   }
 }

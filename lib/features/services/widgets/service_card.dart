@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../app/localization/app_strings.dart';
+import '../../../app/theme/coolcare_theme.dart';
 import '../models/service_model.dart';
 
 class ServiceCard extends StatelessWidget {
@@ -36,9 +38,7 @@ class ServiceCard extends StatelessWidget {
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(18),
-        side: BorderSide(
-          color: Colors.grey.shade200,
-        ),
+        side: BorderSide(color: context.appBorder),
       ),
       child: Padding(
         padding: const EdgeInsets.all(18),
@@ -52,7 +52,9 @@ class ServiceCard extends StatelessWidget {
                   width: 52,
                   height: 52,
                   decoration: BoxDecoration(
-                    color: const Color(0xFFEAF7F2),
+                    color: context.isDarkMode
+                        ? const Color(0xFF173951)
+                        : const Color(0xFFEAF7F2),
                     borderRadius: BorderRadius.circular(14),
                   ),
                   child: const Icon(
@@ -63,8 +65,7 @@ class ServiceCard extends StatelessWidget {
                 const SizedBox(width: 14),
                 Expanded(
                   child: Column(
-                    crossAxisAlignment:
-                    CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         service.name,
@@ -76,10 +77,10 @@ class ServiceCard extends StatelessWidget {
                       if (service.estimatedDuration != null) ...[
                         const SizedBox(height: 5),
                         Text(
-                          '${service.estimatedDuration} phút',
+                          '${service.estimatedDuration} ${context.tr('minutes')}',
                           style: TextStyle(
                             fontSize: 13,
-                            color: Colors.grey.shade600,
+                            color: context.appMuted,
                           ),
                         ),
                       ],
@@ -95,19 +96,13 @@ class ServiceCard extends StatelessWidget {
                 service.description!,
                 maxLines: 3,
                 overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  height: 1.5,
-                  color: Colors.grey.shade700,
-                ),
+                style: TextStyle(height: 1.5, color: context.appMuted),
               ),
             ],
             const SizedBox(height: 18),
             Text(
-              'Giá từ',
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.grey.shade600,
-              ),
+              context.tr('startingFrom'),
+              style: TextStyle(fontSize: 12, color: context.appMuted),
             ),
             const SizedBox(height: 3),
             Text(
@@ -124,14 +119,14 @@ class ServiceCard extends StatelessWidget {
                 Expanded(
                   child: OutlinedButton(
                     onPressed: onDetails,
-                    child: const Text('Chi tiết'),
+                    child: Text(context.tr('serviceDetails')),
                   ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: FilledButton(
                     onPressed: onBookNow,
-                    child: const Text('Đặt dịch vụ'),
+                    child: Text(context.tr('bookService')),
                   ),
                 ),
               ],
