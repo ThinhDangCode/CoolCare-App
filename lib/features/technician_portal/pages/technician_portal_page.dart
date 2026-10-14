@@ -5,9 +5,11 @@ import '../../../core/network/api_client.dart';
 import '../../../core/network/api_exception.dart';
 import '../../auth/models/auth_user.dart';
 import '../models/technician_dashboard.dart';
+import '../models/set_availability_status.dart';
 import '../repositories/technician_portal_repository.dart';
 import 'certification_status_page.dart';
 import 'manage_skills_page.dart';
+import 'manage_service_areas_page.dart';
 
 class TechnicianPortalPage extends StatefulWidget {
   const TechnicianPortalPage({required this.user, super.key});
@@ -37,9 +39,16 @@ class _TechnicianPortalPageState extends State<TechnicianPortalPage> {
   Future<void> _load() async {
     setState(() => _error = null);
     try {
-      final value = await _repository.dashboard();
+      final result = await Future.wait([
+        _repository.dashboard(),
+        _repository.availabilityStatus(),
+      ]);
+      final value = result[0] as TechnicianDashboard;
+      final availability = result[1] as SetAvailabilityStatus;
       if (mounted) {
-        setState(() => _dashboard = value);
+        setState(() {
+          _dashboard = value.withAvailability(availability.status);
+        });
       }
     } on ApiException catch (error) {
       if (mounted) {
@@ -56,9 +65,20 @@ class _TechnicianPortalPageState extends State<TechnicianPortalPage> {
     if (_changingAvailability) return;
     setState(() => _changingAvailability = true);
     try {
-      final status = await _repository.setAvailability(online);
+      final status = await _repository.setAvailabilityStatus(online);
       if (mounted) {
-        setState(() => _dashboard = _dashboard?.withAvailability(status));
+        setState(() {
+          _dashboard = _dashboard?.withAvailability(status.status);
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              online
+                  ? 'Bạn đang Online và có thể nhận đơn mới.'
+                  : 'Bạn đã Offline và sẽ không nhận đơn mới.',
+            ),
+          ),
+        );
       }
     } on ApiException catch (error) {
       if (mounted) {
@@ -657,14 +677,17 @@ class _TechnicianProfile extends StatelessWidget {
           _ProfileLink(
             icon: Icons.build_outlined,
             label: 'My Skills',
-            onTap: () => Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const ManageSkillsPage()),
-            ),
+            onTap: () => Navigator.of(
+              context,
+            ).push(MaterialPageRoute(builder: (_) => const ManageSkillsPage())),
           ),
           const Divider(height: 1),
-          const _ProfileLink(
+          _ProfileLink(
             icon: Icons.location_on_outlined,
             label: 'Service Areas',
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const ManageServiceAreasPage()),
+            ),
           ),
         ],
       ),

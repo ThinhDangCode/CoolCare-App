@@ -18,8 +18,8 @@ class ApiEndpoints {
     return '/services/$serviceId/reviews';
   }
   // ============================================================
-// ADDRESS
-// ============================================================
+  // ADDRESS
+  // ============================================================
 
   static const String addresses = '/addresses';
 
@@ -31,8 +31,7 @@ class ApiEndpoints {
     return '/addresses/$addressId/default';
   }
 
-  static const String provinces =
-      '/addresses/locations/provinces';
+  static const String provinces = '/addresses/locations/provinces';
 
   static String wards(String provinceCode) {
     return '/addresses/locations/provinces/$provinceCode/wards';
@@ -42,8 +41,7 @@ class ApiEndpoints {
   static const String technicianApplications = '/technician-applications';
   static const String technicianApplicationOptions =
       '/technician-applications/options';
-  static const String myTechnicianApplication =
-      '/technician-applications/me';
+  static const String myTechnicianApplication = '/technician-applications/me';
 
   static const String technicianCertifications =
       '/technician-portal/certifications';
@@ -51,6 +49,11 @@ class ApiEndpoints {
   static const String technicianSkills = '/technician-portal/skills';
   static const String technicianSkillOptions =
       '/technician-portal/skills/options';
+
+  static const String technicianAreas = '/technician-portal/areas';
+  static const String technicianAreaOptions =
+      '/technician-portal/areas/options';
+  static const String setAvailabilityStatus = '/technician-portal/availability';
 
   static String technicianSkill(String assignmentId) =>
       '/technician-portal/skills/$assignmentId';
