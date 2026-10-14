@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../app/localization/app_strings.dart';
 import '../../../app/theme/coolcare_theme.dart';
 import '../../../core/network/api_client.dart';
+import '../../booking/pages/create_booking_page.dart';
 import '../controllers/service_controller.dart';
 import '../models/service_model.dart';
 
@@ -444,10 +445,10 @@ class _ServiceDetailPageState extends State<ServiceDetailPage> {
                 .take(2)
                 .map(
                   (review) => Padding(
-                    padding: const EdgeInsets.only(bottom: 10),
-                    child: _buildReviewCard(review),
-                  ),
-                ),
+                padding: const EdgeInsets.only(bottom: 10),
+                child: _buildReviewCard(review),
+              ),
+            ),
         ],
       ),
     );
@@ -711,7 +712,7 @@ class _ServiceDetailPageState extends State<ServiceDetailPage> {
               SizedBox(
                 height: 42,
                 child: FilledButton(
-                  onPressed: _showBookingMessage,
+                  onPressed: () => _openBooking(service),
                   style: FilledButton.styleFrom(
                     backgroundColor: const Color(0xFF109DA0),
                     foregroundColor: Colors.white,
@@ -736,9 +737,11 @@ class _ServiceDetailPageState extends State<ServiceDetailPage> {
     );
   }
 
-  void _showBookingMessage() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Booking flow will be connected here.')),
+  void _openBooking(ServiceModel service) {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => CreateBookingPage(initialServiceId: service.id),
+      ),
     );
   }
 

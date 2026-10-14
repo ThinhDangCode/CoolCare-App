@@ -11,7 +11,7 @@ class AppPreferencesController extends ChangeNotifier {
   final FlutterSecureStorage _storage;
 
   ThemeMode themeMode = ThemeMode.light;
-  Locale locale = const Locale('vi');
+  Locale locale = const Locale('en');
 
   Future<void> load() async {
     final values = await Future.wait([
@@ -19,7 +19,7 @@ class AppPreferencesController extends ChangeNotifier {
       _storage.read(key: _localeKey),
     ]);
     themeMode = values[0] == 'dark' ? ThemeMode.dark : ThemeMode.light;
-    locale = Locale(values[1] == 'en' ? 'en' : 'vi');
+    locale = Locale(values[1] == 'vi' ? 'vi' : 'en');
     notifyListeners();
   }
 
