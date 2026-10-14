@@ -5,6 +5,7 @@ class AuthUser {
     required this.email,
     required this.fullName,
     required this.role,
+    this.isTechnicianVerified = false,
     this.phone,
     this.dateOfBirth,
     this.gender,
@@ -17,6 +18,9 @@ class AuthUser {
       email: json['email']?.toString() ?? '',
       fullName: (json['fullName'] ?? json['full_name'])?.toString() ?? '',
       role: json['role']?.toString() ?? 'CUSTOMER',
+      isTechnicianVerified:
+          json['isTechnicianVerified'] == true ||
+          json['is_technician_verified'] == true,
       phone: json['phone']?.toString(),
       dateOfBirth: _normalizeDate(json['dateOfBirth']),
       gender: json['gender']?.toString(),
@@ -29,6 +33,7 @@ class AuthUser {
     'email': email,
     'fullName': fullName,
     'role': role,
+    'isTechnicianVerified': isTechnicianVerified,
     'phone': phone,
     'dateOfBirth': dateOfBirth,
     'gender': gender,
@@ -39,6 +44,7 @@ class AuthUser {
   final String email;
   final String fullName;
   final String role;
+  final bool isTechnicianVerified;
   final String? phone;
   final String? dateOfBirth;
   final String? gender;

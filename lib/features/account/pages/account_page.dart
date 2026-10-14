@@ -9,6 +9,8 @@ import '../../auth/controllers/auth_controller.dart';
 import '../../auth/models/auth_user.dart';
 import '../../auth/validators/auth_validators.dart';
 import '../../blogs/pages/blog_pages.dart';
+import '../../technician_application/pages/technician_application_page.dart';
+import '../../technician_portal/pages/technician_portal_page.dart';
 
 String _displayDate(String? value, String fallback) {
   final date = DateTime.tryParse(value ?? '');
@@ -186,7 +188,9 @@ class AccountPage extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  context.tr('becomeTechnician'),
+                  user.isTechnicianVerified
+                      ? context.tr('technicianPortal')
+                      : context.tr('becomeTechnician'),
                   style: TextStyle(
                     color: context.appText,
                     fontSize: 12,
@@ -197,7 +201,9 @@ class AccountPage extends StatelessWidget {
                 const SizedBox(height: 5),
 
                 Text(
-                  context.tr('becomeTechnicianHint'),
+                  user.isTechnicianVerified
+                      ? context.tr('technicianPortalHint')
+                      : context.tr('becomeTechnicianHint'),
                   style: TextStyle(
                     color: context.appMuted,
                     fontSize: 9,
@@ -210,7 +216,13 @@ class AccountPage extends StatelessWidget {
                 SizedBox(
                   width: double.infinity,
                   child: FilledButton(
-                    onPressed: () {},
+                    onPressed: () => Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => user.isTechnicianVerified
+                            ? TechnicianPortalPage(user: user)
+                            : const TechnicianApplicationPage(),
+                      ),
+                    ),
                     style: FilledButton.styleFrom(
                       minimumSize: const Size.fromHeight(39),
                       shape: RoundedRectangleBorder(
@@ -218,7 +230,9 @@ class AccountPage extends StatelessWidget {
                       ),
                     ),
                     child: Text(
-                      context.tr('registerTechnician'),
+                      user.isTechnicianVerified
+                          ? context.tr('openTechnicianPortal')
+                          : context.tr('registerTechnician'),
                       style: const TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.w700,

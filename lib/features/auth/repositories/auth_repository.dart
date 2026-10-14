@@ -2,6 +2,7 @@ import '../models/auth_user.dart';
 
 abstract interface class AuthRepository {
   Future<AuthSession?> restoreSession();
+  Future<AuthSession> refreshSession();
 
   Future<AuthSession> login({required String email, required String password});
 
