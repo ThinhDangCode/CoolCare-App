@@ -22,6 +22,22 @@ class ApiAuthRepository implements AuthRepository {
   Future<AuthSession?> restoreSession() => _sessionStore.read();
 
   @override
+  Future<AuthSession> refreshSession() async {
+    final session = await _sessionStore.read();
+    if (session == null) {
+      throw const ApiException(
+        code: 'UNAUTHENTICATED',
+        message: 'Phiên đăng nhập đã hết hạn.',
+      );
+    }
+    final payload = await _apiClient.post(
+      '/auth/refresh',
+      bearerToken: session.token,
+    );
+    return _saveSession(payload);
+  }
+
+  @override
   Future<AuthSession> login({
     required String email,
     required String password,

@@ -7,6 +7,8 @@ import '../../../app/theme/coolcare_theme.dart';
 import '../../auth/controllers/auth_controller.dart';
 import '../../auth/models/auth_user.dart';
 import '../../auth/validators/auth_validators.dart';
+import '../../technician_application/pages/technician_application_page.dart';
+import '../../technician_portal/pages/technician_portal_page.dart';
 
 String _displayDate(String? value) {
   final date = DateTime.tryParse(value ?? '');
@@ -177,8 +179,10 @@ class AccountPage extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Become a CoolCare Technician',
+                Text(
+                  user.isTechnicianVerified
+                      ? 'Chuyển sang giao diện kỹ thuật viên'
+                      : 'Become a CoolCare Technician',
                   style: TextStyle(
                     color: CoolCareColors.text,
                     fontSize: 12,
@@ -188,8 +192,10 @@ class AccountPage extends StatelessWidget {
 
                 const SizedBox(height: 5),
 
-                const Text(
-                  'Register as a technician to provide services on the platform.',
+                Text(
+                  user.isTechnicianVerified
+                      ? 'Quản lý công việc, trạng thái hoạt động và thu nhập kỹ thuật viên.'
+                      : 'Register as a technician to provide services on the platform.',
                   style: TextStyle(
                     color: CoolCareColors.mutedText,
                     fontSize: 9,
@@ -202,15 +208,23 @@ class AccountPage extends StatelessWidget {
                 SizedBox(
                   width: double.infinity,
                   child: FilledButton(
-                    onPressed: () {},
+                    onPressed: () => Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => user.isTechnicianVerified
+                            ? TechnicianPortalPage(user: user)
+                            : const TechnicianApplicationPage(),
+                      ),
+                    ),
                     style: FilledButton.styleFrom(
                       minimumSize: const Size.fromHeight(39),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(7),
                       ),
                     ),
-                    child: const Text(
-                      'Register as Technician',
+                    child: Text(
+                      user.isTechnicianVerified
+                          ? 'Chuyển sang chế độ kỹ thuật viên'
+                          : 'Register as Technician',
                       style: TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.w700,

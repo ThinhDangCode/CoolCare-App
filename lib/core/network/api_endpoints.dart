@@ -37,4 +37,24 @@ class ApiEndpoints {
   static String wards(String provinceCode) {
     return '/addresses/locations/provinces/$provinceCode/wards';
   }
+
+  // Technician partner applications
+  static const String technicianApplications = '/technician-applications';
+  static const String technicianApplicationOptions =
+      '/technician-applications/options';
+  static const String myTechnicianApplication =
+      '/technician-applications/me';
+
+  static const String technicianCertifications =
+      '/technician-portal/certifications';
+
+  static const String technicianSkills = '/technician-portal/skills';
+  static const String technicianSkillOptions =
+      '/technician-portal/skills/options';
+
+  static String technicianSkill(String assignmentId) =>
+      '/technician-portal/skills/$assignmentId';
+
+  static String resubmitTechnicianCertification(String certificationId) =>
+      '/technician-portal/certifications/$certificationId/resubmit';
 }
