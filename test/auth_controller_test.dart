@@ -147,6 +147,10 @@ class _FakeAuthRepository implements AuthRepository {
   Future<AuthSession?> restoreSession() async => null;
 
   @override
+  Future<AuthSession> refreshSession() async =>
+      const AuthSession(token: 'token', user: _user);
+
+  @override
   Future<String> verifyResetOtp({
     required String email,
     required String otp,

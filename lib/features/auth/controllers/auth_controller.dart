@@ -105,6 +105,17 @@ class AuthController extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> refreshSession() async {
+    if (status != AuthStatus.authenticated || isBusy) return;
+    try {
+      final session = await _repository.refreshSession();
+      user = session.user;
+      notifyListeners();
+    } on ApiException {
+      // Keep the current local session when a background refresh is unavailable.
+    }
+  }
+
   Future<bool> requestPasswordReset(String email) async {
     return _runOperation(() => _repository.requestPasswordReset(email: email));
   }

@@ -73,6 +73,10 @@ const _messages = <String, Map<String, String>>{
     'becomeTechnicianHint':
         'Đăng ký làm kỹ thuật viên để cung cấp dịch vụ trên nền tảng.',
     'registerTechnician': 'Đăng ký làm kỹ thuật viên',
+    'technicianPortal': 'Giao diện kỹ thuật viên',
+    'technicianPortalHint':
+        'Quản lý công việc, trạng thái hoạt động và thu nhập kỹ thuật viên.',
+    'openTechnicianPortal': 'Chuyển sang chế độ kỹ thuật viên',
     'logoutConfirmTitle': 'Đăng xuất khỏi CoolCare?',
     'logoutConfirmMessage': 'Bạn có thể đăng nhập lại bất cứ lúc nào.',
     'stay': 'Ở lại',
@@ -276,6 +280,10 @@ const _messages = <String, Map<String, String>>{
     'becomeTechnicianHint':
         'Register as a technician to provide services on the platform.',
     'registerTechnician': 'Register as Technician',
+    'technicianPortal': 'Technician Portal',
+    'technicianPortalHint':
+        'Manage technician jobs, availability, and earnings.',
+    'openTechnicianPortal': 'Switch to Technician Mode',
     'logoutConfirmTitle': 'Log out of CoolCare?',
     'logoutConfirmMessage': 'You can log in again anytime.',
     'stay': 'Stay',

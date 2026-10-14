@@ -68,6 +68,9 @@ class _HomePageState extends State<HomePage> {
     setState(() {
       _selectedIndex = index;
     });
+    if (index == 3 && widget.controller.status == AuthStatus.authenticated) {
+      widget.controller.refreshSession();
+    }
   }
 
   Widget _selectedPage() {

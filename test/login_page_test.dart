@@ -124,6 +124,9 @@ class _NoopAuthRepository implements AuthRepository {
   Future<AuthSession?> restoreSession() async => session;
 
   @override
+  Future<AuthSession> refreshSession() async => session!;
+
+  @override
   Future<String> verifyResetOtp({
     required String email,
     required String otp,
