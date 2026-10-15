@@ -9,7 +9,7 @@ import '../../../address/pages/addresses_page.dart';
 import '../../../auth/controllers/auth_controller.dart';
 import '../../../auth/pages/login_page.dart';
 import '../../../blogs/pages/blog_pages.dart';
-import '../../../reviews/pages/review_pages.dart';
+import '../../../booking/pages/my_bookings_page.dart';
 import '../../../services/controllers/service_controller.dart';
 import '../../../services/models/service_model.dart';
 import '../../../services/pages/service_detail_page.dart';
@@ -83,7 +83,7 @@ class _HomePageState extends State<HomePage> {
 
       case 2:
         if (widget.controller.status == AuthStatus.authenticated) {
-          return const CustomerActivityPage();
+          return const MyBookingsPage();
         }
 
         return _RestrictedPage(onLogin: () => _openLogin(context));
