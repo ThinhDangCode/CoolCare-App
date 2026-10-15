@@ -5,11 +5,14 @@ import '../../../core/network/api_client.dart';
 import '../../../core/network/api_exception.dart';
 import '../../auth/models/auth_user.dart';
 import '../models/technician_dashboard.dart';
+import '../models/view_job_request.dart';
 import '../models/set_availability_status.dart';
 import '../repositories/technician_portal_repository.dart';
 import 'certification_status_page.dart';
 import 'manage_skills_page.dart';
 import 'manage_service_areas_page.dart';
+import 'view_job_requests_page.dart';
+import 'view_job_request_detail_page.dart';
 
 class TechnicianPortalPage extends StatefulWidget {
   const TechnicianPortalPage({required this.user, super.key});
@@ -23,6 +26,7 @@ class TechnicianPortalPage extends StatefulWidget {
 class _TechnicianPortalPageState extends State<TechnicianPortalPage> {
   late final TechnicianPortalRepository _repository;
   TechnicianDashboard? _dashboard;
+  List<ViewJobRequest> _jobRequests = const [];
   String? _error;
   int _tab = 0;
   bool _changingAvailability = false;
@@ -42,12 +46,15 @@ class _TechnicianPortalPageState extends State<TechnicianPortalPage> {
       final result = await Future.wait([
         _repository.dashboard(),
         _repository.availabilityStatus(),
+        _repository.viewJobRequests(status: 'ALL'),
       ]);
       final value = result[0] as TechnicianDashboard;
       final availability = result[1] as SetAvailabilityStatus;
+      final jobRequests = result[2] as List<ViewJobRequest>;
       if (mounted) {
         setState(() {
           _dashboard = value.withAvailability(availability.status);
+          _jobRequests = jobRequests;
         });
       }
     } on ApiException catch (error) {
@@ -126,11 +133,12 @@ class _TechnicianPortalPageState extends State<TechnicianPortalPage> {
                       changingAvailability: _changingAvailability,
                       onAvailabilityChanged: _toggleAvailability,
                       onRefresh: _load,
+                      onViewJobRequests: () => setState(() => _tab = 1),
+                      onViewNextJob: _openNextJob,
                     ),
-                    const _EmptyTab(
-                      icon: Icons.assignment_outlined,
-                      title: 'Jobs',
-                      message: 'Your assigned jobs will appear here.',
+                    ViewJobRequestsPage(
+                      repository: _repository,
+                      onRequestChanged: _load,
                     ),
                     const _EmptyTab(
                       icon: Icons.forum_outlined,
@@ -214,6 +222,30 @@ class _TechnicianPortalPageState extends State<TechnicianPortalPage> {
       ),
     );
   }
+
+  Future<void> _openNextJob() async {
+    final bookingId = _dashboard?.nextJob?.id;
+    ViewJobRequest? request;
+    for (final item in _jobRequests) {
+      if (item.booking.id == bookingId) {
+        request = item;
+        break;
+      }
+    }
+    if (request == null) {
+      setState(() => _tab = 1);
+      return;
+    }
+    final changed = await Navigator.of(context).push<bool>(
+      MaterialPageRoute<bool>(
+        builder: (_) => ViewJobRequestDetailPage(
+          request: request!,
+          repository: _repository,
+        ),
+      ),
+    );
+    if (changed == true && mounted) await _load();
+  }
 }
 
 class _DashboardHome extends StatelessWidget {
@@ -222,12 +254,16 @@ class _DashboardHome extends StatelessWidget {
     required this.changingAvailability,
     required this.onAvailabilityChanged,
     required this.onRefresh,
+    required this.onViewJobRequests,
+    required this.onViewNextJob,
   });
 
   final TechnicianDashboard dashboard;
   final bool changingAvailability;
   final ValueChanged<bool> onAvailabilityChanged;
   final Future<void> Function() onRefresh;
+  final VoidCallback onViewJobRequests;
+  final VoidCallback onViewNextJob;
 
   @override
   Widget build(BuildContext context) {
@@ -314,7 +350,7 @@ class _DashboardHome extends StatelessWidget {
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      'You have ${dashboard.pendingRequests} new service requests nearby!',
+                      'You have ${dashboard.pendingRequests} new booking requests!',
                       style: const TextStyle(
                         color: Color(0xFF92400E),
                         fontWeight: FontWeight.w700,
@@ -330,7 +366,10 @@ class _DashboardHome extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _NextJobCard(job: dashboard.nextJob),
+                _NextJobCard(
+                  job: dashboard.nextJob,
+                  onViewDetails: onViewNextJob,
+                ),
                 const SizedBox(height: 16),
                 SizedBox(
                   height: 76,
@@ -373,12 +412,9 @@ class _DashboardHome extends StatelessWidget {
                         fontSize: 16,
                       ),
                     ),
-                    const Text(
-                      'View All →',
-                      style: TextStyle(
-                        color: CoolCareColors.primary,
-                        fontWeight: FontWeight.w700,
-                      ),
+                    TextButton(
+                      onPressed: onViewJobRequests,
+                      child: const Text('View All →'),
                     ),
                   ],
                 ),
@@ -392,8 +428,9 @@ class _DashboardHome extends StatelessWidget {
 }
 
 class _NextJobCard extends StatelessWidget {
-  const _NextJobCard({this.job});
+  const _NextJobCard({required this.onViewDetails, this.job});
   final TechnicianNextJob? job;
+  final VoidCallback onViewDetails;
   @override
   Widget build(BuildContext context) => Container(
     padding: const EdgeInsets.all(16),
@@ -417,7 +454,7 @@ class _NextJobCard extends StatelessWidget {
               ),
               SizedBox(height: 4),
               Text(
-                'Accepted jobs will appear here.',
+                'New booking requests will appear here.',
                 textAlign: TextAlign.center,
                 style: TextStyle(color: CoolCareColors.mutedText),
               ),
@@ -430,18 +467,14 @@ class _NextJobCard extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   const Text(
-                    'UPCOMING JOB',
+                    'NEW REQUEST',
                     style: TextStyle(
                       color: CoolCareColors.mutedText,
                       fontWeight: FontWeight.w800,
                       fontSize: 11,
                     ),
                   ),
-                  Chip(
-                    label: Text(
-                      job!.status == 'ACCEPTED' ? 'Accepted' : 'Selected',
-                    ),
-                  ),
+                  const Chip(label: Text('New request')),
                 ],
               ),
               Text(
@@ -462,7 +495,7 @@ class _NextJobCard extends StatelessWidget {
               SizedBox(
                 width: double.infinity,
                 child: FilledButton(
-                  onPressed: () {},
+                  onPressed: onViewDetails,
                   child: const Text('View Details'),
                 ),
               ),

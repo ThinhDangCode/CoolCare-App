@@ -52,6 +52,16 @@ class ApiEndpoints {
   static const String technicianAreaOptions =
       '/technician-portal/areas/options';
   static const String setAvailabilityStatus = '/technician-portal/availability';
+  static const String viewJobRequests = '/technician-portal/job-requests';
+
+  static String respondToJobRequest(String requestId) =>
+      '/technician-portal/job-requests/$requestId/response';
+
+  static String updateJobStatus(String requestId) =>
+      '/technician-portal/job-requests/$requestId/status';
+
+  static String cancelAcceptedJob(String requestId) =>
+      '/technician-portal/job-requests/$requestId/cancel';
 
   static String technicianSkill(String assignmentId) =>
       '/technician-portal/skills/$assignmentId';

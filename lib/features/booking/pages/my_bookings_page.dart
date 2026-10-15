@@ -5,7 +5,9 @@ import '../../../app/theme/coolcare_theme.dart';
 import '../../reviews/pages/review_pages.dart';
 import '../models/my_booking.dart';
 import '../repositories/my_bookings_repository.dart';
+import '../repositories/booking_detail_repository.dart';
 import 'booking_detail_page.dart';
+import 'create_booking_page.dart';
 
 class MyBookingsPage extends StatefulWidget {
   const MyBookingsPage({super.key});
@@ -19,6 +21,7 @@ class _MyBookingsPageState extends State<MyBookingsPage> {
   late Future<List<MyBooking>> _bookings;
   bool _showReviews = false;
   String _filter = 'all';
+  String? _rebookingId;
 
   @override
   void initState() {
@@ -29,21 +32,56 @@ class _MyBookingsPageState extends State<MyBookingsPage> {
   void _reload() {
     final next = _repository.getMyBookings();
     if (!mounted) return;
-    setState(() { _bookings = next; });
+    setState(() {
+      _bookings = next;
+    });
   }
 
   Future<void> _refresh() async {
     final next = _repository.getMyBookings();
     if (!mounted) return;
-    setState(() { _bookings = next; });
-    try { await next; } catch (_) { /* FutureBuilder shows the error. */ }
+    setState(() {
+      _bookings = next;
+    });
+    try {
+      await next;
+    } catch (_) {
+      /* FutureBuilder shows the error. */
+    }
   }
 
   Future<void> _open(MyBooking booking) async {
-    await Navigator.of(context).push(MaterialPageRoute<bool>(
-      builder: (_) => BookingDetailPage(bookingId: booking.id),
-    ));
+    await Navigator.of(context).push(
+      MaterialPageRoute<bool>(
+        builder: (_) => BookingDetailPage(bookingId: booking.id),
+      ),
+    );
     if (mounted) _reload();
+  }
+
+  Future<void> _rebook(MyBooking booking) async {
+    if (_rebookingId != null) return;
+    setState(() => _rebookingId = booking.id);
+    try {
+      final data = await BookingDetailRepository().getDetail(booking.id);
+      if (!mounted) return;
+      await Navigator.of(context).push(
+        MaterialPageRoute<void>(
+          builder: (_) => CreateBookingPage(rebookData: data),
+        ),
+      );
+      if (mounted) _reload();
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Unable to load this booking. Please try again.'),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _rebookingId = null);
+    }
   }
 
   bool _matches(MyBooking booking) {
@@ -55,65 +93,114 @@ class _MyBookingsPageState extends State<MyBookingsPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(children: [
-      Padding(
-        padding: const EdgeInsets.fromLTRB(16, 14, 16, 10),
-        child: Row(children: [
-          Expanded(child: Text(context.tr('bookingUi57'),
-            style: TextStyle(fontSize: 21, fontWeight: FontWeight.w800, color: context.appText))),
-          TextButton(
-            onPressed: () => setState(() { _showReviews = !_showReviews; }),
-            child: Text(_showReviews ? context.tr('bookingUi58') : context.tr('bookingUi59')),
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 14, 16, 10),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  context.tr('bookingUi57'),
+                  style: TextStyle(
+                    fontSize: 21,
+                    fontWeight: FontWeight.w800,
+                    color: context.appText,
+                  ),
+                ),
+              ),
+              TextButton(
+                onPressed: () => setState(() {
+                  _showReviews = !_showReviews;
+                }),
+                child: Text(
+                  _showReviews
+                      ? context.tr('bookingUi58')
+                      : context.tr('bookingUi59'),
+                ),
+              ),
+            ],
           ),
-        ]),
-      ),
-      if (!_showReviews)
-        SizedBox(height: 42, child: ListView(
-          padding: const EdgeInsets.symmetric(horizontal: 14),
-          scrollDirection: Axis.horizontal,
-          children: [
-            _chip('all', context.tr('bookingFilterAll')),
-            _chip('active', context.tr('bookingFilterActive')),
-            _chip('done', context.tr('bookingFilterDone')),
-            _chip('cancelled', context.tr('bookingFilterCancelled')),
-          ],
-        )),
-      Expanded(child: _showReviews
-        ? const CustomerActivityPage(showHeader: false)
-        : RefreshIndicator(
-            onRefresh: _refresh,
-            child: FutureBuilder<List<MyBooking>>(
-              future: _bookings,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-                if (snapshot.hasError) {
-                  return ListView(physics: const AlwaysScrollableScrollPhysics(), children: [
-                    const SizedBox(height: 90),
-                    Center(child: Text(context.tr('bookingUiLoadError'))),
-                    Center(child: TextButton(onPressed: _reload, child: Text(context.tr('bookingUi60')))),
-                  ]);
-                }
-                final items = (snapshot.data ?? <MyBooking>[]).where(_matches).toList();
-                if (items.isEmpty) {
-                  return ListView(physics: const AlwaysScrollableScrollPhysics(), children: [
-                    const SizedBox(height: 95),
-                    const Icon(Icons.event_note_outlined, size: 42, color: Color(0xFF8AA0A6)),
-                    const SizedBox(height: 12),
-                    Center(child: Text(context.tr('bookingUi61'))),
-                  ]);
-                }
-                return ListView.builder(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  padding: const EdgeInsets.fromLTRB(14, 12, 14, 24),
-                  itemCount: items.length,
-                  itemBuilder: (_, index) => _BookingCard(booking: items[index], onTap: () => _open(items[index])),
-                );
-              },
+        ),
+        if (!_showReviews)
+          SizedBox(
+            height: 42,
+            child: ListView(
+              padding: const EdgeInsets.symmetric(horizontal: 14),
+              scrollDirection: Axis.horizontal,
+              children: [
+                _chip('all', context.tr('bookingFilterAll')),
+                _chip('active', context.tr('bookingFilterActive')),
+                _chip('done', context.tr('bookingFilterDone')),
+                _chip('cancelled', context.tr('bookingFilterCancelled')),
+              ],
             ),
-          )),
-    ]);
+          ),
+        Expanded(
+          child: _showReviews
+              ? const CustomerActivityPage(showHeader: false)
+              : RefreshIndicator(
+                  onRefresh: _refresh,
+                  child: FutureBuilder<List<MyBooking>>(
+                    future: _bookings,
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+                      if (snapshot.hasError) {
+                        return ListView(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          children: [
+                            const SizedBox(height: 90),
+                            Center(
+                              child: Text(context.tr('bookingUiLoadError')),
+                            ),
+                            Center(
+                              child: TextButton(
+                                onPressed: _reload,
+                                child: Text(context.tr('bookingUi60')),
+                              ),
+                            ),
+                          ],
+                        );
+                      }
+                      final items = (snapshot.data ?? <MyBooking>[])
+                          .where(_matches)
+                          .toList();
+                      if (items.isEmpty) {
+                        return ListView(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          children: [
+                            const SizedBox(height: 95),
+                            const Icon(
+                              Icons.event_note_outlined,
+                              size: 42,
+                              color: Color(0xFF8AA0A6),
+                            ),
+                            const SizedBox(height: 12),
+                            Center(child: Text(context.tr('bookingUi61'))),
+                          ],
+                        );
+                      }
+                      return ListView.builder(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        padding: const EdgeInsets.fromLTRB(14, 12, 14, 24),
+                        itemCount: items.length,
+                        itemBuilder: (_, index) => _BookingCard(
+                          booking: items[index],
+                          onTap: () => _open(items[index]),
+                          onRebook: items[index].status == 'CANCELLED'
+                              ? () => _rebook(items[index])
+                              : null,
+                          rebooking: _rebookingId == items[index].id,
+                        ),
+                      );
+                    },
+                  ),
+                ),
+        ),
+      ],
+    );
   }
 
   Widget _chip(String value, String label) {
@@ -121,22 +208,39 @@ class _MyBookingsPageState extends State<MyBookingsPage> {
     return Padding(
       padding: const EdgeInsets.only(right: 8),
       child: ChoiceChip(
-        label: Text(label, style: TextStyle(fontSize: 12, color: selected ? Colors.white : const Color(0xFF61757B))),
+        label: Text(
+          label,
+          style: TextStyle(
+            fontSize: 12,
+            color: selected ? Colors.white : const Color(0xFF61757B),
+          ),
+        ),
         selected: selected,
         showCheckmark: false,
         selectedColor: const Color(0xFF078B96),
         backgroundColor: Colors.transparent,
-        side: BorderSide(color: selected ? const Color(0xFF078B96) : const Color(0xFFDDE6E8)),
-        onSelected: (_) => setState(() { _filter = value; }),
+        side: BorderSide(
+          color: selected ? const Color(0xFF078B96) : const Color(0xFFDDE6E8),
+        ),
+        onSelected: (_) => setState(() {
+          _filter = value;
+        }),
       ),
     );
   }
 }
 
 class _BookingCard extends StatelessWidget {
-  const _BookingCard({required this.booking, required this.onTap});
+  const _BookingCard({
+    required this.booking,
+    required this.onTap,
+    required this.rebooking,
+    this.onRebook,
+  });
   final MyBooking booking;
   final VoidCallback onTap;
+  final VoidCallback? onRebook;
+  final bool rebooking;
   static const teal = Color(0xFF078B96);
 
   String _date(DateTime? input) {
@@ -148,7 +252,10 @@ class _BookingCard extends StatelessWidget {
 
   String _money(num? value) {
     if (value == null) return '—';
-    final formatted = value.round().toString().replaceAllMapped(RegExp(r'\B(?=(\d{3})+(?!\d))'), (_) => '.');
+    final formatted = value.round().toString().replaceAllMapped(
+      RegExp(r'\B(?=(\d{3})+(?!\d))'),
+      (_) => '.',
+    );
     return '$formatted đ';
   }
 
@@ -157,57 +264,140 @@ class _BookingCard extends StatelessWidget {
     final status = booking.status;
     final warning = status == 'PENDING' || status == 'TECHNICIAN_SELECTED';
     final cancelled = status == 'CANCELLED';
-    final color = cancelled ? const Color(0xFFB42318) : warning ? const Color(0xFF946500) : teal;
-    final background = cancelled ? const Color(0xFFFEECEB) : warning ? const Color(0xFFFFF4D8) : const Color(0xFFE8F7F5);
+    final color = cancelled
+        ? const Color(0xFFB42318)
+        : warning
+        ? const Color(0xFF946500)
+        : teal;
+    final background = cancelled
+        ? const Color(0xFFFEECEB)
+        : warning
+        ? const Color(0xFFFFF4D8)
+        : const Color(0xFFE8F7F5);
     return Card(
       elevation: 0,
       margin: const EdgeInsets.only(bottom: 11),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15), side: const BorderSide(color: Color(0xFFE1E8EA))),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(15),
+        side: const BorderSide(color: Color(0xFFE1E8EA)),
+      ),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(15),
         child: Padding(
           padding: const EdgeInsets.all(14),
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Row(children: [
-              Expanded(child: Text(booking.code, maxLines: 1, overflow: TextOverflow.ellipsis,
-                style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 12))),
-              const SizedBox(width: 6),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
-                decoration: BoxDecoration(color: background, borderRadius: BorderRadius.circular(20)),
-                child: Text(context.tr('bookingStatus_$status'),
-                  style: TextStyle(color: color, fontWeight: FontWeight.w700, fontSize: 10)),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      booking.code,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 9,
+                      vertical: 5,
+                    ),
+                    decoration: BoxDecoration(
+                      color: background,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      context.tr('bookingStatus_$status'),
+                      style: TextStyle(
+                        color: color,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 10,
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ]),
-            const SizedBox(height: 12),
-            _line(Icons.calendar_today_outlined, _date(booking.scheduledAt)),
-            const SizedBox(height: 7),
-            _line(Icons.ac_unit, '${booking.unitCount} ${context.tr('bookingUiUnits')} · ${booking.serviceCount} ${context.tr('bookingUiServices')}'),
-            if (booking.technicianName?.isNotEmpty == true) ...[
+              const SizedBox(height: 12),
+              _line(Icons.calendar_today_outlined, _date(booking.scheduledAt)),
               const SizedBox(height: 7),
-              _line(Icons.engineering_outlined, booking.technicianName!),
+              _line(
+                Icons.ac_unit,
+                '${booking.unitCount} ${context.tr('bookingUiUnits')} · ${booking.serviceCount} ${context.tr('bookingUiServices')}',
+              ),
+              if (booking.technicianName?.isNotEmpty == true) ...[
+                const SizedBox(height: 7),
+                _line(Icons.engineering_outlined, booking.technicianName!),
+              ],
+              const SizedBox(height: 12),
+              const Divider(height: 1),
+              const SizedBox(height: 10),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      _money(booking.totalAmount),
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w800,
+                        color: teal,
+                      ),
+                    ),
+                  ),
+                  if (onRebook != null) ...[
+                    SizedBox(
+                      height: 34,
+                      child: OutlinedButton.icon(
+                        onPressed: rebooking ? null : onRebook,
+                        icon: rebooking
+                            ? const SizedBox.square(
+                                dimension: 14,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : const Icon(Icons.refresh_rounded, size: 16),
+                        label: const Text('Re-book'),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                  ],
+                  Text(
+                    context.tr('bookingDetailView'),
+                    style: const TextStyle(
+                      color: teal,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  const Icon(Icons.chevron_right, size: 17, color: teal),
+                ],
+              ),
             ],
-            const SizedBox(height: 12),
-            const Divider(height: 1),
-            const SizedBox(height: 10),
-            Row(children: [
-              Expanded(child: Text(_money(booking.totalAmount),
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: teal))),
-              Text(context.tr('bookingDetailView'), style: const TextStyle(color: teal, fontSize: 12, fontWeight: FontWeight.w700)),
-              const SizedBox(width: 4),
-              const Icon(Icons.chevron_right, size: 17, color: teal),
-            ]),
-          ]),
+          ),
         ),
       ),
     );
   }
 
-  Widget _line(IconData icon, String text) => Row(children: [
-    Icon(icon, size: 15, color: teal),
-    const SizedBox(width: 9),
-    Expanded(child: Text(text, maxLines: 1, overflow: TextOverflow.ellipsis,
-      style: const TextStyle(fontSize: 12, color: Color(0xFF61757B)))),
-  ]);
+  Widget _line(IconData icon, String text) => Row(
+    children: [
+      Icon(icon, size: 15, color: teal),
+      const SizedBox(width: 9),
+      Expanded(
+        child: Text(
+          text,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(fontSize: 12, color: Color(0xFF61757B)),
+        ),
+      ),
+    ],
+  );
 }
