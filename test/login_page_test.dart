@@ -1,4 +1,5 @@
 import 'package:coolcare_mobile/app/coolcare_app.dart';
+import 'package:coolcare_mobile/app/preferences/app_preferences_controller.dart';
 import 'package:coolcare_mobile/features/auth/controllers/auth_controller.dart';
 import 'package:coolcare_mobile/features/auth/models/auth_user.dart';
 import 'package:coolcare_mobile/features/auth/repositories/auth_repository.dart';
@@ -11,7 +12,7 @@ void main() {
     addTearDown(() => tester.binding.setSurfaceSize(null));
     final controller = AuthController(_NoopAuthRepository());
     await controller.initialize();
-    await tester.pumpWidget(CoolCareApp(authController: controller));
+    await tester.pumpWidget(_buildVietnameseApp(controller));
 
     expect(find.textContaining('Mát lạnh mỗi ngày'), findsOneWidget);
     expect(tester.takeException(), isNull);
@@ -30,7 +31,7 @@ void main() {
     addTearDown(() => tester.binding.setSurfaceSize(null));
     final controller = AuthController(_NoopAuthRepository());
     await controller.initialize();
-    await tester.pumpWidget(CoolCareApp(authController: controller));
+    await tester.pumpWidget(_buildVietnameseApp(controller));
 
     await tester.tap(find.text('Khám phá dịch vụ'));
     await tester.pumpAndSettle();
@@ -57,7 +58,7 @@ void main() {
       ),
     );
     await controller.initialize();
-    await tester.pumpWidget(CoolCareApp(authController: controller));
+    await tester.pumpWidget(_buildVietnameseApp(controller));
 
     await tester.tap(find.text('Tài khoản'));
     await tester.pumpAndSettle();
@@ -69,6 +70,15 @@ void main() {
     expect(find.text('nguyenvana@gmail.com'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+}
+
+CoolCareApp _buildVietnameseApp(AuthController controller) {
+  final preferencesController = AppPreferencesController()
+    ..locale = const Locale('vi');
+  return CoolCareApp(
+    authController: controller,
+    preferencesController: preferencesController,
+  );
 }
 
 class _NoopAuthRepository implements AuthRepository {

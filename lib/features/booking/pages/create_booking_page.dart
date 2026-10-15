@@ -1,10 +1,12 @@
 import '../../../app/localization/app_strings.dart';
 import 'package:flutter/material.dart';
 
+import '../../../app/theme/coolcare_theme.dart';
 import '../../../core/network/api_client.dart';
 import '../controllers/booking_controller.dart';
 import '../services/technician_matching_api_service.dart';
 import 'recommended_technicians_page.dart';
+
 class CreateBookingPage extends StatefulWidget {
   const CreateBookingPage({
     super.key,
@@ -21,10 +23,6 @@ class CreateBookingPage extends StatefulWidget {
 
 class _CreateBookingPageState extends State<CreateBookingPage> {
   static const Color primary = Color(0xFF078B96);
-  static const Color textColor = Color(0xFF17333A);
-  static const Color mutedColor = Color(0xFF718087);
-  static const Color borderColor = Color(0xFFE1E8EA);
-  static const Color backgroundColor = Color(0xFFF7F9FA);
 
   late final BookingController controller;
 
@@ -34,9 +32,7 @@ class _CreateBookingPageState extends State<CreateBookingPage> {
   void initState() {
     super.initState();
 
-    controller = BookingController(
-      apiClient: ApiClient.fromEnvironment(),
-    );
+    controller = BookingController(apiClient: ApiClient.fromEnvironment());
 
     controller.addListener(_refresh);
     _loadBookingData();
@@ -50,7 +46,7 @@ class _CreateBookingPageState extends State<CreateBookingPage> {
     if (serviceId == null || serviceId.isEmpty) return;
 
     final isAvailable = controller.services.any(
-          (service) => service['id']?.toString() == serviceId,
+      (service) => service['id']?.toString() == serviceId,
     );
     if (isAvailable && !controller.units.first.serviceIds.contains(serviceId)) {
       controller.toggleService(0, serviceId);
@@ -112,9 +108,7 @@ class _CreateBookingPageState extends State<CreateBookingPage> {
     if (!mounted) return;
 
     if (!success) {
-      _showMessage(
-        controller.formErrorMessage ?? context.tr('bookingUi54'),
-      );
+      _showMessage(controller.formErrorMessage ?? context.tr('bookingUi54'));
       return;
     }
 
@@ -134,15 +128,16 @@ class _CreateBookingPageState extends State<CreateBookingPage> {
 
     final matchingService = TechnicianMatchingApiService();
 
-    final selectedTechnician = await Navigator.of(context).push<RecommendedTechnician>(
-      MaterialPageRoute<RecommendedTechnician>(
-        builder: (_) => RecommendedTechniciansPage(
-          bookingId: bookingId,
-          loadRecommendations: matchingService.getRecommendedTechnicians,
-          sendRequest: matchingService.selectTechnician,
-        ),
-      ),
-    );
+    final selectedTechnician = await Navigator.of(context)
+        .push<RecommendedTechnician>(
+          MaterialPageRoute<RecommendedTechnician>(
+            builder: (_) => RecommendedTechniciansPage(
+              bookingId: bookingId,
+              loadRecommendations: matchingService.getRecommendedTechnicians,
+              sendRequest: matchingService.selectTechnician,
+            ),
+          ),
+        );
 
     if (!mounted) return;
     if (selectedTechnician == null) {
@@ -157,9 +152,9 @@ class _CreateBookingPageState extends State<CreateBookingPage> {
   }
 
   void _showMessage(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   // ------------------------------------------------------------
@@ -172,19 +167,19 @@ class _CreateBookingPageState extends State<CreateBookingPage> {
       children: [
         Text(
           title,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 19,
             fontWeight: FontWeight.w700,
-            color: textColor,
+            color: context.appText,
           ),
         ),
         if (subtitle != null) ...[
           const SizedBox(height: 5),
           Text(
             subtitle,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 12,
-              color: mutedColor,
+              color: context.appMuted,
               height: 1.5,
             ),
           ),
@@ -199,7 +194,7 @@ class _CreateBookingPageState extends State<CreateBookingPage> {
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: borderColor),
+        border: Border.all(color: context.appBorder),
       ),
       child: child,
     );
@@ -212,19 +207,17 @@ class _CreateBookingPageState extends State<CreateBookingPage> {
         children: [
           Text(
             label,
-            style: const TextStyle(
+            style: TextStyle(
               fontWeight: FontWeight.w600,
               fontSize: 12,
-              color: textColor,
+              color: context.appText,
             ),
           ),
           if (optional) ...[
             const SizedBox(width: 5),
-            Text(context.tr('bookingUi0'),
-              style: TextStyle(
-                fontSize: 11,
-                color: mutedColor,
-              ),
+            Text(
+              context.tr('bookingUi0'),
+              style: TextStyle(fontSize: 11, color: context.appMuted),
             ),
           ],
         ],
@@ -235,19 +228,13 @@ class _CreateBookingPageState extends State<CreateBookingPage> {
   InputDecoration _inputDecoration(String hint) {
     return InputDecoration(
       hintText: hint,
-      hintStyle: const TextStyle(
-        fontSize: 12,
-        color: mutedColor,
-      ),
+      hintStyle: TextStyle(fontSize: 12, color: context.appMuted),
       filled: true,
       fillColor: Theme.of(context).colorScheme.surface,
-      contentPadding: const EdgeInsets.symmetric(
-        horizontal: 12,
-        vertical: 13,
-      ),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 13),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8),
-        borderSide: const BorderSide(color: borderColor),
+        borderSide: BorderSide(color: context.appBorder),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8),
@@ -257,7 +244,11 @@ class _CreateBookingPageState extends State<CreateBookingPage> {
   }
 
   Widget _progressIndicator() {
-    final labels = [context.tr('bookingUi1'), context.tr('bookingUi2'), context.tr('bookingUi3')];
+    final labels = [
+      context.tr('bookingUi1'),
+      context.tr('bookingUi2'),
+      context.tr('bookingUi3'),
+    ];
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 12),
@@ -275,19 +266,19 @@ class _CreateBookingPageState extends State<CreateBookingPage> {
                   height: 19,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: active ? primary : borderColor,
+                    color: active ? primary : context.appBorder,
                   ),
                   alignment: Alignment.center,
                   child: completed
                       ? const Icon(Icons.check, color: Colors.white, size: 13)
                       : Text(
-                    '${index + 1}',
-                    style: TextStyle(
-                      color: selected ? Colors.white : mutedColor,
-                      fontSize: 10,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
+                          '${index + 1}',
+                          style: TextStyle(
+                            color: selected ? Colors.white : context.appMuted,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
                 ),
                 const SizedBox(width: 4),
                 Flexible(
@@ -296,14 +287,13 @@ class _CreateBookingPageState extends State<CreateBookingPage> {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      color: active ? primary : mutedColor,
+                      color: active ? primary : context.appMuted,
                       fontWeight: active ? FontWeight.w700 : FontWeight.w400,
                       fontSize: 10,
                     ),
                   ),
                 ),
-                if (index < labels.length - 1)
-                  const SizedBox(width: 5),
+                if (index < labels.length - 1) const SizedBox(width: 5),
               ],
             ),
           );
@@ -318,8 +308,7 @@ class _CreateBookingPageState extends State<CreateBookingPage> {
       children: [
         _sectionTitle(
           context.tr('bookingUi4'),
-          subtitle:
-          context.tr('bookingUi5'),
+          subtitle: context.tr('bookingUi5'),
         ),
         const SizedBox(height: 16),
 
@@ -342,9 +331,7 @@ class _CreateBookingPageState extends State<CreateBookingPage> {
         ),
 
         const SizedBox(height: 14),
-        _infoBox(
-          context.tr('bookingUi7'),
-        ),
+        _infoBox(context.tr('bookingUi7')),
       ],
     );
   }
@@ -354,8 +341,7 @@ class _CreateBookingPageState extends State<CreateBookingPage> {
 
     final availableModels = unit.acBrandId == null
         ? <Map<String, dynamic>>[]
-        : controller.modelsByBrand[unit.acBrandId!] ??
-        <Map<String, dynamic>>[];
+        : controller.modelsByBrand[unit.acBrandId!] ?? <Map<String, dynamic>>[];
 
     return _card(
       child: Column(
@@ -363,18 +349,14 @@ class _CreateBookingPageState extends State<CreateBookingPage> {
         children: [
           Row(
             children: [
-              const Icon(
-                Icons.ac_unit,
-                size: 20,
-                color: primary,
-              ),
+              const Icon(Icons.ac_unit, size: 20, color: primary),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
                   '${context.tr('bookingUiAcUnit')} ${index + 1}',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontWeight: FontWeight.w700,
-                    color: textColor,
+                    color: context.appText,
                   ),
                 ),
               ),
@@ -433,8 +415,9 @@ class _CreateBookingPageState extends State<CreateBookingPage> {
           _fieldLabel(context.tr('bookingUi12')),
 
           if (unit.serviceIds.isEmpty)
-            Text(context.tr('bookingUi13'),
-              style: TextStyle(color: mutedColor, fontSize: 12),
+            Text(
+              context.tr('bookingUi13'),
+              style: TextStyle(color: context.appMuted, fontSize: 12),
             ),
 
           for (final serviceId in unit.serviceIds)
@@ -452,18 +435,13 @@ class _CreateBookingPageState extends State<CreateBookingPage> {
 
           const Divider(height: 24),
 
-          _fieldLabel(
-            context.tr('bookingUi15'),
-            optional: true,
-          ),
+          _fieldLabel(context.tr('bookingUi15'), optional: true),
 
           TextFormField(
             initialValue: unit.description,
             maxLines: 3,
             maxLength: 2000,
-            decoration: _inputDecoration(
-              context.tr('bookingUi16'),
-            ),
+            decoration: _inputDecoration(context.tr('bookingUi16')),
             onChanged: (value) {
               controller.setUnitDescription(index, value);
             },
@@ -475,7 +453,7 @@ class _CreateBookingPageState extends State<CreateBookingPage> {
 
   Widget _selectedServiceTile(String serviceId) {
     final matches = controller.services.where(
-          (service) => service['id']?.toString() == serviceId,
+      (service) => service['id']?.toString() == serviceId,
     );
 
     if (matches.isEmpty) {
@@ -499,18 +477,12 @@ class _CreateBookingPageState extends State<CreateBookingPage> {
           Expanded(
             child: Text(
               service['name']?.toString() ?? '',
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-              ),
+              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
             ),
           ),
           Text(
             _formatPrice(service['base_price']),
-            style: const TextStyle(
-              fontSize: 11,
-              color: primary,
-            ),
+            style: const TextStyle(fontSize: 11, color: primary),
           ),
         ],
       ),
@@ -518,9 +490,7 @@ class _CreateBookingPageState extends State<CreateBookingPage> {
   }
 
   Future<void> _openServiceSelector(int unitIndex) async {
-    final selected = Set<String>.from(
-      controller.units[unitIndex].serviceIds,
-    );
+    final selected = Set<String>.from(controller.units[unitIndex].serviceIds);
 
     final confirmed = await showModalBottomSheet<bool>(
       context: context,
@@ -547,8 +517,7 @@ class _CreateBookingPageState extends State<CreateBookingPage> {
 
                     ConstrainedBox(
                       constraints: BoxConstraints(
-                        maxHeight:
-                        MediaQuery.sizeOf(context).height * 0.5,
+                        maxHeight: MediaQuery.sizeOf(context).height * 0.5,
                       ),
                       child: ListView(
                         shrinkWrap: true,
@@ -558,9 +527,7 @@ class _CreateBookingPageState extends State<CreateBookingPage> {
                           return CheckboxListTile(
                             value: selected.contains(id),
                             activeColor: primary,
-                            title: Text(
-                              service['name']?.toString() ?? '',
-                            ),
+                            title: Text(service['name']?.toString() ?? ''),
                             subtitle: Text(
                               '${context.tr('bookingUiFrom')} ${_formatPrice(service['base_price'])}',
                             ),
@@ -585,9 +552,7 @@ class _CreateBookingPageState extends State<CreateBookingPage> {
                         onPressed: () {
                           Navigator.pop(sheetContext, true);
                         },
-                        style: FilledButton.styleFrom(
-                          backgroundColor: primary,
-                        ),
+                        style: FilledButton.styleFrom(backgroundColor: primary),
                         child: Text(context.tr('bookingUi17')),
                       ),
                     ),
@@ -602,9 +567,7 @@ class _CreateBookingPageState extends State<CreateBookingPage> {
 
     if (confirmed != true || !mounted) return;
 
-    final current = List<String>.from(
-      controller.units[unitIndex].serviceIds,
-    );
+    final current = List<String>.from(controller.units[unitIndex].serviceIds);
 
     for (final id in current) {
       if (!selected.contains(id)) {
@@ -625,9 +588,7 @@ class _CreateBookingPageState extends State<CreateBookingPage> {
       builder: (dialogContext) {
         return AlertDialog(
           title: Text(context.tr('bookingUi18')),
-          content: Text(
-            context.tr('bookingUi19'),
-          ),
+          content: Text(context.tr('bookingUi19')),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(dialogContext, false),
@@ -635,9 +596,7 @@ class _CreateBookingPageState extends State<CreateBookingPage> {
             ),
             FilledButton(
               onPressed: () => Navigator.pop(dialogContext, true),
-              style: FilledButton.styleFrom(
-                backgroundColor: Colors.red,
-              ),
+              style: FilledButton.styleFrom(backgroundColor: Colors.red),
               child: Text(context.tr('bookingUi21')),
             ),
           ],
@@ -660,8 +619,7 @@ class _CreateBookingPageState extends State<CreateBookingPage> {
       children: [
         _sectionTitle(
           context.tr('bookingUi22'),
-          subtitle:
-          context.tr('bookingUi23'),
+          subtitle: context.tr('bookingUi23'),
         ),
         const SizedBox(height: 20),
 
@@ -679,11 +637,9 @@ class _CreateBookingPageState extends State<CreateBookingPage> {
                     style: const TextStyle(fontSize: 12),
                   ),
                 ),
-                Text(context.tr('bookingUi25'),
-                  style: TextStyle(
-                    color: primary,
-                    fontWeight: FontWeight.w600,
-                  ),
+                Text(
+                  context.tr('bookingUi25'),
+                  style: TextStyle(color: primary, fontWeight: FontWeight.w600),
                 ),
               ],
             ),
@@ -712,8 +668,9 @@ class _CreateBookingPageState extends State<CreateBookingPage> {
         ),
 
         const SizedBox(height: 6),
-        Text(context.tr('bookingUi31'),
-          style: TextStyle(color: mutedColor, fontSize: 11),
+        Text(
+          context.tr('bookingUi31'),
+          style: TextStyle(color: context.appMuted, fontSize: 11),
         ),
 
         const SizedBox(height: 24),
@@ -757,9 +714,7 @@ class _CreateBookingPageState extends State<CreateBookingPage> {
         ),
 
         const SizedBox(height: 14),
-        _infoBox(
-          context.tr('bookingUi36'),
-        ),
+        _infoBox(context.tr('bookingUi36')),
       ],
     );
   }
@@ -789,11 +744,9 @@ class _CreateBookingPageState extends State<CreateBookingPage> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(context.tr('bookingUi38'),
-                  style: TextStyle(
-                    fontSize: 17,
-                    fontWeight: FontWeight.w700,
-                  ),
+                Text(
+                  context.tr('bookingUi38'),
+                  style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
                 ),
                 const SizedBox(height: 12),
                 if (controller.addresses.isEmpty)
@@ -805,9 +758,7 @@ class _CreateBookingPageState extends State<CreateBookingPage> {
                   return RadioListTile<String>(
                     value: address['id'].toString(),
                     groupValue: controller.customerAddressId,
-                    title: Text(
-                      address['recipient_name']?.toString() ?? '',
-                    ),
+                    title: Text(address['recipient_name']?.toString() ?? ''),
                     subtitle: Text(
                       [
                         address['address_line'],
@@ -857,7 +808,6 @@ class _CreateBookingPageState extends State<CreateBookingPage> {
     );
   }
 
-
   Future<void> _selectTime() async {
     final previous = controller.scheduledAt;
     final now = DateTime.now();
@@ -900,21 +850,18 @@ class _CreateBookingPageState extends State<CreateBookingPage> {
                             selectedHour = index;
                           });
                         },
-                        childDelegate:
-                        ListWheelChildBuilderDelegate(
+                        childDelegate: ListWheelChildBuilderDelegate(
                           childCount: 24,
                           builder: (context, index) {
-                            final selected =
-                                index == selectedHour;
+                            final selected = index == selectedHour;
 
                             return Container(
                               alignment: Alignment.center,
                               decoration: BoxDecoration(
                                 color: selected
-                                    ? const Color(0xFFE4F7F9)
+                                    ? context.appAccentSurface
                                     : Colors.transparent,
-                                borderRadius:
-                                BorderRadius.circular(8),
+                                borderRadius: BorderRadius.circular(8),
                               ),
                               child: Text(
                                 index.toString().padLeft(2, '0'),
@@ -924,7 +871,9 @@ class _CreateBookingPageState extends State<CreateBookingPage> {
                                       ? FontWeight.w700
                                       : FontWeight.w400,
                                   color: selected
-                                      ? const Color(0xFF078B96)
+                                      ? (context.isDarkMode
+                                            ? const Color(0xFF8FE1E5)
+                                            : primary)
                                       : Colors.grey,
                                 ),
                               ),
@@ -957,21 +906,18 @@ class _CreateBookingPageState extends State<CreateBookingPage> {
                             selectedMinute = index;
                           });
                         },
-                        childDelegate:
-                        ListWheelChildBuilderDelegate(
+                        childDelegate: ListWheelChildBuilderDelegate(
                           childCount: 60,
                           builder: (context, index) {
-                            final selected =
-                                index == selectedMinute;
+                            final selected = index == selectedMinute;
 
                             return Container(
                               alignment: Alignment.center,
                               decoration: BoxDecoration(
                                 color: selected
-                                    ? const Color(0xFFE4F7F9)
+                                    ? context.appAccentSurface
                                     : Colors.transparent,
-                                borderRadius:
-                                BorderRadius.circular(8),
+                                borderRadius: BorderRadius.circular(8),
                               ),
                               child: Text(
                                 index.toString().padLeft(2, '0'),
@@ -981,7 +927,9 @@ class _CreateBookingPageState extends State<CreateBookingPage> {
                                       ? FontWeight.w700
                                       : FontWeight.w400,
                                   color: selected
-                                      ? const Color(0xFF078B96)
+                                      ? (context.isDarkMode
+                                            ? const Color(0xFF8FE1E5)
+                                            : primary)
                                       : Colors.grey,
                                 ),
                               ),
@@ -995,22 +943,17 @@ class _CreateBookingPageState extends State<CreateBookingPage> {
               ),
               actions: [
                 TextButton(
-                  onPressed: () =>
-                      Navigator.pop(dialogContext, false),
+                  onPressed: () => Navigator.pop(dialogContext, false),
                   child: Text(
-                    MaterialLocalizations.of(context)
-                        .cancelButtonLabel,
+                    MaterialLocalizations.of(context).cancelButtonLabel,
                   ),
                 ),
                 FilledButton(
                   style: FilledButton.styleFrom(
                     backgroundColor: const Color(0xFF078B96),
                   ),
-                  onPressed: () =>
-                      Navigator.pop(dialogContext, true),
-                  child: Text(
-                    MaterialLocalizations.of(context).okButtonLabel,
-                  ),
+                  onPressed: () => Navigator.pop(dialogContext, true),
+                  child: Text(MaterialLocalizations.of(context).okButtonLabel),
                 ),
               ],
             );
@@ -1024,16 +967,9 @@ class _CreateBookingPageState extends State<CreateBookingPage> {
     final date = previous ?? now;
 
     controller.selectSchedule(
-      DateTime(
-        date.year,
-        date.month,
-        date.day,
-        selectedHour,
-        selectedMinute,
-      ),
+      DateTime(date.year, date.month, date.day, selectedHour, selectedMinute),
     );
   }
-
 
   // ------------------------------------------------------------
   // STEP 3 - REVIEW
@@ -1045,8 +981,7 @@ class _CreateBookingPageState extends State<CreateBookingPage> {
       children: [
         _sectionTitle(
           context.tr('bookingUi40'),
-          subtitle:
-          context.tr('bookingUi41'),
+          subtitle: context.tr('bookingUi41'),
         ),
         const SizedBox(height: 18),
 
@@ -1072,10 +1007,7 @@ class _CreateBookingPageState extends State<CreateBookingPage> {
                   if (controller.units[index].description.isNotEmpty)
                     Text(
                       controller.units[index].description,
-                      style: const TextStyle(
-                        color: mutedColor,
-                        fontSize: 12,
-                      ),
+                      style: TextStyle(color: context.appMuted, fontSize: 12),
                     ),
                 ],
               ),
@@ -1095,7 +1027,7 @@ class _CreateBookingPageState extends State<CreateBookingPage> {
             controller.scheduledAt == null
                 ? context.tr('bookingUi44')
                 : '${_formatDate(controller.scheduledAt!)} '
-                '- ${_formatTime(controller.scheduledAt!)}',
+                      '- ${_formatTime(controller.scheduledAt!)}',
           ),
         ),
 
@@ -1106,16 +1038,15 @@ class _CreateBookingPageState extends State<CreateBookingPage> {
         _card(
           child: Column(
             children: [
-              for (var index = 0;
-              index < controller.units.length;
-              index++)
+              for (var index = 0; index < controller.units.length; index++)
                 for (final id in controller.units[index].serviceIds)
                   _priceRow(index, id),
               const Divider(),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(context.tr('bookingUi46'),
+                  Text(
+                    context.tr('bookingUi46'),
                     style: TextStyle(fontWeight: FontWeight.w700),
                   ),
                   Text(
@@ -1132,9 +1063,7 @@ class _CreateBookingPageState extends State<CreateBookingPage> {
         ),
 
         const SizedBox(height: 14),
-        _infoBox(
-          context.tr('bookingUi47'),
-        ),
+        _infoBox(context.tr('bookingUi47')),
       ],
     );
   }
@@ -1144,17 +1073,14 @@ class _CreateBookingPageState extends State<CreateBookingPage> {
       padding: const EdgeInsets.only(bottom: 8),
       child: Text(
         title,
-        style: const TextStyle(
-          fontWeight: FontWeight.w700,
-          color: textColor,
-        ),
+        style: TextStyle(fontWeight: FontWeight.w700, color: context.appText),
       ),
     );
   }
 
   Widget _priceRow(int unitIndex, String serviceId) {
     final matches = controller.services.where(
-          (service) => service['id']?.toString() == serviceId,
+      (service) => service['id']?.toString() == serviceId,
     );
 
     if (matches.isEmpty) return const SizedBox.shrink();
@@ -1191,10 +1117,7 @@ class _CreateBookingPageState extends State<CreateBookingPage> {
       for (final id in unit.serviceIds) {
         for (final service in controller.services) {
           if (service['id']?.toString() == id) {
-            total += double.tryParse(
-              '${service['base_price'] ?? 0}',
-            ) ??
-                0;
+            total += double.tryParse('${service['base_price'] ?? 0}') ?? 0;
             break;
           }
         }
@@ -1240,11 +1163,7 @@ class _CreateBookingPageState extends State<CreateBookingPage> {
       ),
       child: Text(
         message,
-        style: const TextStyle(
-          color: primary,
-          fontSize: 11,
-          height: 1.5,
-        ),
+        style: const TextStyle(color: primary, fontSize: 11, height: 1.5),
       ),
     );
   }
@@ -1258,10 +1177,8 @@ class _CreateBookingPageState extends State<CreateBookingPage> {
       top: false,
       child: Container(
         padding: const EdgeInsets.all(14),
-        decoration: const BoxDecoration(
-          border: Border(
-            top: BorderSide(color: borderColor),
-          ),
+        decoration: BoxDecoration(
+          border: Border(top: BorderSide(color: context.appBorder)),
         ),
         child: Row(
           children: [
@@ -1272,14 +1189,8 @@ class _CreateBookingPageState extends State<CreateBookingPage> {
                 children: [
                   Text(
                     '${controller.units.length} ${context.tr('bookingUiUnits')} - '
-                        '${controller.units.fold<int>(
-                      0,
-                          (total, unit) => total + unit.serviceIds.length,
-                    )} services',
-                    style: const TextStyle(
-                      fontSize: 10,
-                      color: mutedColor,
-                    ),
+                    '${controller.units.fold<int>(0, (total, unit) => total + unit.serviceIds.length)} services',
+                    style: TextStyle(fontSize: 10, color: context.appMuted),
                   ),
                   Text(
                     '${context.tr('bookingUiFrom')} ${_formatPrice(_estimatedTotal())}',
@@ -1297,23 +1208,21 @@ class _CreateBookingPageState extends State<CreateBookingPage> {
                   : currentStep == 2
                   ? _submitBooking
                   : _continue,
-              style: FilledButton.styleFrom(
-                backgroundColor: primary,
-              ),
+              style: FilledButton.styleFrom(backgroundColor: primary),
               child: controller.isSaving
                   ? const SizedBox(
-                height: 18,
-                width: 18,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: Colors.white,
-                ),
-              )
+                      height: 18,
+                      width: 18,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
                   : Text(
-                currentStep == 2
-                    ? context.tr('bookingUi49')
-                    : context.tr('bookingUi50'),
-              ),
+                      currentStep == 2
+                          ? context.tr('bookingUi49')
+                          : context.tr('bookingUi50'),
+                    ),
             ),
           ],
         ),
@@ -1328,7 +1237,7 @@ class _CreateBookingPageState extends State<CreateBookingPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: backgroundColor,
+      backgroundColor: context.appBackground,
       appBar: AppBar(
         title: Text(context.tr('bookingUi51')),
         leading: IconButton(
@@ -1339,46 +1248,41 @@ class _CreateBookingPageState extends State<CreateBookingPage> {
       body: controller.isLoading
           ? const Center(child: CircularProgressIndicator())
           : controller.errorMessage != null &&
-          controller.brands.isEmpty &&
-          controller.services.isEmpty
+                controller.brands.isEmpty &&
+                controller.services.isEmpty
           ? Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(
-              Icons.error_outline,
-              size: 44,
-              color: Colors.red,
-            ),
-            const SizedBox(height: 12),
-            Text(controller.errorMessage!),
-            TextButton(
-              onPressed: controller.loadInitialData,
-              child: Text(context.tr('bookingUi52')),
-            ),
-          ],
-        ),
-      )
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.error_outline, size: 44, color: Colors.red),
+                  const SizedBox(height: 12),
+                  Text(controller.errorMessage!),
+                  TextButton(
+                    onPressed: controller.loadInitialData,
+                    child: Text(context.tr('bookingUi52')),
+                  ),
+                ],
+              ),
+            )
           : Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: _progressIndicator(),
-          ),
-          Expanded(
-            child: ListView(
-              padding: const EdgeInsets.all(16),
               children: [
-                if (currentStep == 0) _buildUnitsStep(),
-                if (currentStep == 1) _buildAddressStep(),
-                if (currentStep == 2) _buildReviewStep(),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: _progressIndicator(),
+                ),
+                Expanded(
+                  child: ListView(
+                    padding: const EdgeInsets.all(16),
+                    children: [
+                      if (currentStep == 0) _buildUnitsStep(),
+                      if (currentStep == 1) _buildAddressStep(),
+                      if (currentStep == 2) _buildReviewStep(),
+                    ],
+                  ),
+                ),
               ],
             ),
-          ),
-        ],
-      ),
-      bottomNavigationBar:
-      controller.isLoading ? null : _bottomBar(),
+      bottomNavigationBar: controller.isLoading ? null : _bottomBar(),
     );
   }
 }

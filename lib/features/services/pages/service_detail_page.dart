@@ -265,7 +265,7 @@ class _ServiceDetailPageState extends State<ServiceDetailPage> {
           const SizedBox(height: 2),
 
           Text(
-            '${_formatPrice(service.basePrice)} / unit',
+            '${_formatPrice(service.basePrice)} / ${context.tr('servicePriceUnit')}',
             style: const TextStyle(
               color: Color(0xFF109DA0),
               fontSize: 19,
@@ -445,10 +445,10 @@ class _ServiceDetailPageState extends State<ServiceDetailPage> {
                 .take(2)
                 .map(
                   (review) => Padding(
-                padding: const EdgeInsets.only(bottom: 10),
-                child: _buildReviewCard(review),
-              ),
-            ),
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: _buildReviewCard(review),
+                  ),
+                ),
         ],
       ),
     );
@@ -694,7 +694,7 @@ class _ServiceDetailPageState extends State<ServiceDetailPage> {
                     const SizedBox(height: 2),
 
                     Text(
-                      '${_formatPrice(service.basePrice)} / unit',
+                      '${_formatPrice(service.basePrice)} / ${context.tr('servicePriceUnit')}',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(

@@ -7,7 +7,9 @@ import '../models/reviewable_booking.dart';
 import '../repositories/review_repository.dart';
 
 class CustomerActivityPage extends StatefulWidget {
-  const CustomerActivityPage({super.key});
+  const CustomerActivityPage({super.key, this.showHeader = true});
+
+  final bool showHeader;
 
   @override
   State<CustomerActivityPage> createState() => _CustomerActivityPageState();
@@ -32,15 +34,17 @@ class _CustomerActivityPageState extends State<CustomerActivityPage> {
       key: const PageStorageKey('customer-bookings'),
       padding: const EdgeInsets.fromLTRB(20, 18, 20, 26),
       children: [
-        Text(
-          context.tr('myBookings'),
-          style: TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.w800,
-            color: context.appText,
+        if (widget.showHeader) ...[
+          Text(
+            context.tr('myBookings'),
+            style: TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.w800,
+              color: context.appText,
+            ),
           ),
-        ),
-        const SizedBox(height: 5),
+          const SizedBox(height: 5),
+        ],
         Text(context.tr('bookingSubtitle')),
         const SizedBox(height: 18),
         FutureBuilder<List<ReviewableBooking>>(
@@ -136,7 +140,7 @@ class _BookingCard extends StatelessWidget {
         ),
         const SizedBox(height: 6),
         Text(
-          '${context.tr('technician')}: ${booking.technician}',
+          '${context.tr('technician')}: ${booking.technician == 'Unassigned' ? context.tr('unassigned') : booking.technician}',
           style: const TextStyle(fontSize: 12),
         ),
         const SizedBox(height: 14),
@@ -317,7 +321,7 @@ class _StatusChip extends StatelessWidget {
       borderRadius: BorderRadius.circular(20),
     ),
     child: Text(
-      status.replaceAll('_', ' '),
+      context.tr('bookingStatus_$status'),
       style: const TextStyle(
         color: CoolCareColors.primaryDark,
         fontSize: 10,

@@ -79,7 +79,7 @@ class _MyBookingsPageState extends State<MyBookingsPage> {
           ],
         )),
       Expanded(child: _showReviews
-        ? const CustomerActivityPage()
+        ? const CustomerActivityPage(showHeader: false)
         : RefreshIndicator(
             onRefresh: _refresh,
             child: FutureBuilder<List<MyBooking>>(

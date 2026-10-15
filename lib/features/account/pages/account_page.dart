@@ -252,11 +252,17 @@ class AccountPage extends StatelessWidget {
               icon: const Icon(Icons.logout_rounded, size: 17),
               label: Text(context.tr('logout')),
               style: OutlinedButton.styleFrom(
-                foregroundColor: CoolCareColors.error,
+                foregroundColor: context.isDarkMode
+                    ? const Color(0xFFFF8A80)
+                    : const Color(0xFFC62828),
                 side: BorderSide(
-                  color: CoolCareColors.error.withValues(alpha: .28),
+                  color: context.isDarkMode
+                      ? const Color(0xFFFF6B61)
+                      : const Color(0xFFEF9A9A),
                 ),
-                backgroundColor: CoolCareColors.error.withValues(alpha: .04),
+                backgroundColor: context.isDarkMode
+                    ? const Color(0xFF3B171B)
+                    : const Color(0xFFFFEBEE),
                 minimumSize: const Size.fromHeight(46),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
