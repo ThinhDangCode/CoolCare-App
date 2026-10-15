@@ -59,6 +59,7 @@ class TechnicianDashboard {
 
 class TechnicianNextJob {
   const TechnicianNextJob({
+    required this.id,
     required this.serviceName,
     required this.address,
     required this.status,
@@ -67,6 +68,7 @@ class TechnicianNextJob {
 
   factory TechnicianNextJob.fromJson(Map<String, dynamic> json) =>
       TechnicianNextJob(
+        id: json['id']?.toString() ?? '',
         serviceName: json['service_name']?.toString() ?? 'CoolCare Service',
         address: [json['service_address'], json['ward'], json['city']]
             .where((value) => value?.toString().trim().isNotEmpty == true)
@@ -77,6 +79,7 @@ class TechnicianNextJob {
         )?.toLocal(),
       );
 
+  final String id;
   final String serviceName;
   final String address;
   final String status;

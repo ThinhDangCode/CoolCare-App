@@ -22,6 +22,13 @@ const _messages = <String, Map<String, String>>{
     'bookingDetailConfirmCancel': 'Xác nhận hủy',
     'bookingDetailCancelled': 'Đã hủy lịch đặt',
     'bookingDetailCancelFailed': 'Không thể hủy lịch đặt',
+    'bookingDetailConfirmCompletion': 'Xác nhận hoàn thành',
+    'bookingDetailConfirmCompletionTitle': 'Xác nhận công việc đã hoàn thành?',
+    'bookingDetailConfirmCompletionMessage':
+        'Sau khi xác nhận, đơn của bạn và công việc của kỹ thuật viên sẽ chuyển sang Hoàn thành.',
+    'bookingDetailCompletionConfirmed': 'Đã xác nhận hoàn thành công việc',
+    'bookingDetailConfirmCompletionFailed':
+        'Không thể xác nhận hoàn thành công việc',
     'bookingDetailView': 'Xem chi tiết',
     'bookingStatus_PENDING': 'Chờ chọn kỹ thuật viên',
     'bookingStatus_TECHNICIAN_SELECTED': 'Chờ kỹ thuật viên phản hồi',
@@ -364,6 +371,12 @@ const _messages = <String, Map<String, String>>{
     'bookingDetailConfirmCancel': 'Confirm cancellation',
     'bookingDetailCancelled': 'Booking cancelled',
     'bookingDetailCancelFailed': 'Could not cancel booking',
+    'bookingDetailConfirmCompletion': 'Confirm completion',
+    'bookingDetailConfirmCompletionTitle': 'Confirm this job is completed?',
+    'bookingDetailConfirmCompletionMessage':
+        'After confirmation, your booking and the technician job will both be completed.',
+    'bookingDetailCompletionConfirmed': 'Job completion confirmed',
+    'bookingDetailConfirmCompletionFailed': 'Could not confirm completion',
     'bookingDetailView': 'View details',
     'bookingStatus_PENDING': 'Pending selection',
     'bookingStatus_TECHNICIAN_SELECTED': 'Awaiting technician',

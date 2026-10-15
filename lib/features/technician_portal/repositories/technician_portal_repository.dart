@@ -8,6 +8,10 @@ import '../models/technician_dashboard.dart';
 import '../models/technician_skill.dart';
 import '../models/technician_service_area.dart';
 import '../models/set_availability_status.dart';
+import '../models/view_job_request.dart';
+import '../models/accept_decline_job_request_result.dart';
+import '../models/update_job_status_result.dart';
+import '../models/cancel_accepted_job_result.dart';
 
 class TechnicianPortalRepository {
   TechnicianPortalRepository({
@@ -72,6 +76,121 @@ class TechnicianPortalRepository {
       );
     }
     return SetAvailabilityStatus.fromJson(data);
+  }
+
+  Future<List<ViewJobRequest>> viewJobRequests({
+    String status = 'SELECTED',
+    int page = 1,
+    int limit = 50,
+  }) async {
+    final response = await _apiClient.get(
+      ApiEndpoints.viewJobRequests,
+      queryParameters: {'status': status, 'page': '$page', 'limit': '$limit'},
+      bearerToken: await _token(),
+    );
+    final data = response is Map<String, dynamic> ? response['data'] : null;
+    final items = data is Map<String, dynamic> ? data['items'] : null;
+    if (items is! List) {
+      throw const ApiException(
+        code: 'INVALID_RESPONSE',
+        message: 'Máy chủ không trả về danh sách yêu cầu công việc hợp lệ.',
+      );
+    }
+    try {
+      return items
+          .map((item) {
+            if (item is! Map<String, dynamic>) {
+              throw const FormatException('Invalid job request item.');
+            }
+            return ViewJobRequest.fromJson(item);
+          })
+          .toList(growable: false);
+    } on FormatException {
+      throw const ApiException(
+        code: 'INVALID_RESPONSE',
+        message: 'Dữ liệu yêu cầu công việc từ máy chủ không hợp lệ.',
+      );
+    }
+  }
+
+  Future<AcceptDeclineJobRequestResult> respondToJobRequest(
+    String requestId, {
+    required bool accept,
+    String? reason,
+  }) async {
+    final response = await _apiClient.patch(
+      ApiEndpoints.respondToJobRequest(requestId),
+      bearerToken: await _token(),
+      body: {
+        'action': accept ? 'ACCEPT' : 'DECLINE',
+        if (!accept && reason?.trim().isNotEmpty == true)
+          'reason': reason!.trim(),
+      },
+    );
+    final data = response['data'];
+    if (data is! Map<String, dynamic>) {
+      throw const ApiException(
+        code: 'INVALID_RESPONSE',
+        message: 'Máy chủ không xác nhận phản hồi yêu cầu công việc.',
+      );
+    }
+    try {
+      return AcceptDeclineJobRequestResult.fromJson(data);
+    } on FormatException {
+      throw const ApiException(
+        code: 'INVALID_RESPONSE',
+        message: 'Dữ liệu phản hồi yêu cầu công việc không hợp lệ.',
+      );
+    }
+  }
+
+  Future<UpdateJobStatusResult> completeJob(String requestId) async {
+    final response = await _apiClient.patch(
+      ApiEndpoints.updateJobStatus(requestId),
+      bearerToken: await _token(),
+      body: const {'status': 'COMPLETED'},
+    );
+    final data = response['data'];
+    if (data is! Map<String, dynamic>) {
+      throw const ApiException(
+        code: 'INVALID_RESPONSE',
+        message: 'Máy chủ không xác nhận trạng thái hoàn thành công việc.',
+      );
+    }
+    try {
+      return UpdateJobStatusResult.fromJson(data);
+    } on FormatException {
+      throw const ApiException(
+        code: 'INVALID_RESPONSE',
+        message: 'Dữ liệu trạng thái công việc không hợp lệ.',
+      );
+    }
+  }
+
+  Future<CancelAcceptedJobResult> cancelAcceptedJob(
+    String requestId, {
+    required String reason,
+  }) async {
+    final response = await _apiClient.patch(
+      ApiEndpoints.cancelAcceptedJob(requestId),
+      bearerToken: await _token(),
+      body: {'reason': reason.trim()},
+    );
+    final data = response['data'];
+    if (data is! Map<String, dynamic>) {
+      throw const ApiException(
+        code: 'INVALID_RESPONSE',
+        message: 'Máy chủ không xác nhận việc hủy công việc.',
+      );
+    }
+    try {
+      return CancelAcceptedJobResult.fromJson(data);
+    } on FormatException {
+      throw const ApiException(
+        code: 'INVALID_RESPONSE',
+        message: 'Dữ liệu hủy công việc không hợp lệ.',
+      );
+    }
   }
 
   Future<List<TechnicianSkill>> skills() async {

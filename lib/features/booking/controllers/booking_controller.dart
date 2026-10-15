@@ -30,7 +30,7 @@ class BookingController extends ChangeNotifier {
     required ApiClient apiClient,
     SecureSessionStore sessionStore = const SecureSessionStore(),
   }) : _apiClient = apiClient,
-        _sessionStore = sessionStore;
+       _sessionStore = sessionStore;
 
   final ApiClient _apiClient;
   final SecureSessionStore _sessionStore;
@@ -104,7 +104,7 @@ class BookingController extends ChangeNotifier {
 
       if (customerAddressId == null && addresses.isNotEmpty) {
         final defaultAddress = addresses.firstWhere(
-              (address) => address['is_default'] == true,
+          (address) => address['is_default'] == true,
           orElse: () => addresses.first,
         );
 
@@ -120,9 +120,9 @@ class BookingController extends ChangeNotifier {
 
   // LOAD ALL CATALOG PAGES
   Future<List<Map<String, dynamic>>> _loadAllPages(
-      String path, {
-        Map<String, String> filters = const {},
-      }) async {
+    String path, {
+    Map<String, String> filters = const {},
+  }) async {
     const pageSize = 100;
     var page = 1;
 
@@ -131,11 +131,7 @@ class BookingController extends ChangeNotifier {
     while (true) {
       final response = await _apiClient.get(
         path,
-        queryParameters: {
-          ...filters,
-          'page': '$page',
-          'limit': '$pageSize',
-        },
+        queryParameters: {...filters, 'page': '$page', 'limit': '$pageSize'},
       );
 
       final currentItems = _extractItems(response);
@@ -277,14 +273,65 @@ class BookingController extends ChangeNotifier {
     _notify();
   }
 
+  Future<void> prefillFromBooking(Map<String, dynamic> booking) async {
+    final savedAddressId = booking['customerAddressId']?.toString();
+    if (savedAddressId != null &&
+        addresses.any(
+          (address) => address['id']?.toString() == savedAddressId,
+        )) {
+      customerAddressId = savedAddressId;
+    }
+
+    final recipient = booking['recipient'];
+    if (recipient is Map) {
+      recipientName = recipient['name']?.toString() ?? recipientName;
+      recipientPhone = recipient['phone']?.toString() ?? recipientPhone;
+    }
+    description = booking['description']?.toString() ?? '';
+    scheduledAt = null;
+
+    final rawUnits = booking['units'];
+    if (rawUnits is List && rawUnits.isNotEmpty) {
+      units
+        ..clear()
+        ..addAll(
+          rawUnits.whereType<Map>().map((raw) {
+            final rawServices = raw['services'];
+            return BookingAcUnit(
+              acBrandId: raw['ac_brand_id']?.toString(),
+              acModelId: raw['ac_model_id']?.toString(),
+              description: raw['description']?.toString() ?? '',
+              serviceIds: rawServices is List
+                  ? rawServices
+                        .whereType<Map>()
+                        .map((service) => service['id']?.toString() ?? '')
+                        .where((id) => id.isNotEmpty)
+                        .toList()
+                  : <String>[],
+            );
+          }),
+        );
+      if (units.isEmpty) units.add(BookingAcUnit());
+    }
+
+    final brandIds = units
+        .map((unit) => unit.acBrandId)
+        .whereType<String>()
+        .toSet();
+    for (final brandId in brandIds) {
+      await loadModels(brandId);
+    }
+    formErrorMessage = null;
+    _notify();
+  }
+
   // VALIDATE BOOKING FORM
   String? validateBooking() {
     if (customerAddressId == null) {
       return 'Please select a service address.';
     }
 
-    if (recipientName.trim().isEmpty ||
-        recipientName.trim().length > 100) {
+    if (recipientName.trim().isEmpty || recipientName.trim().length > 100) {
       return 'Please enter a valid recipient name.';
     }
 
@@ -401,9 +448,7 @@ class BookingController extends ChangeNotifier {
 
   List<Map<String, dynamic>> _extractItems(dynamic response) {
     if (response is List) {
-      return response
-          .whereType<Map<String, dynamic>>()
-          .toList();
+      return response.whereType<Map<String, dynamic>>().toList();
     }
 
     if (response is Map<String, dynamic>) {
@@ -411,9 +456,7 @@ class BookingController extends ChangeNotifier {
 
       // Address API returns the list directly in data.
       if (data is List) {
-        return data
-            .whereType<Map<String, dynamic>>()
-            .toList();
+        return data.whereType<Map<String, dynamic>>().toList();
       }
 
       // Other APIs may return paginated data.
@@ -421,9 +464,7 @@ class BookingController extends ChangeNotifier {
         final items = data['items'] ?? data['addresses'];
 
         if (items is List) {
-          return items
-              .whereType<Map<String, dynamic>>()
-              .toList();
+          return items.whereType<Map<String, dynamic>>().toList();
         }
       }
 
@@ -431,9 +472,7 @@ class BookingController extends ChangeNotifier {
       final items = response['items'] ?? response['addresses'];
 
       if (items is List) {
-        return items
-            .whereType<Map<String, dynamic>>()
-            .toList();
+        return items.whereType<Map<String, dynamic>>().toList();
       }
     }
 

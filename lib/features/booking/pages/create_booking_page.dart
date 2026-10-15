@@ -12,10 +12,12 @@ class CreateBookingPage extends StatefulWidget {
     super.key,
     this.onBookingCreated,
     this.initialServiceId,
+    this.rebookData,
   });
 
   final ValueChanged<Map<String, dynamic>>? onBookingCreated;
   final String? initialServiceId;
+  final Map<String, dynamic>? rebookData;
 
   @override
   State<CreateBookingPage> createState() => _CreateBookingPageState();
@@ -41,6 +43,12 @@ class _CreateBookingPageState extends State<CreateBookingPage> {
   Future<void> _loadBookingData() async {
     await controller.loadInitialData();
     if (!mounted) return;
+
+    final rebookData = widget.rebookData;
+    if (rebookData != null) {
+      await controller.prefillFromBooking(rebookData);
+      return;
+    }
 
     final serviceId = widget.initialServiceId;
     if (serviceId == null || serviceId.isEmpty) return;
