@@ -470,7 +470,7 @@ class _BookingDetailPageState extends State<BookingDetailPage> {
                 FilledButton.icon(
                   onPressed: () => _rebook(data),
                   icon: const Icon(Icons.refresh_rounded),
-                  label: const Text('Re-book'),
+                  label: Text(context.tr('bookingRebook')),
                 ),
             ],
           ),

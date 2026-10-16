@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../app/localization/app_strings.dart';
 import '../../../app/theme/coolcare_theme.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/network/api_exception.dart';
@@ -63,7 +64,7 @@ class _TechnicianPortalPageState extends State<TechnicianPortalPage> {
       }
     } catch (_) {
       if (mounted) {
-        setState(() => _error = 'Unable to load Technician Mode.');
+        setState(() => _error = context.tr('technicianModeLoadFailed'));
       }
     }
   }
@@ -80,9 +81,9 @@ class _TechnicianPortalPageState extends State<TechnicianPortalPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              online
-                  ? 'Bạn đang Online và có thể nhận đơn mới.'
-                  : 'Bạn đã Offline và sẽ không nhận đơn mới.',
+              context.tr(
+                online ? 'technicianOnlineNotice' : 'technicianOfflineNotice',
+              ),
             ),
           ),
         );
@@ -101,11 +102,11 @@ class _TechnicianPortalPageState extends State<TechnicianPortalPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF7FAFA),
+      backgroundColor: context.appBackground,
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        backgroundColor: Colors.white,
-        surfaceTintColor: Colors.white,
+        backgroundColor: context.appSurface,
+        surfaceTintColor: Colors.transparent,
         title: const Text(
           'CoolCare',
           style: TextStyle(fontWeight: FontWeight.w800),
@@ -140,10 +141,10 @@ class _TechnicianPortalPageState extends State<TechnicianPortalPage> {
                       repository: _repository,
                       onRequestChanged: _load,
                     ),
-                    const _EmptyTab(
+                    _EmptyTab(
                       icon: Icons.forum_outlined,
-                      title: 'Messages',
-                      message: 'Chat with customers for each assigned job.',
+                      title: context.tr('messages'),
+                      message: context.tr('technicianMessagesHint'),
                     ),
                     _WalletTab(amount: _dashboard!.earningsToday),
                     _TechnicianProfile(
@@ -191,27 +192,27 @@ class _TechnicianPortalPageState extends State<TechnicianPortalPage> {
                   labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
                   onDestinationSelected: (value) =>
                       setState(() => _tab = value),
-                  destinations: const [
+                  destinations: [
                     NavigationDestination(
-                      icon: Icon(Icons.home_outlined),
-                      selectedIcon: Icon(Icons.home_rounded),
-                      label: 'Home',
+                      icon: const Icon(Icons.home_outlined),
+                      selectedIcon: const Icon(Icons.home_rounded),
+                      label: context.tr('home'),
                     ),
                     NavigationDestination(
-                      icon: Icon(Icons.assignment_outlined),
-                      label: 'Jobs',
+                      icon: const Icon(Icons.assignment_outlined),
+                      label: context.tr('jobs'),
                     ),
                     NavigationDestination(
-                      icon: Icon(Icons.forum_outlined),
-                      label: 'Messages',
+                      icon: const Icon(Icons.forum_outlined),
+                      label: context.tr('messages'),
                     ),
                     NavigationDestination(
-                      icon: Icon(Icons.account_balance_wallet_outlined),
-                      label: 'Wallet',
+                      icon: const Icon(Icons.account_balance_wallet_outlined),
+                      label: context.tr('wallet'),
                     ),
                     NavigationDestination(
-                      icon: Icon(Icons.person_outline),
-                      label: 'Profile',
+                      icon: const Icon(Icons.person_outline),
+                      label: context.tr('profile'),
                     ),
                   ],
                 ),
@@ -274,7 +275,7 @@ class _DashboardHome extends StatelessWidget {
         padding: const EdgeInsets.only(bottom: 24),
         children: [
           Container(
-            color: Colors.white,
+            color: context.appSurface,
             padding: const EdgeInsets.all(20),
             child: Row(
               children: [
@@ -297,11 +298,8 @@ class _DashboardHome extends StatelessWidget {
                         style: const TextStyle(fontWeight: FontWeight.w800),
                       ),
                       Text(
-                        _qualification(dashboard.qualification),
-                        style: const TextStyle(
-                          color: CoolCareColors.mutedText,
-                          fontSize: 12,
-                        ),
+                        _qualification(context, dashboard.qualification),
+                        style: TextStyle(color: context.appMuted, fontSize: 12),
                       ),
                     ],
                   ),
@@ -310,11 +308,11 @@ class _DashboardHome extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      online ? 'ONLINE' : 'OFFLINE',
+                      context.tr(online ? 'online' : 'offline'),
                       style: TextStyle(
                         color: online
                             ? CoolCareColors.primary
-                            : CoolCareColors.mutedText,
+                            : context.appMuted,
                         fontSize: 11,
                         fontWeight: FontWeight.w800,
                       ),
@@ -350,7 +348,9 @@ class _DashboardHome extends StatelessWidget {
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      'You have ${dashboard.pendingRequests} new booking requests!',
+                      context.trArgs('technicianNewRequestsNotice', {
+                        'count': dashboard.pendingRequests,
+                      }),
                       style: const TextStyle(
                         color: Color(0xFF92400E),
                         fontWeight: FontWeight.w700,
@@ -377,14 +377,16 @@ class _DashboardHome extends StatelessWidget {
                     children: [
                       Expanded(
                         child: _StatCard(
-                          label: 'Jobs Today',
-                          value: '${dashboard.jobsToday} jobs',
+                          label: context.tr('jobsToday'),
+                          value: context.trArgs('jobCount', {
+                            'count': dashboard.jobsToday,
+                          }),
                         ),
                       ),
                       const SizedBox(width: 8),
                       Expanded(
                         child: _StatCard(
-                          label: 'Earnings',
+                          label: context.tr('earnings'),
                           value: _money(dashboard.earningsToday),
                           accent: true,
                         ),
@@ -392,9 +394,9 @@ class _DashboardHome extends StatelessWidget {
                       const SizedBox(width: 8),
                       Expanded(
                         child: _StatCard(
-                          label: 'Rating',
+                          label: context.tr('rating'),
                           value: dashboard.rating == 0
-                              ? 'No ratings'
+                              ? context.tr('noRatings')
                               : '${dashboard.rating.toStringAsFixed(1)} ★',
                         ),
                       ),
@@ -406,7 +408,9 @@ class _DashboardHome extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'New Requests (${dashboard.pendingRequests})',
+                      context.trArgs('newRequestsCount', {
+                        'count': dashboard.pendingRequests,
+                      }),
                       style: const TextStyle(
                         fontWeight: FontWeight.w800,
                         fontSize: 16,
@@ -414,7 +418,7 @@ class _DashboardHome extends StatelessWidget {
                     ),
                     TextButton(
                       onPressed: onViewJobRequests,
-                      child: const Text('View All →'),
+                      child: Text('${context.tr('viewAll')} →'),
                     ),
                   ],
                 ),
@@ -435,28 +439,28 @@ class _NextJobCard extends StatelessWidget {
   Widget build(BuildContext context) => Container(
     padding: const EdgeInsets.all(16),
     decoration: BoxDecoration(
-      color: Colors.white,
-      border: Border.all(color: CoolCareColors.border),
+      color: context.appSurface,
+      border: Border.all(color: context.appBorder),
       borderRadius: BorderRadius.circular(16),
     ),
     child: job == null
-        ? const Column(
+        ? Column(
             children: [
-              Icon(
+              const Icon(
                 Icons.event_available_outlined,
                 size: 38,
                 color: CoolCareColors.primary,
               ),
-              SizedBox(height: 8),
+              const SizedBox(height: 8),
               Text(
-                'No upcoming jobs',
-                style: TextStyle(fontWeight: FontWeight.w800),
+                context.tr('noUpcomingJobs'),
+                style: const TextStyle(fontWeight: FontWeight.w800),
               ),
-              SizedBox(height: 4),
+              const SizedBox(height: 4),
               Text(
-                'New booking requests will appear here.',
+                context.tr('newRequestsAppearHere'),
                 textAlign: TextAlign.center,
-                style: TextStyle(color: CoolCareColors.mutedText),
+                style: TextStyle(color: context.appMuted),
               ),
             ],
           )
@@ -466,15 +470,15 @@ class _NextJobCard extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
-                    'NEW REQUEST',
+                  Text(
+                    context.tr('newRequest').toUpperCase(),
                     style: TextStyle(
-                      color: CoolCareColors.mutedText,
+                      color: context.appMuted,
                       fontWeight: FontWeight.w800,
                       fontSize: 11,
                     ),
                   ),
-                  const Chip(label: Text('New request')),
+                  Chip(label: Text(context.tr('newRequest'))),
                 ],
               ),
               Text(
@@ -485,18 +489,18 @@ class _NextJobCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 10),
-              Text('📅  ${_date(job!.scheduledAt)}'),
+              Text('📅  ${_date(context, job!.scheduledAt)}'),
               const SizedBox(height: 6),
               Text(
                 '📍  ${job!.address}',
-                style: const TextStyle(color: CoolCareColors.mutedText),
+                style: TextStyle(color: context.appMuted),
               ),
               const SizedBox(height: 12),
               SizedBox(
                 width: double.infinity,
                 child: FilledButton(
                   onPressed: onViewDetails,
-                  child: const Text('View Details'),
+                  child: Text(context.tr('viewDetails')),
                 ),
               ),
             ],
@@ -517,8 +521,8 @@ class _StatCard extends StatelessWidget {
   Widget build(BuildContext context) => Container(
     padding: const EdgeInsets.all(11),
     decoration: BoxDecoration(
-      color: Colors.white,
-      border: Border.all(color: CoolCareColors.border),
+      color: context.appSurface,
+      border: Border.all(color: context.appBorder),
       borderRadius: BorderRadius.circular(12),
     ),
     child: Column(
@@ -528,8 +532,8 @@ class _StatCard extends StatelessWidget {
         Text(
           label,
           textAlign: TextAlign.center,
-          style: const TextStyle(
-            color: CoolCareColors.mutedText,
+          style: TextStyle(
+            color: context.appMuted,
             fontSize: 10,
             fontWeight: FontWeight.w600,
           ),
@@ -541,7 +545,7 @@ class _StatCard extends StatelessWidget {
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           style: TextStyle(
-            color: accent ? CoolCareColors.primary : CoolCareColors.text,
+            color: accent ? CoolCareColors.primary : context.appText,
             fontWeight: FontWeight.w800,
             fontSize: 13,
           ),
@@ -568,16 +572,16 @@ class _TechnicianProfile extends StatelessWidget {
   Widget build(BuildContext context) => ListView(
     padding: const EdgeInsets.all(20),
     children: [
-      const Text(
-        'My Profile',
-        style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800),
+      Text(
+        context.tr('myProfile'),
+        style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800),
       ),
       const SizedBox(height: 16),
       Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white,
-          border: Border.all(color: CoolCareColors.border),
+          color: context.appSurface,
+          border: Border.all(color: context.appBorder),
           borderRadius: BorderRadius.circular(16),
         ),
         child: Column(
@@ -619,16 +623,13 @@ class _TechnicianProfile extends StatelessWidget {
                         ],
                       ),
                       Text(
-                        _qualification(dashboard.qualification),
-                        style: const TextStyle(
-                          color: CoolCareColors.mutedText,
-                          fontSize: 12,
-                        ),
+                        _qualification(context, dashboard.qualification),
+                        style: TextStyle(color: context.appMuted, fontSize: 12),
                       ),
                       const SizedBox(height: 3),
                       Text(
                         dashboard.rating == 0
-                            ? 'No ratings yet'
+                            ? context.tr('noRatingsYet')
                             : '${dashboard.rating.toStringAsFixed(1)} ★',
                         style: const TextStyle(
                           color: Color(0xFFD97706),
@@ -644,30 +645,29 @@ class _TechnicianProfile extends StatelessWidget {
             const Divider(height: 28),
             Row(
               children: [
-                const Expanded(
+                Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Working Status',
-                        style: TextStyle(fontWeight: FontWeight.w700),
+                        context.tr('workingStatus'),
+                        style: const TextStyle(fontWeight: FontWeight.w700),
                       ),
                       Text(
-                        'Toggle to receive booking requests',
-                        style: TextStyle(
-                          color: CoolCareColors.mutedText,
-                          fontSize: 11,
-                        ),
+                        context.tr('workingStatusHint'),
+                        style: TextStyle(color: context.appMuted, fontSize: 11),
                       ),
                     ],
                   ),
                 ),
                 Text(
-                  dashboard.availability == 'ONLINE' ? 'ONLINE' : 'OFFLINE',
+                  context.tr(
+                    dashboard.availability == 'ONLINE' ? 'online' : 'offline',
+                  ),
                   style: TextStyle(
                     color: dashboard.availability == 'ONLINE'
                         ? CoolCareColors.primary
-                        : CoolCareColors.mutedText,
+                        : context.appMuted,
                     fontSize: 11,
                     fontWeight: FontWeight.w800,
                   ),
@@ -684,10 +684,10 @@ class _TechnicianProfile extends StatelessWidget {
         ),
       ),
       const SizedBox(height: 22),
-      const Text(
-        'SETTINGS & PERFORMANCE',
+      Text(
+        context.tr('settingsPerformance').toUpperCase(),
         style: TextStyle(
-          color: CoolCareColors.mutedText,
+          color: context.appMuted,
           fontWeight: FontWeight.w800,
           fontSize: 12,
           letterSpacing: .5,
@@ -695,11 +695,11 @@ class _TechnicianProfile extends StatelessWidget {
       ),
       const SizedBox(height: 10),
       _ProfileSection(
-        title: 'VERIFICATION & SKILLS',
+        title: context.tr('verificationSkills').toUpperCase(),
         children: [
           _ProfileLink(
             icon: Icons.workspace_premium_outlined,
-            label: 'Certification Status',
+            label: context.tr('certificationStatus'),
             onTap: () => Navigator.of(context).push(
               MaterialPageRoute(
                 builder: (_) => const CertificationStatusPage(),
@@ -709,7 +709,7 @@ class _TechnicianProfile extends StatelessWidget {
           const Divider(height: 1),
           _ProfileLink(
             icon: Icons.build_outlined,
-            label: 'My Skills',
+            label: context.tr('mySkills'),
             onTap: () => Navigator.of(
               context,
             ).push(MaterialPageRoute(builder: (_) => const ManageSkillsPage())),
@@ -717,7 +717,7 @@ class _TechnicianProfile extends StatelessWidget {
           const Divider(height: 1),
           _ProfileLink(
             icon: Icons.location_on_outlined,
-            label: 'Service Areas',
+            label: context.tr('serviceAreas'),
             onTap: () => Navigator.of(context).push(
               MaterialPageRoute(builder: (_) => const ManageServiceAreasPage()),
             ),
@@ -728,7 +728,7 @@ class _TechnicianProfile extends StatelessWidget {
       FilledButton.tonalIcon(
         onPressed: onSwitchCustomer,
         icon: const Icon(Icons.swap_horiz_rounded),
-        label: const Text('Switch to Customer Mode'),
+        label: Text(context.tr('switchCustomerMode')),
       ),
     ],
   );
@@ -742,8 +742,8 @@ class _ProfileSection extends StatelessWidget {
   Widget build(BuildContext context) => Container(
     padding: const EdgeInsets.all(12),
     decoration: BoxDecoration(
-      color: Colors.white,
-      border: Border.all(color: CoolCareColors.border),
+      color: context.appSurface,
+      border: Border.all(color: context.appBorder),
       borderRadius: BorderRadius.circular(12),
     ),
     child: Column(
@@ -751,8 +751,8 @@ class _ProfileSection extends StatelessWidget {
       children: [
         Text(
           title,
-          style: const TextStyle(
-            color: CoolCareColors.mutedText,
+          style: TextStyle(
+            color: context.appMuted,
             fontWeight: FontWeight.w800,
             fontSize: 11,
           ),
@@ -789,8 +789,8 @@ class _WalletTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) => _EmptyTab(
     icon: Icons.account_balance_wallet_outlined,
-    title: 'Technician Wallet',
-    message: "Today's earnings: ${_money(amount)}",
+    title: context.tr('technicianWallet'),
+    message: context.trArgs('todayEarnings', {'amount': _money(amount)}),
   );
 }
 
@@ -820,7 +820,7 @@ class _EmptyTab extends StatelessWidget {
           Text(
             message,
             textAlign: TextAlign.center,
-            style: const TextStyle(color: CoolCareColors.mutedText),
+            style: TextStyle(color: context.appMuted),
           ),
         ],
       ),
@@ -839,10 +839,10 @@ class _ErrorView extends StatelessWidget {
       children: [
         Text(message),
         const SizedBox(height: 12),
-        FilledButton(onPressed: onRetry, child: const Text('Try Again')),
+        FilledButton(onPressed: onRetry, child: Text(context.tr('tryAgain'))),
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Return to Customer Mode'),
+          child: Text(context.tr('returnCustomerMode')),
         ),
       ],
     ),
@@ -856,16 +856,16 @@ String _initials(String name) => name
     .take(2)
     .map((e) => e[0].toUpperCase())
     .join();
-String _qualification(String value) =>
+String _qualification(BuildContext context, String value) =>
     {
-      'BEGINNER': 'Junior AC Technician',
-      'INTERMEDIATE': 'AC Technician',
-      'ADVANCED': 'Senior AC Technician',
-      'EXPERT': 'AC Specialist',
+      'BEGINNER': context.tr('qualificationBeginner'),
+      'INTERMEDIATE': context.tr('qualificationIntermediate'),
+      'ADVANCED': context.tr('qualificationAdvanced'),
+      'EXPERT': context.tr('qualificationExpert'),
     }[value] ??
-    'CoolCare Technician';
-String _date(DateTime? value) => value == null
-    ? 'Not scheduled'
+    context.tr('coolcareTechnician');
+String _date(BuildContext context, DateTime? value) => value == null
+    ? context.tr('notScheduled')
     : '${value.day.toString().padLeft(2, '0')}/${value.month.toString().padLeft(2, '0')}/${value.year} - ${value.hour.toString().padLeft(2, '0')}:${value.minute.toString().padLeft(2, '0')}';
 String _money(double value) {
   final digits = value.round().toString();

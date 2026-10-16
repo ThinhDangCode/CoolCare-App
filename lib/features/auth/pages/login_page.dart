@@ -72,7 +72,8 @@ class _LoginPageState extends State<LoginPage> {
                       AutofillHints.username,
                       AutofillHints.email,
                     ],
-                    validator: AuthValidators.email,
+                    validator: (value) =>
+                        AuthValidators.email(value, context: context),
                   ),
                   const SizedBox(height: 16),
                   AuthTextField(
@@ -83,8 +84,11 @@ class _LoginPageState extends State<LoginPage> {
                     obscureText: true,
                     textInputAction: TextInputAction.done,
                     autofillHints: const [AutofillHints.password],
-                    validator: (value) =>
-                        AuthValidators.requiredText(value, 'mật khẩu'),
+                    validator: (value) => AuthValidators.requiredText(
+                      value,
+                      'validationPasswordField',
+                      context: context,
+                    ),
                     onFieldSubmitted: (_) => _submit(),
                   ),
                   Align(

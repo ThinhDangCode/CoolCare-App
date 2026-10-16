@@ -59,7 +59,7 @@ class AuthScaffold extends StatelessWidget {
                                       Icons.arrow_back_rounded,
                                       size: 21,
                                     ),
-                                    tooltip: 'Back',
+                                    tooltip: context.tr('back'),
                                   ),
                                 ),
                               const _Wordmark(),

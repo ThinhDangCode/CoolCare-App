@@ -55,9 +55,9 @@ class _EmailVerificationPageState extends State<EmailVerificationPage> {
       widget.email,
     );
     if (sent && mounted) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Đã gửi lại mã xác thực.')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(context.tr('verificationCodeResent'))),
+      );
     }
   }
 
@@ -95,7 +95,8 @@ class _EmailVerificationPageState extends State<EmailVerificationPage> {
                     FilteringTextInputFormatter.digitsOnly,
                     LengthLimitingTextInputFormatter(6),
                   ],
-                  validator: AuthValidators.otp,
+                  validator: (value) =>
+                      AuthValidators.otp(value, context: context),
                   onFieldSubmitted: (_) => _verify(),
                 ),
                 const SizedBox(height: 18),

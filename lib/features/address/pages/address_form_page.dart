@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 
+import '../../../app/localization/app_strings.dart';
 import '../../../app/theme/coolcare_theme.dart';
 import '../controllers/address_controller.dart';
 import '../models/address_model.dart';
@@ -22,9 +23,7 @@ class AddressFormPage extends StatefulWidget {
 
 class _AddressFormPageState extends State<AddressFormPage> {
   static const Color _primary = Color(0xFF078B96);
-  static const Color _text = Color(0xFF17333A);
   static const Color _muted = Color(0xFF718087);
-  static const Color _border = Color(0xFFE1E8EA);
   static const Color _error = Color(0xFFD92D20);
 
   final _formKey = GlobalKey<FormState>();
@@ -202,16 +201,14 @@ class _AddressFormPageState extends State<AddressFormPage> {
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Current location updated successfully.'),
+        SnackBar(
+          content: Text(context.tr('currentLocationUpdated')),
           behavior: SnackBarBehavior.floating,
-          duration: Duration(seconds: 2),
+          duration: const Duration(seconds: 2),
         ),
       );
     } catch (_) {
-      _showLocationError(
-        'Unable to get your current location. Please try again.',
-      );
+      _showLocationError(context.tr('currentLocationUnavailable'));
     } finally {
       if (mounted) {
         setState(() {
@@ -589,19 +586,23 @@ class _AddressFormPageState extends State<AddressFormPage> {
                   ),
                 ),
                 const SizedBox(height: 12),
-                const Text(
-                  'Discard unsaved changes?',
+                Text(
+                  context.tr('discardChangesTitle'),
                   style: TextStyle(
-                    color: _text,
+                    color: Theme.of(context).colorScheme.onSurface,
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
                 const SizedBox(height: 6),
-                const Text(
-                  'You have unsaved changes. Are you sure you want to leave?',
+                Text(
+                  context.tr('discardChangesMessage'),
                   textAlign: TextAlign.center,
-                  style: TextStyle(color: _muted, fontSize: 10, height: 1.5),
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    fontSize: 10,
+                    height: 1.5,
+                  ),
                 ),
                 const SizedBox(height: 18),
                 Row(
@@ -612,12 +613,16 @@ class _AddressFormPageState extends State<AddressFormPage> {
                           Navigator.of(dialogContext).pop(false);
                         },
                         style: OutlinedButton.styleFrom(
-                          foregroundColor: _text,
-                          side: const BorderSide(color: _border),
+                          foregroundColor: Theme.of(
+                            context,
+                          ).colorScheme.onSurface,
+                          side: BorderSide(
+                            color: Theme.of(context).colorScheme.outlineVariant,
+                          ),
                         ),
-                        child: const Text(
-                          'Keep Editing',
-                          style: TextStyle(fontSize: 10),
+                        child: Text(
+                          context.tr('keepEditing'),
+                          style: const TextStyle(fontSize: 10),
                         ),
                       ),
                     ),
@@ -632,9 +637,9 @@ class _AddressFormPageState extends State<AddressFormPage> {
                           foregroundColor: Colors.white,
                           elevation: 0,
                         ),
-                        child: const Text(
-                          'Discard',
-                          style: TextStyle(fontSize: 10),
+                        child: Text(
+                          context.tr('discard'),
+                          style: const TextStyle(fontSize: 10),
                         ),
                       ),
                     ),
@@ -660,11 +665,11 @@ class _AddressFormPageState extends State<AddressFormPage> {
     final text = value?.trim() ?? '';
 
     if (text.isEmpty) {
-      return 'Full name is required';
+      return context.tr('fullNameRequired');
     }
 
     if (text.length > 100) {
-      return 'Maximum 100 characters';
+      return context.trArgs('maximumCharacters', {'count': 100});
     }
 
     return null;
@@ -674,11 +679,11 @@ class _AddressFormPageState extends State<AddressFormPage> {
     final text = value?.trim() ?? '';
 
     if (text.isEmpty) {
-      return 'Phone number is required';
+      return context.tr('phoneRequired');
     }
 
     if (!RegExp(r'^0[0-9]{9}$').hasMatch(text)) {
-      return 'Enter a valid 10-digit phone number';
+      return context.tr('phoneTenDigits');
     }
 
     return null;
@@ -688,11 +693,11 @@ class _AddressFormPageState extends State<AddressFormPage> {
     final text = value?.trim() ?? '';
 
     if (text.isEmpty) {
-      return 'Detailed address is required';
+      return context.tr('detailedAddressRequired');
     }
 
     if (text.length > 255) {
-      return 'Maximum 255 characters';
+      return context.trArgs('maximumCharacters', {'count': 255});
     }
 
     return null;
@@ -739,13 +744,17 @@ class _AddressFormPageState extends State<AddressFormPage> {
           scrolledUnderElevation: 0,
           leading: IconButton(
             onPressed: _back,
-            icon: const Icon(Icons.arrow_back, color: _text, size: 20),
+            icon: Icon(
+              Icons.arrow_back,
+              color: Theme.of(context).colorScheme.onSurface,
+              size: 20,
+            ),
           ),
           titleSpacing: 0,
           title: Text(
-            widget.isEditing ? 'Edit Address' : 'Add New Address',
-            style: const TextStyle(
-              color: _text,
+            context.tr(widget.isEditing ? 'editAddress' : 'addNewAddress'),
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurface,
               fontSize: 15,
               fontWeight: FontWeight.w700,
             ),
@@ -770,47 +779,55 @@ class _AddressFormPageState extends State<AddressFormPage> {
                       const SizedBox(height: 18),
                     ],
 
-                    _sectionTitle('CONTACT INFORMATION'),
+                    _sectionTitle(context.tr('contactInformation')),
                     const SizedBox(height: 12),
 
-                    _label('Full Name *'),
+                    _label(context.tr('fullNameRequiredLabel')),
                     TextFormField(
                       controller: _nameController,
                       validator: _validateName,
                       maxLength: 100,
                       textInputAction: TextInputAction.next,
-                      style: const TextStyle(color: _text, fontSize: 11),
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurface,
+                        fontSize: 11,
+                      ),
                       decoration: _inputDecoration(
-                        'Enter full name',
+                        context.tr('enterFullName'),
                       ).copyWith(counterText: ''),
                     ),
 
                     const SizedBox(height: 14),
 
-                    _label('Phone Number *'),
+                    _label(context.tr('phoneRequiredLabel')),
                     TextFormField(
                       controller: _phoneController,
                       validator: _validatePhone,
                       keyboardType: TextInputType.phone,
                       textInputAction: TextInputAction.next,
-                      style: const TextStyle(color: _text, fontSize: 11),
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurface,
+                        fontSize: 11,
+                      ),
                       inputFormatters: [
                         FilteringTextInputFormatter.digitsOnly,
                         LengthLimitingTextInputFormatter(10),
                       ],
-                      decoration: _inputDecoration('Enter phone number'),
+                      decoration: _inputDecoration(
+                        context.tr('enterPhoneNumber'),
+                      ),
                     ),
 
                     const SizedBox(height: 25),
 
-                    _sectionTitle('ADDRESS'),
+                    _sectionTitle(context.tr('addressSection')),
                     const SizedBox(height: 12),
 
                     _buildCurrentLocationButton(),
 
                     const SizedBox(height: 18),
 
-                    _label('Province / City *'),
+                    _label(context.tr('provinceCityRequiredLabel')),
                     DropdownButtonFormField<ProvinceModel>(
                       initialValue: _selectedProvince,
                       isExpanded: true,
@@ -819,7 +836,9 @@ class _AddressFormPageState extends State<AddressFormPage> {
                         color: _muted,
                         size: 18,
                       ),
-                      decoration: _inputDecoration('Select province/city'),
+                      decoration: _inputDecoration(
+                        context.tr('selectProvinceCity'),
+                      ),
                       items: widget.controller.provinces
                           .map(
                             (province) => DropdownMenuItem<ProvinceModel>(
@@ -827,8 +846,10 @@ class _AddressFormPageState extends State<AddressFormPage> {
                               child: Text(
                                 province.name,
                                 overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                  color: _text,
+                                style: TextStyle(
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onSurface,
                                   fontSize: 11,
                                 ),
                               ),
@@ -838,7 +859,7 @@ class _AddressFormPageState extends State<AddressFormPage> {
                       onChanged: _changeProvince,
                       validator: (_) {
                         if (_selectedProvince == null) {
-                          return 'Province/city is required';
+                          return context.tr('provinceRequired');
                         }
 
                         return null;
@@ -847,7 +868,7 @@ class _AddressFormPageState extends State<AddressFormPage> {
 
                     const SizedBox(height: 14),
 
-                    _label('Ward / Commune *'),
+                    _label(context.tr('wardCommuneRequiredLabel')),
                     DropdownButtonFormField<WardModel>(
                       initialValue: _selectedWard,
                       isExpanded: true,
@@ -867,10 +888,10 @@ class _AddressFormPageState extends State<AddressFormPage> {
                             ),
                       decoration: _inputDecoration(
                         _selectedProvince == null
-                            ? 'Select province/city first'
+                            ? context.tr('selectProvinceFirst')
                             : widget.controller.isLoadingWards
-                            ? 'Loading wards...'
-                            : 'Select ward/commune',
+                            ? context.tr('loadingWards')
+                            : context.tr('selectWardCommune'),
                       ),
                       items: widget.controller.wards
                           .map(
@@ -879,8 +900,10 @@ class _AddressFormPageState extends State<AddressFormPage> {
                               child: Text(
                                 ward.name,
                                 overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                  color: _text,
+                                style: TextStyle(
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onSurface,
                                   fontSize: 11,
                                 ),
                               ),
@@ -894,7 +917,7 @@ class _AddressFormPageState extends State<AddressFormPage> {
                           : _changeWard,
                       validator: (_) {
                         if (_selectedWard == null) {
-                          return 'Ward/commune is required';
+                          return context.tr('wardRequired');
                         }
 
                         return null;
@@ -903,15 +926,18 @@ class _AddressFormPageState extends State<AddressFormPage> {
 
                     const SizedBox(height: 14),
 
-                    _label('Detailed Address *'),
+                    _label(context.tr('detailedAddressRequiredLabel')),
                     TextFormField(
                       controller: _detailController,
                       validator: _validateDetail,
                       maxLines: 2,
                       maxLength: 255,
-                      style: const TextStyle(color: _text, fontSize: 11),
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurface,
+                        fontSize: 11,
+                      ),
                       decoration: _inputDecoration(
-                        'House number, street, building...',
+                        context.tr('detailedAddressHint'),
                       ).copyWith(counterText: ''),
                     ),
 
@@ -942,7 +968,7 @@ class _AddressFormPageState extends State<AddressFormPage> {
         height: 38,
         padding: const EdgeInsets.symmetric(horizontal: 12),
         decoration: BoxDecoration(
-          color: const Color(0xFFEAF7F7),
+          color: context.appSoftSurface,
           borderRadius: BorderRadius.circular(7),
         ),
         child: Row(
@@ -962,8 +988,8 @@ class _AddressFormPageState extends State<AddressFormPage> {
             Expanded(
               child: Text(
                 _isGettingLocation
-                    ? 'Getting your location...'
-                    : 'Use Current Location',
+                    ? context.tr('gettingLocation')
+                    : context.tr('useCurrentLocation'),
                 style: const TextStyle(
                   color: _primary,
                   fontSize: 10,
@@ -986,19 +1012,29 @@ class _AddressFormPageState extends State<AddressFormPage> {
       width: double.infinity,
       padding: const EdgeInsets.all(11),
       decoration: BoxDecoration(
-        color: const Color(0xFFFFF1F0),
+        color: Theme.of(context).colorScheme.errorContainer,
         borderRadius: BorderRadius.circular(7),
-        border: Border.all(color: const Color(0xFFF5B7B1)),
+        border: Border.all(
+          color: Theme.of(context).colorScheme.error.withValues(alpha: 0.35),
+        ),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(Icons.error_outline, color: _error, size: 17),
+          Icon(
+            Icons.error_outline,
+            color: Theme.of(context).colorScheme.onErrorContainer,
+            size: 17,
+          ),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
               _formError!,
-              style: const TextStyle(color: _error, fontSize: 9.5, height: 1.4),
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onErrorContainer,
+                fontSize: 9.5,
+                height: 1.4,
+              ),
             ),
           ),
           GestureDetector(
@@ -1007,7 +1043,11 @@ class _AddressFormPageState extends State<AddressFormPage> {
                 _formError = null;
               });
             },
-            child: const Icon(Icons.close, color: _error, size: 15),
+            child: Icon(
+              Icons.close,
+              color: Theme.of(context).colorScheme.onErrorContainer,
+              size: 15,
+            ),
           ),
         ],
       ),
@@ -1022,30 +1062,33 @@ class _AddressFormPageState extends State<AddressFormPage> {
     final currentDefault = widget.isEditing && widget.address!.isDefault;
 
     return Material(
-      color: const Color(0xFFF4FAFA),
+      color: context.appSoftSurface,
       borderRadius: BorderRadius.circular(8),
       child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: const Color(0xFFDCEBEC)),
+          border: Border.all(color: context.appBorder),
         ),
         child: SwitchListTile(
           dense: true,
           contentPadding: const EdgeInsets.symmetric(horizontal: 11),
           activeTrackColor: _primary,
-          title: const Text(
-            'Set as default address',
+          title: Text(
+            context.tr('setDefaultAddress'),
             style: TextStyle(
-              color: _text,
+              color: Theme.of(context).colorScheme.onSurface,
               fontSize: 10,
               fontWeight: FontWeight.w600,
             ),
           ),
           subtitle: Text(
             currentDefault
-                ? 'This is your current default address.'
-                : 'Use this address as the default for new bookings.',
-            style: const TextStyle(color: _muted, fontSize: 8.5),
+                ? context.tr('currentDefaultAddress')
+                : context.tr('defaultAddressHint'),
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+              fontSize: 8.5,
+            ),
           ),
           value: _isDefault,
           onChanged: currentDefault
@@ -1088,7 +1131,7 @@ class _AddressFormPageState extends State<AddressFormPage> {
                 ),
               )
             : Text(
-                widget.isEditing ? 'Save Changes' : 'Save Address',
+                context.tr(widget.isEditing ? 'saveChanges' : 'saveAddress'),
                 style: const TextStyle(
                   fontSize: 10,
                   fontWeight: FontWeight.w700,

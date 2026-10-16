@@ -204,7 +204,7 @@ class BookingController extends ChangeNotifier {
   // MANAGE AC UNITS
   void addUnit() {
     if (units.length >= 20) {
-      formErrorMessage = 'You can add up to 20 AC units.';
+      formErrorMessage = 'bookingValidationMaxUnits';
       _notify();
       return;
     }
@@ -328,38 +328,38 @@ class BookingController extends ChangeNotifier {
   // VALIDATE BOOKING FORM
   String? validateBooking() {
     if (customerAddressId == null) {
-      return 'Please select a service address.';
+      return 'bookingValidationAddress';
     }
 
     if (recipientName.trim().isEmpty || recipientName.trim().length > 100) {
-      return 'Please enter a valid recipient name.';
+      return 'bookingValidationRecipientName';
     }
 
     if (!RegExp(r'^0[0-9]{9}$').hasMatch(recipientPhone.trim())) {
-      return 'Please enter a valid 10-digit phone number.';
+      return 'bookingValidationPhone';
     }
 
     if (description.trim().length > 2000) {
-      return 'Booking description is too long.';
+      return 'bookingValidationDescription';
     }
 
     if (scheduledAt == null || !scheduledAt!.isAfter(DateTime.now())) {
-      return 'Please select a future service schedule.';
+      return 'bookingValidationSchedule';
     }
 
     for (var index = 0; index < units.length; index++) {
       final unit = units[index];
 
       if (unit.description.trim().length > 2000) {
-        return 'Description for AC unit ${index + 1} is too long.';
+        return 'bookingValidationUnitDescription:${index + 1}';
       }
 
       if (unit.acModelId != null && unit.acBrandId == null) {
-        return 'Please select a brand for AC unit ${index + 1}.';
+        return 'bookingValidationUnitBrand:${index + 1}';
       }
 
       if (unit.serviceIds.isEmpty) {
-        return 'Please select a service for AC unit ${index + 1}.';
+        return 'bookingValidationUnitService:${index + 1}';
       }
     }
 

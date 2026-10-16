@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../app/localization/app_strings.dart';
 import '../../../app/theme/coolcare_theme.dart';
 import '../../../core/network/api_exception.dart';
 import '../models/view_job_request.dart';
@@ -15,10 +16,6 @@ class ViewJobRequestDetailPage extends StatefulWidget {
   final ViewJobRequest request;
   final TechnicianPortalRepository? repository;
 
-  static const _text = Color(0xFF193943);
-  static const _muted = Color(0xFF657F8A);
-  static const _border = Color(0xFFDBE7EB);
-
   @override
   State<ViewJobRequestDetailPage> createState() =>
       _ViewJobRequestDetailPageState();
@@ -33,27 +30,29 @@ class _ViewJobRequestDetailPageState extends State<ViewJobRequestDetailPage> {
     final booking = request.booking;
     final notes = _notes(booking);
     return Scaffold(
-      backgroundColor: const Color(0xFFF7F9FA),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         toolbarHeight: 54,
         centerTitle: false,
         leadingWidth: 48,
         leading: IconButton(
-          tooltip: 'Back',
+          tooltip: context.tr('back'),
           onPressed: () => Navigator.of(context).pop(),
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 19),
         ),
         titleSpacing: 0,
-        title: const Text(
-          'Job Details',
+        title: Text(
+          context.tr('jobDetails'),
           style: TextStyle(
-            color: ViewJobRequestDetailPage._text,
+            color: Theme.of(context).colorScheme.onSurface,
             fontSize: 20,
             fontWeight: FontWeight.w800,
           ),
         ),
-        shape: const Border(
-          bottom: BorderSide(color: ViewJobRequestDetailPage._border),
+        shape: Border(
+          bottom: BorderSide(
+            color: Theme.of(context).colorScheme.outlineVariant,
+          ),
         ),
       ),
       body: SafeArea(
@@ -64,21 +63,21 @@ class _ViewJobRequestDetailPageState extends State<ViewJobRequestDetailPage> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               _Section(
-                label: 'SERVICE TYPE',
+                label: context.tr('jobServiceType'),
                 children: [
                   Text(
                     _serviceTitle(booking),
-                    style: const TextStyle(
-                      color: ViewJobRequestDetailPage._text,
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurface,
                       fontSize: 18,
                       fontWeight: FontWeight.w800,
                     ),
                   ),
                   const SizedBox(height: 5),
                   Text(
-                    'Customer: ${_value(request.customer.name)}',
-                    style: const TextStyle(
-                      color: ViewJobRequestDetailPage._muted,
+                    '${context.tr('jobCustomer')}: ${_value(context, request.customer.name)}',
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                       fontSize: 13,
                     ),
                   ),
@@ -86,21 +85,21 @@ class _ViewJobRequestDetailPageState extends State<ViewJobRequestDetailPage> {
               ),
               const SizedBox(height: 14),
               _Section(
-                label: 'SCHEDULE & LOCATION',
+                label: context.tr('jobScheduleLocation'),
                 children: [
                   Text(
-                    _date(booking.scheduledAt),
-                    style: const TextStyle(
-                      color: ViewJobRequestDetailPage._text,
+                    _date(context, booking.scheduledAt),
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurface,
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
                   const SizedBox(height: 7),
                   Text(
-                    _value(booking.address),
-                    style: const TextStyle(
-                      color: ViewJobRequestDetailPage._muted,
+                    _value(context, booking.address),
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                       fontSize: 13,
                     ),
                   ),
@@ -109,7 +108,7 @@ class _ViewJobRequestDetailPageState extends State<ViewJobRequestDetailPage> {
               if (booking.units.isNotEmpty) ...[
                 const SizedBox(height: 14),
                 _Section(
-                  label: 'AC SPECIFICATION',
+                  label: context.tr('jobAcSpecification'),
                   children: [
                     for (var index = 0; index < booking.units.length; index++)
                       _UnitSpecification(
@@ -122,12 +121,12 @@ class _ViewJobRequestDetailPageState extends State<ViewJobRequestDetailPage> {
               if (notes.isNotEmpty) ...[
                 const SizedBox(height: 14),
                 _Section(
-                  label: 'CUSTOMER NOTES',
+                  label: context.tr('jobCustomerNotes'),
                   children: [
                     Text(
                       notes,
-                      style: const TextStyle(
-                        color: ViewJobRequestDetailPage._text,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurface,
                         fontSize: 13,
                         height: 1.35,
                       ),
@@ -137,12 +136,15 @@ class _ViewJobRequestDetailPageState extends State<ViewJobRequestDetailPage> {
               ],
               const SizedBox(height: 14),
               _Section(
-                label: 'BOOKING INFORMATION',
+                label: context.tr('jobBookingInformation'),
                 children: [
-                  _InformationRow(label: 'Booking code:', value: booking.code),
+                  _InformationRow(
+                    label: context.tr('jobBookingCode'),
+                    value: booking.code,
+                  ),
                   const SizedBox(height: 8),
                   _InformationRow(
-                    label: 'Contact:',
+                    label: context.tr('jobContact'),
                     value: [
                       booking.recipientName,
                       booking.recipientPhone,
@@ -151,7 +153,7 @@ class _ViewJobRequestDetailPageState extends State<ViewJobRequestDetailPage> {
                   if (request.matchReason?.trim().isNotEmpty == true) ...[
                     const SizedBox(height: 8),
                     _InformationRow(
-                      label: 'Match reason:',
+                      label: context.tr('jobMatchReason'),
                       value: request.matchReason!,
                     ),
                   ],
@@ -166,10 +168,12 @@ class _ViewJobRequestDetailPageState extends State<ViewJobRequestDetailPage> {
               top: false,
               child: Container(
                 padding: const EdgeInsets.fromLTRB(16, 15, 16, 16),
-                decoration: const BoxDecoration(
-                  color: Colors.white,
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surface,
                   border: Border(
-                    top: BorderSide(color: ViewJobRequestDetailPage._border),
+                    top: BorderSide(
+                      color: Theme.of(context).colorScheme.outlineVariant,
+                    ),
                   ),
                 ),
                 child: Row(
@@ -189,7 +193,7 @@ class _ViewJobRequestDetailPageState extends State<ViewJobRequestDetailPage> {
                             fontWeight: FontWeight.w700,
                           ),
                         ),
-                        child: const Text('Decline'),
+                        child: Text(context.tr('jobDecline')),
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -215,7 +219,7 @@ class _ViewJobRequestDetailPageState extends State<ViewJobRequestDetailPage> {
                                   color: Colors.white,
                                 ),
                               )
-                            : const Text('Accept Job'),
+                            : Text(context.tr('jobAccept')),
                       ),
                     ),
                   ],
@@ -227,10 +231,12 @@ class _ViewJobRequestDetailPageState extends State<ViewJobRequestDetailPage> {
               top: false,
               child: Container(
                 padding: const EdgeInsets.fromLTRB(16, 15, 16, 16),
-                decoration: const BoxDecoration(
-                  color: Colors.white,
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surface,
                   border: Border(
-                    top: BorderSide(color: ViewJobRequestDetailPage._border),
+                    top: BorderSide(
+                      color: Theme.of(context).colorScheme.outlineVariant,
+                    ),
                   ),
                 ),
                 child: Row(
@@ -250,7 +256,7 @@ class _ViewJobRequestDetailPageState extends State<ViewJobRequestDetailPage> {
                             ),
                           ),
                           icon: const Icon(Icons.cancel_outlined, size: 18),
-                          label: const Text('Cancel'),
+                          label: Text(context.tr('cancel')),
                         ),
                       ),
                     if (request.canCancelAcceptedJob && request.canComplete)
@@ -279,7 +285,7 @@ class _ViewJobRequestDetailPageState extends State<ViewJobRequestDetailPage> {
                                   ),
                                 )
                               : const Icon(Icons.check_circle_outline_rounded),
-                          label: const Text('Complete Job'),
+                          label: Text(context.tr('jobComplete')),
                         ),
                       ),
                   ],
@@ -305,7 +311,7 @@ class _ViewJobRequestDetailPageState extends State<ViewJobRequestDetailPage> {
     final count = booking.units.length;
     final suffix = count == 0
         ? ''
-        : ' ($count ${count == 1 ? 'unit' : 'units'})';
+        : ' (${context.tr(count == 1 ? 'jobUnitCount' : 'jobUnitsCount').replaceFirst('{count}', '$count')})';
     return '${booking.primaryServiceName}$suffix';
   }
 
@@ -313,18 +319,16 @@ class _ViewJobRequestDetailPageState extends State<ViewJobRequestDetailPage> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Accept this job?'),
-        content: const Text(
-          'The booking will move to Ongoing and the customer will be notified.',
-        ),
+        title: Text(context.tr('jobAcceptTitle')),
+        content: Text(context.tr('jobAcceptMessage')),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
+            child: Text(context.tr('cancel')),
           ),
           FilledButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Accept Job'),
+            child: Text(context.tr('jobAccept')),
           ),
         ],
       ),
@@ -337,22 +341,20 @@ class _ViewJobRequestDetailPageState extends State<ViewJobRequestDetailPage> {
     final reason = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Decline this job?'),
+        title: Text(context.tr('jobDeclineTitle')),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'This request will be removed from New Requests and the customer will be notified.',
-            ),
+            Text(context.tr('jobDeclineMessage')),
             const SizedBox(height: 14),
             TextField(
               onChanged: (value) => enteredReason = value,
               maxLength: 500,
               maxLines: 3,
-              decoration: const InputDecoration(
-                labelText: 'Reason (optional)',
-                hintText: 'Enter a reason for declining',
+              decoration: InputDecoration(
+                labelText: context.tr('jobReasonOptional'),
+                hintText: context.tr('jobDeclineReasonHint'),
               ),
             ),
           ],
@@ -360,14 +362,14 @@ class _ViewJobRequestDetailPageState extends State<ViewJobRequestDetailPage> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
+            child: Text(context.tr('cancel')),
           ),
           FilledButton(
             style: FilledButton.styleFrom(
               backgroundColor: const Color(0xFFDC2626),
             ),
             onPressed: () => Navigator.of(context).pop(enteredReason.trim()),
-            child: const Text('Decline'),
+            child: Text(context.tr('jobDecline')),
           ),
         ],
       ),
@@ -379,21 +381,19 @@ class _ViewJobRequestDetailPageState extends State<ViewJobRequestDetailPage> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Complete this job?'),
-        content: const Text(
-          'The customer will be asked to confirm completion. The job stays Ongoing until they confirm.',
-        ),
+        title: Text(context.tr('jobCompleteTitle')),
+        content: Text(context.tr('jobCompleteMessage')),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
+            child: Text(context.tr('cancel')),
           ),
           FilledButton(
             style: FilledButton.styleFrom(
               backgroundColor: const Color(0xFF16A34A),
             ),
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Complete Job'),
+            child: Text(context.tr('jobComplete')),
           ),
         ],
       ),
@@ -407,14 +407,12 @@ class _ViewJobRequestDetailPageState extends State<ViewJobRequestDetailPage> {
       context: context,
       builder: (dialogContext) => StatefulBuilder(
         builder: (context, setDialogState) => AlertDialog(
-          title: const Text('Cancel accepted job?'),
+          title: Text(context.tr('jobCancelAcceptedTitle')),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'The customer booking will be cancelled. A late cancellation may add penalty points.',
-              ),
+              Text(context.tr('jobCancelAcceptedMessage')),
               const SizedBox(height: 14),
               TextField(
                 autofocus: true,
@@ -424,9 +422,9 @@ class _ViewJobRequestDetailPageState extends State<ViewJobRequestDetailPage> {
                   reason = value.trim();
                   setDialogState(() {});
                 },
-                decoration: const InputDecoration(
-                  labelText: 'Cancellation reason',
-                  hintText: 'At least 5 characters',
+                decoration: InputDecoration(
+                  labelText: context.tr('jobCancellationReason'),
+                  hintText: context.tr('jobReasonMinLength'),
                 ),
               ),
             ],
@@ -434,7 +432,7 @@ class _ViewJobRequestDetailPageState extends State<ViewJobRequestDetailPage> {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(dialogContext).pop(),
-              child: const Text('Back'),
+              child: Text(context.tr('back')),
             ),
             FilledButton(
               style: FilledButton.styleFrom(
@@ -443,7 +441,7 @@ class _ViewJobRequestDetailPageState extends State<ViewJobRequestDetailPage> {
               onPressed: reason.length < 5
                   ? null
                   : () => Navigator.of(dialogContext).pop(reason),
-              child: const Text('Cancel Job'),
+              child: Text(context.tr('jobCancel')),
             ),
           ],
         ),
@@ -467,8 +465,10 @@ class _ViewJobRequestDetailPageState extends State<ViewJobRequestDetailPage> {
         SnackBar(
           content: Text(
             penalty == null
-                ? 'Job cancelled successfully.'
-                : 'Job cancelled. $penalty penalty points were applied.',
+                ? context.tr('jobCancelledSuccess')
+                : context
+                      .tr('jobPenaltyApplied')
+                      .replaceFirst('{count}', '$penalty'),
           ),
         ),
       );
@@ -481,11 +481,9 @@ class _ViewJobRequestDetailPageState extends State<ViewJobRequestDetailPage> {
       }
     } catch (_) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Unable to cancel this job. Please try again.'),
-          ),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(context.tr('jobCancelFailed'))));
       }
     } finally {
       if (mounted) setState(() => _submitting = false);
@@ -500,11 +498,7 @@ class _ViewJobRequestDetailPageState extends State<ViewJobRequestDetailPage> {
       await repository.completeJob(widget.request.id);
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Completion submitted. Awaiting customer confirmation.',
-          ),
-        ),
+        SnackBar(content: Text(context.tr('jobCompletionSubmitted'))),
       );
       Navigator.of(context).pop(true);
     } on ApiException catch (error) {
@@ -516,9 +510,7 @@ class _ViewJobRequestDetailPageState extends State<ViewJobRequestDetailPage> {
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Unable to complete this job. Please try again.'),
-          ),
+          SnackBar(content: Text(context.tr('jobCompleteFailed'))),
         );
       }
     } finally {
@@ -541,8 +533,8 @@ class _ViewJobRequestDetailPageState extends State<ViewJobRequestDetailPage> {
         SnackBar(
           content: Text(
             accept
-                ? 'Job accepted successfully.'
-                : 'Job declined successfully.',
+                ? context.tr('jobAcceptedSuccess')
+                : context.tr('jobDeclinedSuccess'),
           ),
         ),
       );
@@ -556,9 +548,7 @@ class _ViewJobRequestDetailPageState extends State<ViewJobRequestDetailPage> {
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Unable to save your response. Please try again.'),
-          ),
+          SnackBar(content: Text(context.tr('jobResponseFailed'))),
         );
       }
     } finally {
@@ -574,29 +564,32 @@ class _Section extends StatelessWidget {
   final List<Widget> children;
 
   @override
-  Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.all(14),
-    decoration: BoxDecoration(
-      color: Colors.white,
-      border: Border.all(color: ViewJobRequestDetailPage._border),
-      borderRadius: BorderRadius.circular(12),
-    ),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: const TextStyle(
-            color: ViewJobRequestDetailPage._muted,
-            fontSize: 12,
-            fontWeight: FontWeight.w700,
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: colors.surface,
+        border: Border.all(color: colors.outlineVariant),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              color: colors.onSurfaceVariant,
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+            ),
           ),
-        ),
-        const SizedBox(height: 8),
-        ...children,
-      ],
-    ),
-  );
+          const SizedBox(height: 8),
+          ...children,
+        ],
+      ),
+    );
+  }
 }
 
 class _UnitSpecification extends StatelessWidget {
@@ -614,22 +607,31 @@ class _UnitSpecification extends StatelessWidget {
     return Column(
       children: [
         if (unit.unitNumber > 0) ...[
-          _InformationRow(label: 'Unit:', value: unit.unitNumber.toString()),
+          _InformationRow(
+            label: context.tr('jobUnit'),
+            value: unit.unitNumber.toString(),
+          ),
           const SizedBox(height: 8),
         ],
-        _InformationRow(label: 'Brand & Model:', value: brandAndModel),
+        _InformationRow(
+          label: context.tr('jobBrandModel'),
+          value: brandAndModel,
+        ),
         const SizedBox(height: 8),
         _InformationRow(
-          label: 'Services:',
+          label: context.tr('jobServices'),
           value: unit.services
               .map((service) => service.name)
               .where((name) => name.trim().isNotEmpty)
               .join(', '),
         ),
         if (showDivider) ...[
-          const Padding(
+          Padding(
             padding: EdgeInsets.symmetric(vertical: 12),
-            child: Divider(height: 1, color: ViewJobRequestDetailPage._border),
+            child: Divider(
+              height: 1,
+              color: Theme.of(context).colorScheme.outlineVariant,
+            ),
           ),
         ],
       ],
@@ -649,18 +651,18 @@ class _InformationRow extends StatelessWidget {
     children: [
       Text(
         label,
-        style: const TextStyle(
-          color: ViewJobRequestDetailPage._muted,
+        style: TextStyle(
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
           fontSize: 13,
         ),
       ),
       const SizedBox(width: 12),
       Expanded(
         child: Text(
-          _value(value),
+          _value(context, value),
           textAlign: TextAlign.right,
-          style: const TextStyle(
-            color: ViewJobRequestDetailPage._text,
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onSurface,
             fontSize: 13,
             fontWeight: FontWeight.w600,
           ),
@@ -670,10 +672,11 @@ class _InformationRow extends StatelessWidget {
   );
 }
 
-String _value(String value) => value.trim().isEmpty ? 'Not provided' : value;
+String _value(BuildContext context, String value) =>
+    value.trim().isEmpty ? context.tr('jobNotProvided') : value;
 
-String _date(DateTime? value) {
-  if (value == null) return 'Not scheduled';
+String _date(BuildContext context, DateTime? value) {
+  if (value == null) return context.tr('jobNotScheduled');
   final local = value.toLocal();
   String two(int number) => number.toString().padLeft(2, '0');
   return '${two(local.day)}/${two(local.month)}/${local.year} - ${two(local.hour)}:${two(local.minute)}';

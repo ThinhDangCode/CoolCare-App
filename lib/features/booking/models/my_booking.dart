@@ -33,9 +33,12 @@ class MyBooking {
       code: json['bookingCode']?.toString() ?? '',
       status: json['status']?.toString() ?? '',
       scheduledAt: DateTime.tryParse(json['scheduledAt']?.toString() ?? ''),
-      address: [addressData['addressLine'], addressData['ward'], addressData['city']]
-          .where((part) => part != null && part.toString().trim().isNotEmpty)
-          .join(', '),
+      address:
+          [addressData['addressLine'], addressData['ward'], addressData['city']]
+              .where(
+                (part) => part != null && part.toString().trim().isNotEmpty,
+              )
+              .join(', '),
       totalAmount: pricingData['totalAmount'] is num
           ? pricingData['totalAmount'] as num
           : num.tryParse(pricingData['totalAmount']?.toString() ?? ''),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../app/localization/app_strings.dart';
 import '../../../app/theme/coolcare_theme.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/network/api_exception.dart';
@@ -32,7 +33,12 @@ class _ManageSkillsPageState extends State<ManageSkillsPage> {
   }
 
   Future<void> _load() async {
-    if (mounted) setState(() { _loading = true; _error = null; });
+    if (mounted) {
+      setState(() {
+        _loading = true;
+        _error = null;
+      });
+    }
     try {
       final result = await Future.wait([
         _repository.skills(),
@@ -46,9 +52,19 @@ class _ManageSkillsPageState extends State<ManageSkillsPage> {
         _loading = false;
       });
     } on ApiException catch (error) {
-      if (mounted) setState(() { _error = error.message; _loading = false; });
+      if (mounted) {
+        setState(() {
+          _error = error.message;
+          _loading = false;
+        });
+      }
     } catch (_) {
-      if (mounted) setState(() { _error = 'Không thể tải danh sách kỹ năng.'; _loading = false; });
+      if (mounted) {
+        setState(() {
+          _error = context.tr('unableLoadSkills');
+          _loading = false;
+        });
+      }
     }
   }
 
@@ -65,15 +81,15 @@ class _ManageSkillsPageState extends State<ManageSkillsPage> {
         await _repository.addSkill(skillId);
       }
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Đã cập nhật kỹ năng.')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(context.tr('skillsUpdated'))));
       await _load();
     } on ApiException catch (error) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error.message)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(error.message)));
       await _load();
     } finally {
       if (mounted) setState(() => _saving = false);
@@ -84,11 +100,19 @@ class _ManageSkillsPageState extends State<ManageSkillsPage> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Xóa kỹ năng?'),
-        content: Text('Bạn có muốn loại bỏ “${skill.name}” khỏi hồ sơ?'),
+        title: Text(context.tr('removeSkillTitle')),
+        content: Text(
+          context.trArgs('removeSkillMessage', {'name': skill.name}),
+        ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Hủy')),
-          FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('Xóa')),
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(context.tr('cancel')),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(context.tr('delete')),
+          ),
         ],
       ),
     );
@@ -96,21 +120,27 @@ class _ManageSkillsPageState extends State<ManageSkillsPage> {
     try {
       await _repository.removeSkill(skill.id);
       if (!mounted) return;
-      setState(() => _current = _current.where((item) => item.id != skill.id).toList());
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Đã loại bỏ kỹ năng.')),
+      setState(
+        () => _current = _current.where((item) => item.id != skill.id).toList(),
       );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(context.tr('skillRemoved'))));
     } on ApiException catch (error) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(error.message)));
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(error.message)));
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    backgroundColor: const Color(0xFFF6F8F9),
+    backgroundColor: Theme.of(context).scaffoldBackgroundColor,
     appBar: AppBar(
-      backgroundColor: Colors.white,
-      surfaceTintColor: Colors.white,
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      surfaceTintColor: Colors.transparent,
       elevation: 0,
       leading: IconButton(
         icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 19),
@@ -118,62 +148,102 @@ class _ManageSkillsPageState extends State<ManageSkillsPage> {
         onPressed: () => Navigator.maybePop(context),
       ),
       titleSpacing: 0,
-      title: const Text('My Skills', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
+      title: Text(
+        context.tr('mySkills'),
+        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+      ),
     ),
     body: _loading
         ? const Center(child: CircularProgressIndicator())
         : _error != null
-            ? _ErrorState(message: _error!, onRetry: _load)
-            : RefreshIndicator(
-                onRefresh: _load,
-                child: ListView(
-                  padding: const EdgeInsets.all(16),
-                  children: [
-                    const _PreviewCard(),
-                    const SizedBox(height: 20),
-                    _SectionTitle('MY CURRENT SKILLS (${_current.length})'),
-                    const SizedBox(height: 8),
-                    if (_current.isEmpty)
-                      const Text('Chưa có kỹ năng.', style: TextStyle(color: CoolCareColors.mutedText))
-                    else
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: _current.map((skill) => _SkillChip(skill: skill, onRemove: () => _remove(skill))).toList(),
-                      ),
-                    const SizedBox(height: 24),
-                    const _SectionTitle('ADD MORE SKILLS'),
-                    const SizedBox(height: 10),
-                    if (_availableOptions.isEmpty)
-                      const Text('Không còn kỹ năng mới để thêm.', style: TextStyle(color: CoolCareColors.mutedText))
-                    else
-                      ..._availableOptions.map((option) => Padding(
-                        padding: const EdgeInsets.only(bottom: 8),
-                        child: _SkillOptionTile(
-                          option: option,
-                          selected: _selected.contains(option.id),
-                          onChanged: (selected) => setState(() {
-                            if (selected) { _selected.add(option.id); } else { _selected.remove(option.id); }
-                          }),
-                        ),
-                      )),
-                    const SizedBox(height: 12),
-                    SizedBox(
-                      height: 46,
-                      child: FilledButton(
-                        onPressed: _selected.isEmpty || _saving ? null : _save,
-                        style: FilledButton.styleFrom(
-                          backgroundColor: CoolCareColors.primary,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                        ),
-                        child: _saving
-                            ? const SizedBox.square(dimension: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                            : const Text('Save Skills', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+        ? _ErrorState(message: _error!, onRetry: _load)
+        : RefreshIndicator(
+            onRefresh: _load,
+            child: ListView(
+              padding: const EdgeInsets.all(16),
+              children: [
+                const _PreviewCard(),
+                const SizedBox(height: 20),
+                _SectionTitle(
+                  context.trArgs('currentSkillsCount', {
+                    'count': _current.length,
+                  }),
+                ),
+                const SizedBox(height: 8),
+                if (_current.isEmpty)
+                  Text(
+                    context.tr('noSkills'),
+                    style: const TextStyle(color: CoolCareColors.mutedText),
+                  )
+                else
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: _current
+                        .map(
+                          (skill) => _SkillChip(
+                            skill: skill,
+                            onRemove: () => _remove(skill),
+                          ),
+                        )
+                        .toList(),
+                  ),
+                const SizedBox(height: 24),
+                _SectionTitle(context.tr('addMoreSkills')),
+                const SizedBox(height: 10),
+                if (_availableOptions.isEmpty)
+                  Text(
+                    context.tr('noMoreSkills'),
+                    style: const TextStyle(color: CoolCareColors.mutedText),
+                  )
+                else
+                  ..._availableOptions.map(
+                    (option) => Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: _SkillOptionTile(
+                        option: option,
+                        selected: _selected.contains(option.id),
+                        onChanged: (selected) => setState(() {
+                          if (selected) {
+                            _selected.add(option.id);
+                          } else {
+                            _selected.remove(option.id);
+                          }
+                        }),
                       ),
                     ),
-                  ],
+                  ),
+                const SizedBox(height: 12),
+                SizedBox(
+                  height: 46,
+                  child: FilledButton(
+                    onPressed: _selected.isEmpty || _saving ? null : _save,
+                    style: FilledButton.styleFrom(
+                      backgroundColor: CoolCareColors.primary,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: _saving
+                        ? const SizedBox.square(
+                            dimension: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                        : Text(
+                            context.tr('saveSkills'),
+                            style: const TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                  ),
                 ),
-              ),
+              ],
+            ),
+          ),
   );
 }
 
@@ -182,16 +252,42 @@ class _PreviewCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Container(
     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-    decoration: BoxDecoration(color: const Color(0xFFEAF6F7), borderRadius: BorderRadius.circular(10)),
-    child: const Row(children: [
-      Icon(Icons.auto_awesome_rounded, size: 16, color: CoolCareColors.primary),
-      SizedBox(width: 10),
-      Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text('AC Cleaning (Preview)', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
-        SizedBox(height: 2),
-        Text('Reference price from 150,000 VND', style: TextStyle(fontSize: 11, color: CoolCareColors.mutedText)),
-      ])),
-    ]),
+    decoration: BoxDecoration(
+      color: context.appSoftSurface,
+      borderRadius: BorderRadius.circular(10),
+    ),
+    child: Row(
+      children: [
+        const Icon(
+          Icons.auto_awesome_rounded,
+          size: 16,
+          color: CoolCareColors.primary,
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                context.tr('skillPreview'),
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                context.tr('skillReferencePrice'),
+                style: const TextStyle(
+                  fontSize: 11,
+                  color: CoolCareColors.mutedText,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    ),
   );
 }
 
@@ -199,7 +295,14 @@ class _SectionTitle extends StatelessWidget {
   const _SectionTitle(this.text);
   final String text;
   @override
-  Widget build(BuildContext context) => Text(text, style: const TextStyle(color: CoolCareColors.mutedText, fontSize: 13, fontWeight: FontWeight.w700));
+  Widget build(BuildContext context) => Text(
+    text,
+    style: const TextStyle(
+      color: CoolCareColors.mutedText,
+      fontSize: 13,
+      fontWeight: FontWeight.w700,
+    ),
+  );
 }
 
 class _SkillChip extends StatelessWidget {
@@ -208,47 +311,98 @@ class _SkillChip extends StatelessWidget {
   final VoidCallback onRemove;
   @override
   Widget build(BuildContext context) => Material(
-    color: skill.isAvailable ? const Color(0xFFEAF6F7) : const Color(0xFFF0F2F3),
+    color: skill.isAvailable
+        ? const Color(0xFFEAF6F7)
+        : const Color(0xFFF0F2F3),
     borderRadius: BorderRadius.circular(20),
     child: InkWell(
       onTap: onRemove,
       borderRadius: BorderRadius.circular(20),
       child: Padding(
         padding: const EdgeInsets.fromLTRB(12, 8, 10, 8),
-        child: Row(mainAxisSize: MainAxisSize.min, children: [
-          Text(skill.name, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: skill.isAvailable ? CoolCareColors.primary : CoolCareColors.mutedText)),
-          const SizedBox(width: 6),
-          Icon(Icons.close_rounded, size: 15, color: skill.isAvailable ? CoolCareColors.primary : CoolCareColors.mutedText),
-        ]),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              skill.name,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: skill.isAvailable
+                    ? CoolCareColors.primary
+                    : CoolCareColors.mutedText,
+              ),
+            ),
+            const SizedBox(width: 6),
+            Icon(
+              Icons.close_rounded,
+              size: 15,
+              color: skill.isAvailable
+                  ? CoolCareColors.primary
+                  : CoolCareColors.mutedText,
+            ),
+          ],
+        ),
       ),
     ),
   );
 }
 
 class _SkillOptionTile extends StatelessWidget {
-  const _SkillOptionTile({required this.option, required this.selected, required this.onChanged});
+  const _SkillOptionTile({
+    required this.option,
+    required this.selected,
+    required this.onChanged,
+  });
   final PortalSkillOption option;
   final bool selected;
   final ValueChanged<bool> onChanged;
   @override
   Widget build(BuildContext context) => Material(
-    color: Colors.white,
-    shape: RoundedRectangleBorder(side: const BorderSide(color: CoolCareColors.border), borderRadius: BorderRadius.circular(12)),
+    color: Theme.of(context).colorScheme.surface,
+    shape: RoundedRectangleBorder(
+      side: BorderSide(color: Theme.of(context).colorScheme.outlineVariant),
+      borderRadius: BorderRadius.circular(12),
+    ),
     child: InkWell(
       onTap: () => onChanged(!selected),
       borderRadius: BorderRadius.circular(12),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-        child: Row(children: [
-          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(option.name, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
-            if (option.serviceName.isNotEmpty) Text(option.serviceName, style: const TextStyle(fontSize: 11, color: CoolCareColors.mutedText)),
-          ])),
-          SizedBox.square(
-            dimension: 20,
-            child: Checkbox(value: selected, onChanged: (value) => onChanged(value ?? false), materialTapTargetSize: MaterialTapTargetSize.shrinkWrap),
-          ),
-        ]),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    option.name,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  if (option.serviceName.isNotEmpty)
+                    Text(
+                      option.serviceName,
+                      style: const TextStyle(
+                        fontSize: 11,
+                        color: CoolCareColors.mutedText,
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            SizedBox.square(
+              dimension: 20,
+              child: Checkbox(
+                value: selected,
+                onChanged: (value) => onChanged(value ?? false),
+                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
+            ),
+          ],
+        ),
       ),
     ),
   );
@@ -259,14 +413,26 @@ class _ErrorState extends StatelessWidget {
   final String message;
   final VoidCallback onRetry;
   @override
-  Widget build(BuildContext context) => Center(child: Padding(
-    padding: const EdgeInsets.all(24),
-    child: Column(mainAxisSize: MainAxisSize.min, children: [
-      const Icon(Icons.error_outline_rounded, size: 44, color: CoolCareColors.primary),
-      const SizedBox(height: 12),
-      Text(message, textAlign: TextAlign.center),
-      const SizedBox(height: 14),
-      OutlinedButton(onPressed: onRetry, child: const Text('Thử lại')),
-    ]),
-  ));
+  Widget build(BuildContext context) => Center(
+    child: Padding(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(
+            Icons.error_outline_rounded,
+            size: 44,
+            color: CoolCareColors.primary,
+          ),
+          const SizedBox(height: 12),
+          Text(message, textAlign: TextAlign.center),
+          const SizedBox(height: 14),
+          OutlinedButton(
+            onPressed: onRetry,
+            child: Text(context.tr('tryAgain')),
+          ),
+        ],
+      ),
+    ),
+  );
 }

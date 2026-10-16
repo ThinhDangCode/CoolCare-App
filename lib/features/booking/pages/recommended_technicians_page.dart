@@ -26,13 +26,11 @@ class RecommendedTechnician {
   final String? matchReason;
 }
 
-typedef LoadBookingRecommendations = Future<List<RecommendedTechnician>>
-Function(String bookingId);
+typedef LoadBookingRecommendations =
+    Future<List<RecommendedTechnician>> Function(String bookingId);
 
-typedef SendTechnicianRequest = Future<void> Function(
-    String bookingId,
-    String technicianId,
-    );
+typedef SendTechnicianRequest =
+    Future<void> Function(String bookingId, String technicianId);
 
 class TechnicianUnavailableException implements Exception {
   const TechnicianUnavailableException([
@@ -113,9 +111,7 @@ class _RecommendedTechniciansPageState
     }
   }
 
-  Future<void> _showProfile(
-      RecommendedTechnician technician,
-      ) async {
+  Future<void> _showProfile(RecommendedTechnician technician) async {
     await showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
@@ -127,11 +123,9 @@ class _RecommendedTechniciansPageState
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(context.tr('bookingUi64'),
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
+              Text(
+                context.tr('bookingUi64'),
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
 
               const SizedBox(height: 16),
@@ -140,43 +134,34 @@ class _RecommendedTechniciansPageState
 
               if (technician.about?.isNotEmpty == true) ...[
                 const SizedBox(height: 18),
-                Text(context.tr('bookingUi65'),
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                  ),
+                Text(
+                  context.tr('bookingUi65'),
+                  style: TextStyle(fontWeight: FontWeight.bold),
                 ),
                 Text(technician.about!),
               ],
 
               if (technician.skills.isNotEmpty) ...[
                 const SizedBox(height: 18),
-                Text(context.tr('bookingUi66'),
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                  ),
+                Text(
+                  context.tr('bookingUi66'),
+                  style: TextStyle(fontWeight: FontWeight.bold),
                 ),
                 Wrap(
                   spacing: 6,
                   children: technician.skills
-                      .map(
-                        (skill) => Chip(
-                      label: Text(skill),
-                    ),
-                  )
+                      .map((skill) => Chip(label: Text(skill)))
                       .toList(),
                 ),
               ],
 
               if (technician.serviceAreas.isNotEmpty) ...[
                 const SizedBox(height: 12),
-                Text(context.tr('bookingUi67'),
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
                 Text(
-                  technician.serviceAreas.join(', '),
+                  context.tr('bookingUi67'),
+                  style: TextStyle(fontWeight: FontWeight.bold),
                 ),
+                Text(technician.serviceAreas.join(', ')),
               ],
 
               const SizedBox(height: 20),
@@ -187,9 +172,9 @@ class _RecommendedTechniciansPageState
                   onPressed: _submitting
                       ? null
                       : () {
-                    Navigator.pop(sheetContext);
-                    _confirmSelection(technician);
-                  },
+                          Navigator.pop(sheetContext);
+                          _confirmSelection(technician);
+                        },
                   child: Text(context.tr('bookingUi68')),
                 ),
               ),
@@ -200,16 +185,13 @@ class _RecommendedTechniciansPageState
     );
   }
 
-  Future<void> _confirmSelection(
-      RecommendedTechnician technician,
-      ) async {
+  Future<void> _confirmSelection(RecommendedTechnician technician) async {
     if (_submitting) return;
 
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: Text(context.tr('bookingUi69'),
-        ),
+        title: Text(context.tr('bookingUi69')),
         content: Text(
           '${technician.name}: ${context.tr('bookingUiRequestExplanation')}',
         ),
@@ -238,10 +220,7 @@ class _RecommendedTechniciansPageState
     });
 
     try {
-      await widget.sendRequest(
-        widget.bookingId,
-        technician.id,
-      );
+      await widget.sendRequest(widget.bookingId, technician.id);
 
       if (!mounted) return;
 
@@ -261,13 +240,9 @@ class _RecommendedTechniciansPageState
     } catch (_) {
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            context.tr('bookingUi82'),
-          ),
-        ),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(context.tr('bookingUi82'))));
     } finally {
       if (mounted) {
         setState(() => _submitting = false);
@@ -285,18 +260,13 @@ class _RecommendedTechniciansPageState
     }
   }
 
-  Widget _identity(
-      RecommendedTechnician technician,
-      ) {
+  Widget _identity(RecommendedTechnician technician) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const CircleAvatar(
           backgroundColor: Color(0xFFE9F4F6),
-          child: Icon(
-            Icons.person,
-            color: _teal,
-          ),
+          child: Icon(Icons.person, color: _teal),
         ),
 
         const SizedBox(width: 12),
@@ -329,9 +299,7 @@ class _RecommendedTechniciansPageState
     );
   }
 
-  Widget _technicianCard(
-      RecommendedTechnician technician,
-      ) {
+  Widget _technicianCard(RecommendedTechnician technician) {
     return Card(
       color: Theme.of(context).colorScheme.surface,
       margin: const EdgeInsets.only(bottom: 12),
@@ -351,10 +319,10 @@ class _RecommendedTechniciansPageState
                 children: technician.skills
                     .map(
                       (skill) => Chip(
-                    label: Text(skill),
-                    visualDensity: VisualDensity.compact,
-                  ),
-                )
+                        label: Text(skill),
+                        visualDensity: VisualDensity.compact,
+                      ),
+                    )
                     .toList(),
               ),
             ],
@@ -364,10 +332,7 @@ class _RecommendedTechniciansPageState
 
               Text(
                 '✓ ${technician.matchReason}',
-                style: const TextStyle(
-                  color: _teal,
-                  fontSize: 12,
-                ),
+                style: const TextStyle(color: _teal, fontSize: 12),
               ),
             ],
 
@@ -416,36 +381,23 @@ class _RecommendedTechniciansPageState
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              icon,
-              size: 52,
-              color: _teal,
-            ),
+            Icon(icon, size: 52, color: _teal),
 
             const SizedBox(height: 18),
 
             Text(
               title,
               textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
 
             const SizedBox(height: 8),
 
-            Text(
-              message,
-              textAlign: TextAlign.center,
-            ),
+            Text(message, textAlign: TextAlign.center),
 
             const SizedBox(height: 20),
 
-            FilledButton(
-              onPressed: onAction,
-              child: Text(action),
-            ),
+            FilledButton(onPressed: onAction, child: Text(action)),
 
             if (secondaryAction != null)
               TextButton(
@@ -461,9 +413,7 @@ class _RecommendedTechniciansPageState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(context.tr('bookingUi63')),
-      ),
+      appBar: AppBar(title: Text(context.tr('bookingUi63'))),
 
       body: Stack(
         children: [
@@ -471,7 +421,8 @@ class _RecommendedTechniciansPageState
             ListView(
               padding: const EdgeInsets.all(16),
               children: [
-                Text(context.tr('bookingUi74'),
+                Text(
+                  context.tr('bookingUi74'),
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 8),
@@ -496,9 +447,17 @@ class _RecommendedTechniciansPageState
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Container(height: 12, width: 125, color: const Color(0xFFE6ECEE)),
+                                    Container(
+                                      height: 12,
+                                      width: 125,
+                                      color: const Color(0xFFE6ECEE),
+                                    ),
                                     const SizedBox(height: 9),
-                                    Container(height: 9, width: 85, color: const Color(0xFFE6ECEE)),
+                                    Container(
+                                      height: 9,
+                                      width: 85,
+                                      color: const Color(0xFFE6ECEE),
+                                    ),
                                   ],
                                 ),
                               ),
@@ -507,9 +466,19 @@ class _RecommendedTechniciansPageState
                           const SizedBox(height: 18),
                           Container(height: 10, color: const Color(0xFFE6ECEE)),
                           const SizedBox(height: 10),
-                          Container(height: 10, width: 160, color: const Color(0xFFE6ECEE)),
+                          Container(
+                            height: 10,
+                            width: 160,
+                            color: const Color(0xFFE6ECEE),
+                          ),
                           const SizedBox(height: 18),
-                          Container(height: 32, decoration: BoxDecoration(color: const Color(0xFFE6ECEE), borderRadius: BorderRadius.circular(7))),
+                          Container(
+                            height: 32,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFE6ECEE),
+                              borderRadius: BorderRadius.circular(7),
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -525,84 +494,73 @@ class _RecommendedTechniciansPageState
               onAction: _reload,
             )
           else if (_technicians.isEmpty)
-              _statusView(
-                icon: Icons.search_off,
-                title: context.tr('bookingUi77'),
-                message:
-                context.tr('bookingUi78'),
-                action: context.tr('bookingUi79'),
-                onAction: _reload,
-                secondaryAction: widget.onBackToBooking,
-              )
-            else
-              RefreshIndicator(
-                onRefresh: _reload,
-                child: ListView(
-                  padding: const EdgeInsets.all(16),
-                  children: [
-                    Text(context.tr('bookingUi74'),
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
+            _statusView(
+              icon: Icons.search_off,
+              title: context.tr('bookingUi77'),
+              message: context.tr('bookingUi78'),
+              action: context.tr('bookingUi79'),
+              onAction: _reload,
+              secondaryAction: widget.onBackToBooking,
+            )
+          else
+            RefreshIndicator(
+              onRefresh: _reload,
+              child: ListView(
+                padding: const EdgeInsets.all(16),
+                children: [
+                  Text(
+                    context.tr('bookingUi74'),
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+
+                  const SizedBox(height: 6),
+
+                  Text(context.tr('bookingUi80')),
+
+                  if (widget.bookingSummary?.isNotEmpty == true) ...[
+                    const SizedBox(height: 14),
+
+                    Card(
+                      color: const Color(0xFFEAF7F8),
+                      child: Padding(
+                        padding: const EdgeInsets.all(14),
+                        child: Text(widget.bookingSummary!),
                       ),
                     ),
+                  ],
 
-                    const SizedBox(height: 6),
-
-                    Text(
-                      context.tr('bookingUi80'),
-                    ),
-
-                    if (widget.bookingSummary?.isNotEmpty == true) ...[
-                      const SizedBox(height: 14),
-
-                      Card(
-                        color: const Color(0xFFEAF7F8),
-                        child: Padding(
-                          padding: const EdgeInsets.all(14),
-                          child: Text(
-                            widget.bookingSummary!,
-                          ),
-                        ),
-                      ),
-                    ],
-
-                    if (_warning != null) ...[
-                      const SizedBox(height: 12),
-
-                      Card(
-                        color: const Color(0xFFFFF4DE),
-                        child: Padding(
-                          padding: const EdgeInsets.all(12),
-                          child: Text(_warning!),
-                        ),
-                      ),
-                    ],
-
-                    const SizedBox(height: 18),
-
-                    Text(
-                      '${context.tr('bookingUiRecommended')}: ${_technicians.length}',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-
+                  if (_warning != null) ...[
                     const SizedBox(height: 12),
 
-                    for (final technician in _technicians)
-                      _technicianCard(technician),
+                    Card(
+                      color: const Color(0xFFFFF4DE),
+                      child: Padding(
+                        padding: const EdgeInsets.all(12),
+                        child: Text(_warning!),
+                      ),
+                    ),
                   ],
-                ),
+
+                  const SizedBox(height: 18),
+
+                  Text(
+                    '${context.tr('bookingUiRecommended')}: ${_technicians.length}',
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  for (final technician in _technicians)
+                    _technicianCard(technician),
+                ],
               ),
+            ),
 
           if (_submitting)
             const Positioned.fill(
               child: ColoredBox(
                 color: Color(0x55000000),
-                child: Center(
-                  child: CircularProgressIndicator(),
-                ),
+                child: Center(child: CircularProgressIndicator()),
               ),
             ),
         ],

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../../../app/localization/app_strings.dart';
 import '../../../app/theme/coolcare_theme.dart';
 import '../../../core/network/api_client.dart';
 import '../controllers/technician_application_controller.dart';
@@ -39,13 +40,13 @@ class _TechnicianApplicationPageState extends State<TechnicianApplicationPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF7FAFA),
+      backgroundColor: context.appBackground,
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        surfaceTintColor: Colors.white,
-        title: const Text(
-          'Đăng ký đối tác kỹ thuật viên',
-          style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800),
+        backgroundColor: context.appSurface,
+        surfaceTintColor: Colors.transparent,
+        title: Text(
+          context.tr('technicianApplicationTitle'),
+          style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800),
         ),
       ),
       body: ListenableBuilder(
@@ -57,7 +58,8 @@ class _TechnicianApplicationPageState extends State<TechnicianApplicationPage> {
           if (_controller.options == null) {
             return _LoadError(
               message:
-                  _controller.errorMessage ?? 'Không thể tải dữ liệu đăng ký.',
+                  _controller.errorMessage ??
+                  context.tr('unableLoadTechnicianApplication'),
               onRetry: _controller.initialize,
             );
           }
@@ -135,9 +137,7 @@ class _TechnicianApplicationFormState
     final otherPath = front ? _identityBackPath : _identityFrontPath;
     if (otherPath != null && await _areSameImages(image.path, otherPath)) {
       if (mounted) {
-        _showMessage(
-          'Ảnh mặt trước và mặt sau CCCD không được trùng nhau. Vui lòng chọn ảnh khác.',
-        );
+        _showMessage(context.tr('identityImagesMustDiffer'));
       }
       return;
     }
@@ -194,10 +194,10 @@ class _TechnicianApplicationFormState
   }
 
   String _skillLevelLabel(String level) => switch (level) {
-    'INTERMEDIATE' => 'Trung cấp',
-    'ADVANCED' => 'Nâng cao',
-    'EXPERT' => 'Chuyên gia',
-    _ => 'Mới bắt đầu',
+    'INTERMEDIATE' => context.tr('qualificationIntermediateShort'),
+    'ADVANCED' => context.tr('qualificationAdvancedShort'),
+    'EXPERT' => context.tr('qualificationExpertShort'),
+    _ => context.tr('qualificationBeginnerShort'),
   };
 
   Future<void> _submit() async {
@@ -205,21 +205,24 @@ class _TechnicianApplicationFormState
     final valid = _formKey.currentState?.validate() ?? false;
     if (!valid) return;
     if (_identityFrontPath == null || _identityBackPath == null) {
-      _showMessage('Vui lòng tải lên đầy đủ hai mặt CCCD.');
+      _showMessage(context.tr('uploadBothIdentitySides'));
       return;
     }
-    if (await _areSameImages(_identityFrontPath!, _identityBackPath!)) {
-      _showMessage(
-        'Ảnh mặt trước và mặt sau CCCD không được trùng nhau. Vui lòng chọn lại.',
-      );
+    final duplicatedIdentityImages = await _areSameImages(
+      _identityFrontPath!,
+      _identityBackPath!,
+    );
+    if (!mounted) return;
+    if (duplicatedIdentityImages) {
+      _showMessage(context.tr('identityImagesMustDiffer'));
       return;
     }
     if (_selectedWards.isEmpty) {
-      _showMessage('Vui lòng chọn ít nhất một khu vực phục vụ.');
+      _showMessage(context.tr('selectAtLeastOneArea'));
       return;
     }
     if (_selectedSkills.isEmpty) {
-      _showMessage('Vui lòng chọn ít nhất một kỹ năng.');
+      _showMessage(context.tr('selectAtLeastOneSkill'));
       return;
     }
 
@@ -245,7 +248,10 @@ class _TechnicianApplicationFormState
     final success = await widget.controller.submit(input);
     if (!mounted) return;
     if (!success) {
-      _showMessage(widget.controller.errorMessage ?? 'Không thể gửi hồ sơ.');
+      _showMessage(
+        widget.controller.errorMessage ??
+            context.tr('unableSubmitTechnicianApplication'),
+      );
     }
   }
 
@@ -268,10 +274,10 @@ class _TechnicianApplicationFormState
             ),
           const _IntroCard(),
           const SizedBox(height: 18),
-          const _SectionTitle(
+          _SectionTitle(
             number: '1',
-            title: 'Thông tin định danh',
-            subtitle: 'Thông tin CCCD chỉ được dùng để quản trị viên xác minh.',
+            title: context.tr('identityInformation'),
+            subtitle: context.tr('identityInformationHint'),
           ),
           const SizedBox(height: 12),
           TextFormField(
@@ -279,24 +285,24 @@ class _TechnicianApplicationFormState
             keyboardType: TextInputType.number,
             inputFormatters: [FilteringTextInputFormatter.digitsOnly],
             maxLength: 12,
-            decoration: const InputDecoration(
-              labelText: 'Số CCCD',
-              hintText: 'Nhập 12 chữ số',
+            decoration: InputDecoration(
+              labelText: context.tr('identityNumber'),
+              hintText: context.tr('identityNumberHint'),
               counterText: '',
             ),
             validator: (value) {
               final identityNumber = value?.trim() ?? '';
               if (identityNumber.isEmpty) {
-                return 'Vui lòng nhập số CCCD.';
+                return context.tr('identityNumberRequired');
               }
               if (!RegExp(r'^\d+$').hasMatch(identityNumber)) {
-                return 'Số CCCD chỉ được chứa chữ số.';
+                return context.tr('identityNumberDigitsOnly');
               }
               if (!identityNumber.startsWith('0')) {
-                return 'Số CCCD phải bắt đầu bằng số 0.';
+                return context.tr('identityNumberStartsZero');
               }
               if (identityNumber.length != 12) {
-                return 'Số CCCD phải gồm đúng 12 chữ số.';
+                return context.tr('identityNumberLength');
               }
               return null;
             },
@@ -306,7 +312,7 @@ class _TechnicianApplicationFormState
             children: [
               Expanded(
                 child: _ImagePickerCard(
-                  label: 'Mặt trước CCCD',
+                  label: context.tr('identityFront'),
                   path: _identityFrontPath,
                   onTap: () => _pickIdentity(true),
                 ),
@@ -314,7 +320,7 @@ class _TechnicianApplicationFormState
               const SizedBox(width: 12),
               Expanded(
                 child: _ImagePickerCard(
-                  label: 'Mặt sau CCCD',
+                  label: context.tr('identityBack'),
                   path: _identityBackPath,
                   onTap: () => _pickIdentity(false),
                 ),
@@ -322,20 +328,34 @@ class _TechnicianApplicationFormState
             ],
           ),
           const SizedBox(height: 24),
-          const _SectionTitle(
+          _SectionTitle(
             number: '2',
-            title: 'Kinh nghiệm chuyên môn',
-            subtitle: 'Mô tả trung thực kinh nghiệm làm việc của bạn.',
+            title: context.tr('professionalExperience'),
+            subtitle: context.tr('professionalExperienceHint'),
           ),
           const SizedBox(height: 12),
           DropdownButtonFormField<String>(
             initialValue: _qualification,
-            decoration: const InputDecoration(labelText: 'Trình độ hiện tại'),
-            items: const [
-              DropdownMenuItem(value: 'BEGINNER', child: Text('Mới bắt đầu')),
-              DropdownMenuItem(value: 'INTERMEDIATE', child: Text('Trung cấp')),
-              DropdownMenuItem(value: 'ADVANCED', child: Text('Nâng cao')),
-              DropdownMenuItem(value: 'EXPERT', child: Text('Chuyên gia')),
+            decoration: InputDecoration(
+              labelText: context.tr('currentQualification'),
+            ),
+            items: [
+              DropdownMenuItem(
+                value: 'BEGINNER',
+                child: Text(context.tr('qualificationBeginnerShort')),
+              ),
+              DropdownMenuItem(
+                value: 'INTERMEDIATE',
+                child: Text(context.tr('qualificationIntermediateShort')),
+              ),
+              DropdownMenuItem(
+                value: 'ADVANCED',
+                child: Text(context.tr('qualificationAdvancedShort')),
+              ),
+              DropdownMenuItem(
+                value: 'EXPERT',
+                child: Text(context.tr('qualificationExpertShort')),
+              ),
             ],
             onChanged: (value) => setState(() => _qualification = value!),
           ),
@@ -344,12 +364,14 @@ class _TechnicianApplicationFormState
             controller: _experienceController,
             keyboardType: TextInputType.number,
             inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-            decoration: const InputDecoration(labelText: 'Số năm kinh nghiệm'),
+            decoration: InputDecoration(
+              labelText: context.tr('yearsExperience'),
+            ),
             validator: (value) {
               final years = int.tryParse(value ?? '');
               return years != null && years >= 0 && years <= 80
                   ? null
-                  : 'Nhập số năm kinh nghiệm từ 0 đến 80.';
+                  : context.tr('yearsExperienceRange');
             },
           ),
           const SizedBox(height: 12),
@@ -358,33 +380,31 @@ class _TechnicianApplicationFormState
             minLines: 4,
             maxLines: 7,
             maxLength: 2000,
-            decoration: const InputDecoration(
-              labelText: 'Hồ sơ chuyên môn',
+            decoration: InputDecoration(
+              labelText: context.tr('professionalProfile'),
               alignLabelWithHint: true,
-              hintText:
-                  'Mô tả kinh nghiệm sửa chữa, bảo dưỡng, loại máy đã từng xử lý...',
+              hintText: context.tr('professionalProfileHint'),
             ),
             validator: (value) {
               final length = value?.trim().length ?? 0;
               return length >= 20 && length <= 2000
                   ? null
-                  : 'Nội dung phải có từ 20 đến 2.000 ký tự.';
+                  : context.tr('professionalProfileLength');
             },
           ),
           const SizedBox(height: 24),
-          const _SectionTitle(
+          _SectionTitle(
             number: '3',
-            title: 'Khu vực phục vụ',
-            subtitle:
-                'Chọn tỉnh/thành phố trước, sau đó chọn các phường bạn có thể phục vụ.',
+            title: context.tr('serviceAreas'),
+            subtitle: context.tr('serviceAreasSelectionHint'),
           ),
           const SizedBox(height: 12),
           DropdownButtonFormField<String>(
             initialValue: _selectedCity,
             isExpanded: true,
-            decoration: const InputDecoration(
-              labelText: 'Tỉnh/Thành phố',
-              prefixIcon: Icon(Icons.location_city_outlined),
+            decoration: InputDecoration(
+              labelText: context.tr('provinceCity'),
+              prefixIcon: const Icon(Icons.location_city_outlined),
             ),
             items: [
               DropdownMenuItem(
@@ -398,7 +418,7 @@ class _TechnicianApplicationFormState
               _selectedWards.clear();
             }),
             validator: (value) => value == null || value.isEmpty
-                ? 'Vui lòng chọn tỉnh/thành phố.'
+                ? context.tr('selectProvinceCity')
                 : null,
           ),
           const SizedBox(height: 12),
@@ -407,15 +427,15 @@ class _TechnicianApplicationFormState
             initialValue: _selectedWard,
             isExpanded: true,
             decoration: InputDecoration(
-              labelText: 'Phường/Xã',
+              labelText: context.tr('ward'),
               hintText: _selectedCity == null
-                  ? 'Vui lòng chọn tỉnh/thành phố trước'
-                  : 'Chọn phường/xã phục vụ',
+                  ? context.tr('selectProvinceFirst')
+                  : context.tr('selectServiceWard'),
               prefixIcon: const Icon(Icons.place_outlined),
               suffixIcon: _selectedWard == null
                   ? null
                   : IconButton(
-                      tooltip: 'Thêm khu vực',
+                      tooltip: context.tr('addArea'),
                       icon: const Icon(Icons.add_circle_outline),
                       onPressed: _addSelectedWard,
                     ),
@@ -441,13 +461,15 @@ class _TechnicianApplicationFormState
             child: FilledButton.tonalIcon(
               onPressed: _selectedWard == null ? null : _addSelectedWard,
               icon: const Icon(Icons.add_location_alt_outlined),
-              label: const Text('Thêm khu vực'),
+              label: Text(context.tr('addArea')),
             ),
           ),
           if (_selectedWards.isNotEmpty) ...[
             const SizedBox(height: 12),
             Text(
-              'Khu vực đã chọn (${_selectedWards.length})',
+              context.trArgs('selectedServiceAreas', {
+                'count': _selectedWards.length,
+              }),
               style: const TextStyle(fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: 8),
@@ -461,7 +483,9 @@ class _TechnicianApplicationFormState
                       label: Text(ward),
                       onDeleted: () => setState(() {
                         _selectedWards.remove(ward);
-                        if (_selectedWard == ward) _selectedWard = null;
+                        if (_selectedWard == ward) {
+                          _selectedWard = null;
+                        }
                       }),
                     ),
                   )
@@ -469,20 +493,20 @@ class _TechnicianApplicationFormState
             ),
           ],
           const SizedBox(height: 24),
-          const _SectionTitle(
+          _SectionTitle(
             number: '4',
-            title: 'Kỹ năng',
-            subtitle: 'Chọn kỹ năng và mức độ thành thạo tương ứng.',
+            title: context.tr('skills'),
+            subtitle: context.tr('skillsSelectionHint'),
           ),
           const SizedBox(height: 12),
           DropdownButtonFormField<String>(
             key: ValueKey('skill-${_selectedSkillId ?? ''}'),
             initialValue: _selectedSkillId,
             isExpanded: true,
-            decoration: const InputDecoration(
-              labelText: 'Kỹ năng chuyên môn',
-              hintText: 'Chọn kỹ năng',
-              prefixIcon: Icon(Icons.home_repair_service_outlined),
+            decoration: InputDecoration(
+              labelText: context.tr('professionalSkill'),
+              hintText: context.tr('selectSkill'),
+              prefixIcon: const Icon(Icons.home_repair_service_outlined),
             ),
             items: _options.skills
                 .where((skill) => !_selectedSkills.contains(skill.id))
@@ -504,15 +528,27 @@ class _TechnicianApplicationFormState
               'skill-level-${_selectedSkillId ?? ''}-$_selectedSkillLevel',
             ),
             initialValue: _selectedSkillLevel,
-            decoration: const InputDecoration(
-              labelText: 'Mức độ thành thạo',
-              prefixIcon: Icon(Icons.workspace_premium_outlined),
+            decoration: InputDecoration(
+              labelText: context.tr('proficiencyLevel'),
+              prefixIcon: const Icon(Icons.workspace_premium_outlined),
             ),
-            items: const [
-              DropdownMenuItem(value: 'BEGINNER', child: Text('Mới bắt đầu')),
-              DropdownMenuItem(value: 'INTERMEDIATE', child: Text('Trung cấp')),
-              DropdownMenuItem(value: 'ADVANCED', child: Text('Nâng cao')),
-              DropdownMenuItem(value: 'EXPERT', child: Text('Chuyên gia')),
+            items: [
+              DropdownMenuItem(
+                value: 'BEGINNER',
+                child: Text(context.tr('qualificationBeginnerShort')),
+              ),
+              DropdownMenuItem(
+                value: 'INTERMEDIATE',
+                child: Text(context.tr('qualificationIntermediateShort')),
+              ),
+              DropdownMenuItem(
+                value: 'ADVANCED',
+                child: Text(context.tr('qualificationAdvancedShort')),
+              ),
+              DropdownMenuItem(
+                value: 'EXPERT',
+                child: Text(context.tr('qualificationExpertShort')),
+              ),
             ],
             onChanged: (value) =>
                 setState(() => _selectedSkillLevel = value ?? 'BEGINNER'),
@@ -523,13 +559,15 @@ class _TechnicianApplicationFormState
             child: FilledButton.tonalIcon(
               onPressed: _selectedSkillId == null ? null : _addSelectedSkill,
               icon: const Icon(Icons.add_circle_outline),
-              label: const Text('Thêm kỹ năng'),
+              label: Text(context.tr('addSkill')),
             ),
           ),
           if (_selectedSkills.isNotEmpty) ...[
             const SizedBox(height: 12),
             Text(
-              'Kỹ năng đã chọn (${_selectedSkills.length})',
+              context.trArgs('selectedSkillsCount', {
+                'count': _selectedSkills.length,
+              }),
               style: const TextStyle(fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: 8),
@@ -549,7 +587,7 @@ class _TechnicianApplicationFormState
                     '${skill.serviceName} • ${_skillLevelLabel(_skillLevels[skillId] ?? 'BEGINNER')}',
                   ),
                   trailing: IconButton(
-                    tooltip: 'Xóa kỹ năng',
+                    tooltip: context.tr('removeSkill'),
                     icon: const Icon(Icons.close_rounded),
                     onPressed: () => setState(() {
                       _selectedSkills.remove(skillId);
@@ -561,10 +599,10 @@ class _TechnicianApplicationFormState
             }),
           ],
           const SizedBox(height: 24),
-          const _SectionTitle(
+          _SectionTitle(
             number: '5',
-            title: 'Chứng chỉ chuyên môn',
-            subtitle: 'Không bắt buộc. Bạn có thể bổ sung sau khi đăng ký.',
+            title: context.tr('professionalCertifications'),
+            subtitle: context.tr('professionalCertificationsHint'),
           ),
           const SizedBox(height: 10),
           ..._certificates.asMap().entries.map(
@@ -582,7 +620,9 @@ class _TechnicianApplicationFormState
                   ),
                 ),
                 title: Text(entry.value.name),
-                subtitle: Text(entry.value.issuedBy ?? 'Chưa nhập đơn vị cấp'),
+                subtitle: Text(
+                  entry.value.issuedBy ?? context.tr('issuerNotProvided'),
+                ),
                 trailing: IconButton(
                   icon: const Icon(Icons.close_rounded),
                   onPressed: () =>
@@ -594,7 +634,7 @@ class _TechnicianApplicationFormState
           OutlinedButton.icon(
             onPressed: _certificates.length >= 10 ? null : _addCertificate,
             icon: const Icon(Icons.add_photo_alternate_outlined),
-            label: const Text('Thêm chứng chỉ'),
+            label: Text(context.tr('addCertification')),
           ),
           const SizedBox(height: 26),
           FilledButton.icon(
@@ -610,8 +650,8 @@ class _TechnicianApplicationFormState
                 : const Icon(Icons.send_rounded),
             label: Text(
               widget.controller.isSubmitting
-                  ? 'Đang tải hồ sơ...'
-                  : 'Gửi hồ sơ xét duyệt',
+                  ? context.tr('submittingApplication')
+                  : context.tr('submitForReview'),
             ),
           ),
         ],
@@ -633,27 +673,27 @@ class _IntroCard extends StatelessWidget {
         ),
         borderRadius: BorderRadius.circular(14),
       ),
-      child: const Row(
+      child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(Icons.engineering_rounded, color: Colors.white, size: 34),
-          SizedBox(width: 12),
+          const Icon(Icons.engineering_rounded, color: Colors.white, size: 34),
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Trở thành đối tác CoolCare',
-                  style: TextStyle(
+                  context.tr('becomeCoolCarePartner'),
+                  style: const TextStyle(
                     color: Colors.white,
                     fontSize: 17,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
-                SizedBox(height: 5),
+                const SizedBox(height: 5),
                 Text(
-                  'Hoàn thành hồ sơ để quản trị viên xác minh năng lực và mở quyền nhận việc.',
-                  style: TextStyle(color: Colors.white, height: 1.4),
+                  context.tr('becomeCoolCarePartnerHint'),
+                  style: const TextStyle(color: Colors.white, height: 1.4),
                 ),
               ],
             ),
@@ -733,9 +773,9 @@ class _ImagePickerCard extends StatelessWidget {
       child: Container(
         height: 132,
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: context.appSurface,
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: CoolCareColors.border),
+          border: Border.all(color: context.appBorder),
           image: path == null
               ? null
               : DecorationImage(
@@ -766,7 +806,7 @@ class _ImagePickerCard extends StatelessWidget {
                   padding: const EdgeInsets.all(7),
                   color: Colors.black54,
                   child: Text(
-                    '$label · Thay đổi',
+                    '$label · ${context.tr('change')}',
                     textAlign: TextAlign.center,
                     style: const TextStyle(color: Colors.white, fontSize: 11),
                   ),
@@ -815,7 +855,7 @@ class _CertificateDialogState extends State<_CertificateDialog> {
   Future<void> _pickDate({required bool expiry}) async {
     if (expiry && _issuedDate == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Vui lòng chọn ngày cấp trước.')),
+        SnackBar(content: Text(context.tr('selectIssueDateFirst'))),
       );
       return;
     }
@@ -831,7 +871,9 @@ class _CertificateDialogState extends State<_CertificateDialog> {
       initialDate: initialDate.isAfter(lastDate) ? lastDate : initialDate,
       firstDate: firstDate,
       lastDate: lastDate,
-      helpText: expiry ? 'CHỌN NGÀY HẾT HẠN' : 'CHỌN NGÀY CẤP',
+      helpText: context
+          .tr(expiry ? 'selectExpiryDate' : 'selectIssueDate')
+          .toUpperCase(),
     );
     if (value != null && mounted) {
       var expiryWasCleared = false;
@@ -848,18 +890,14 @@ class _CertificateDialogState extends State<_CertificateDialog> {
       });
       if (expiryWasCleared && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              'Ngày hết hạn cũ trước ngày cấp mới. Vui lòng chọn lại ngày hết hạn.',
-            ),
-          ),
+          SnackBar(content: Text(context.tr('expiryClearedAfterIssueChange'))),
         );
       }
     }
   }
 
   String _displayDate(DateTime? value) {
-    if (value == null) return 'Không bắt buộc';
+    if (value == null) return context.tr('optional');
     return '${value.day.toString().padLeft(2, '0')}/'
         '${value.month.toString().padLeft(2, '0')}/${value.year}';
   }
@@ -867,7 +905,7 @@ class _CertificateDialogState extends State<_CertificateDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Thêm chứng chỉ'),
+      title: Text(context.tr('addCertification')),
       content: Form(
         key: _formKey,
         child: SingleChildScrollView(
@@ -877,20 +915,24 @@ class _CertificateDialogState extends State<_CertificateDialog> {
               TextFormField(
                 controller: _name,
                 maxLength: 150,
-                decoration: const InputDecoration(labelText: 'Tên chứng chỉ'),
+                decoration: InputDecoration(
+                  labelText: context.tr('certificateName'),
+                ),
                 validator: (value) => value?.trim().isNotEmpty == true
                     ? null
-                    : 'Vui lòng nhập tên chứng chỉ.',
+                    : context.tr('certificateNameRequired'),
               ),
               TextField(
                 controller: _number,
                 maxLength: 30,
-                decoration: const InputDecoration(labelText: 'Số chứng chỉ'),
+                decoration: InputDecoration(
+                  labelText: context.tr('certificateNumber'),
+                ),
               ),
               TextField(
                 controller: _issuer,
                 maxLength: 150,
-                decoration: const InputDecoration(labelText: 'Đơn vị cấp'),
+                decoration: InputDecoration(labelText: context.tr('issuedBy')),
               ),
               Row(
                 children: [
@@ -898,7 +940,9 @@ class _CertificateDialogState extends State<_CertificateDialog> {
                     child: OutlinedButton.icon(
                       onPressed: () => _pickDate(expiry: false),
                       icon: const Icon(Icons.event_outlined),
-                      label: Text('Ngày cấp\n${_displayDate(_issuedDate)}'),
+                      label: Text(
+                        '${context.tr('issueDate')}\n${_displayDate(_issuedDate)}',
+                      ),
                     ),
                   ),
                   const SizedBox(width: 8),
@@ -910,8 +954,8 @@ class _CertificateDialogState extends State<_CertificateDialog> {
                       icon: const Icon(Icons.event_busy_outlined),
                       label: Text(
                         _issuedDate == null
-                            ? 'Hết hạn\nChọn ngày cấp trước'
-                            : 'Hết hạn\n${_displayDate(_expiryDate)}',
+                            ? '${context.tr('expiryDate')}\n${context.tr('selectIssueDateFirst')}'
+                            : '${context.tr('expiryDate')}\n${_displayDate(_expiryDate)}',
                       ),
                     ),
                   ),
@@ -922,7 +966,11 @@ class _CertificateDialogState extends State<_CertificateDialog> {
                 onPressed: _pick,
                 icon: const Icon(Icons.image_outlined),
                 label: Text(
-                  _path == null ? 'Chọn ảnh chứng chỉ' : 'Đã chọn ảnh',
+                  context.tr(
+                    _path == null
+                        ? 'selectCertificationImage'
+                        : 'certificationImageSelected',
+                  ),
                 ),
               ),
             ],
@@ -932,14 +980,14 @@ class _CertificateDialogState extends State<_CertificateDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('Hủy'),
+          child: Text(context.tr('cancel')),
         ),
         FilledButton(
           onPressed: () {
             if (!(_formKey.currentState?.validate() ?? false)) return;
             if (_path == null) {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Vui lòng chọn ảnh chứng chỉ.')),
+                SnackBar(content: Text(context.tr('selectCertificationImage'))),
               );
               return;
             }
@@ -947,9 +995,7 @@ class _CertificateDialogState extends State<_CertificateDialog> {
                 _expiryDate != null &&
                 _expiryDate!.isBefore(_issuedDate!)) {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Ngày hết hạn phải sau hoặc bằng ngày cấp.'),
-                ),
+                SnackBar(content: Text(context.tr('expiryAfterIssueDate'))),
               );
               return;
             }
@@ -969,7 +1015,7 @@ class _CertificateDialogState extends State<_CertificateDialog> {
               ),
             );
           },
-          child: const Text('Thêm'),
+          child: Text(context.tr('add')),
         ),
       ],
     );
@@ -1004,10 +1050,12 @@ class _ApplicationStatusView extends StatelessWidget {
             ),
             const SizedBox(height: 20),
             Text(
-              verified ? 'Hồ sơ đã được xác minh' : 'Hồ sơ đang được xét duyệt',
+              context.tr(
+                verified ? 'applicationVerified' : 'applicationPendingReview',
+              ),
               textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: CoolCareColors.text,
+              style: TextStyle(
+                color: context.appText,
                 fontSize: 22,
                 fontWeight: FontWeight.w800,
               ),
@@ -1015,13 +1063,10 @@ class _ApplicationStatusView extends StatelessWidget {
             const SizedBox(height: 10),
             Text(
               verified
-                  ? 'Bạn đã có quyền sử dụng chức năng dành cho kỹ thuật viên.'
-                  : 'CoolCare sẽ thông báo khi quản trị viên hoàn tất kiểm tra hồ sơ.',
+                  ? context.tr('applicationVerifiedHint')
+                  : context.tr('applicationPendingReviewHint'),
               textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: CoolCareColors.mutedText,
-                height: 1.5,
-              ),
+              style: TextStyle(color: context.appMuted, height: 1.5),
             ),
           ],
         ),
@@ -1052,7 +1097,11 @@ class _RejectedBanner extends StatelessWidget {
           const SizedBox(width: 10),
           Expanded(
             child: Text(
-              'Hồ sơ trước đã bị từ chối.${reason?.trim().isNotEmpty == true ? '\nLý do: $reason' : ''}\nVui lòng cập nhật và gửi lại.',
+              context.trArgs('applicationRejectedHint', {
+                'reason': reason?.trim().isNotEmpty == true
+                    ? '\n${context.tr('reason')}: $reason'
+                    : '',
+              }),
               style: const TextStyle(color: CoolCareColors.error, height: 1.4),
             ),
           ),
@@ -1080,7 +1129,10 @@ class _LoadError extends StatelessWidget {
             const SizedBox(height: 12),
             Text(message, textAlign: TextAlign.center),
             const SizedBox(height: 16),
-            FilledButton(onPressed: onRetry, child: const Text('Thử lại')),
+            FilledButton(
+              onPressed: onRetry,
+              child: Text(context.tr('tryAgain')),
+            ),
           ],
         ),
       ),
