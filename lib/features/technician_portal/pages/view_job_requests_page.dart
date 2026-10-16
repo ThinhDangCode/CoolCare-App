@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../app/localization/app_strings.dart';
 import '../../../app/theme/coolcare_theme.dart';
 import '../../../core/network/api_exception.dart';
 import '../models/view_job_request.dart';
@@ -71,12 +72,12 @@ class _ViewJobRequestsPageState extends State<ViewJobRequestsPage> {
       children: [
         Container(
           width: double.infinity,
-          color: Colors.white,
+          color: Theme.of(context).colorScheme.surface,
           padding: const EdgeInsets.fromLTRB(20, 12, 20, 10),
-          child: const Text(
-            'Jobs',
+          child: Text(
+            context.tr('jobs'),
             style: TextStyle(
-              color: Color(0xFF193943),
+              color: Theme.of(context).colorScheme.onSurface,
               fontSize: 20,
               fontWeight: FontWeight.w800,
             ),
@@ -103,11 +104,11 @@ class _ViewJobRequestsPageState extends State<ViewJobRequestsPage> {
                 final error = snapshot.error;
                 final message = error is ApiException
                     ? error.message
-                    : 'Unable to load job requests.';
+                    : context.tr('unableLoadJobRequests');
                 return _ViewJobRequestsMessage(
                   icon: Icons.cloud_off_outlined,
                   message: message,
-                  actionLabel: 'Try Again',
+                  actionLabel: context.tr('tryAgain'),
                   onAction: _retry,
                 );
               }
@@ -116,9 +117,9 @@ class _ViewJobRequestsPageState extends State<ViewJobRequestsPage> {
                 return _ViewJobRequestsMessage(
                   icon: Icons.assignment_turned_in_outlined,
                   message: switch (_tab) {
-                    0 => 'No new job requests.',
-                    1 => 'No ongoing jobs.',
-                    _ => 'No job history yet.',
+                    0 => context.tr('noNewJobRequests'),
+                    1 => context.tr('noOngoingJobs'),
+                    _ => context.tr('noJobHistory'),
                   },
                 );
               }
@@ -170,21 +171,23 @@ class _ViewJobRequestsTabs extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Container(
     height: 46,
-    decoration: const BoxDecoration(
-      color: Colors.white,
-      border: Border(bottom: BorderSide(color: Color(0xFFDBE7EB))),
+    decoration: BoxDecoration(
+      color: Theme.of(context).colorScheme.surface,
+      border: Border(
+        bottom: BorderSide(color: Theme.of(context).colorScheme.outlineVariant),
+      ),
     ),
     padding: const EdgeInsets.symmetric(horizontal: 16),
     child: Row(
       children: [
-        _tab('New Requests', 0, count: newCount),
-        _tab('Ongoing', 1),
-        _tab('History', 2),
+        _tab(context, context.tr('newRequests'), 0, count: newCount),
+        _tab(context, context.tr('ongoing'), 1),
+        _tab(context, context.tr('history'), 2),
       ],
     ),
   );
 
-  Widget _tab(String label, int value, {int? count}) {
+  Widget _tab(BuildContext context, String label, int value, {int? count}) {
     final active = selected == value;
     return Expanded(
       child: InkWell(
@@ -202,7 +205,7 @@ class _ViewJobRequestsTabs extends StatelessWidget {
                     style: TextStyle(
                       color: active
                           ? CoolCareColors.primary
-                          : const Color(0xFF657F8A),
+                          : Theme.of(context).colorScheme.onSurfaceVariant,
                       fontSize: 13,
                       fontWeight: FontWeight.w700,
                     ),
@@ -257,8 +260,8 @@ class _ViewJobRequestCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border.all(color: const Color(0xFFDBE7EB)),
+        color: Theme.of(context).colorScheme.surface,
+        border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
         borderRadius: BorderRadius.circular(14),
       ),
       child: Column(
@@ -286,8 +289,8 @@ class _ViewJobRequestCard extends StatelessWidget {
                   booking.primaryServiceName,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: Color(0xFF193943),
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurface,
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
                   ),
@@ -298,11 +301,18 @@ class _ViewJobRequestCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 12),
-          _line(Icons.calendar_today_outlined, _date(booking.scheduledAt)),
+          _line(
+            context,
+            Icons.calendar_today_outlined,
+            _date(context, booking.scheduledAt),
+          ),
           const SizedBox(height: 6),
-          _line(Icons.location_on_outlined, booking.address),
+          _line(context, Icons.location_on_outlined, booking.address),
           const SizedBox(height: 12),
-          const Divider(height: 1, color: Color(0xFFDBE7EB)),
+          Divider(
+            height: 1,
+            color: Theme.of(context).colorScheme.outlineVariant,
+          ),
           const SizedBox(height: 9),
           Row(
             children: [
@@ -310,9 +320,12 @@ class _ViewJobRequestCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Estimated Earnings',
-                      style: TextStyle(color: Color(0xFF657F8A), fontSize: 11),
+                    Text(
+                      context.tr('estimatedEarnings'),
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        fontSize: 11,
+                      ),
                     ),
                     const SizedBox(height: 2),
                     Text(
@@ -337,9 +350,12 @@ class _ViewJobRequestCard extends StatelessWidget {
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
-                  child: const Text(
-                    'View',
-                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+                  child: Text(
+                    context.tr('view'),
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                 ),
               ),
@@ -350,16 +366,19 @@ class _ViewJobRequestCard extends StatelessWidget {
     );
   }
 
-  Widget _line(IconData icon, String text) => Row(
+  Widget _line(BuildContext context, IconData icon, String text) => Row(
     children: [
       Icon(icon, size: 15, color: CoolCareColors.primary),
       const SizedBox(width: 8),
       Expanded(
         child: Text(
-          text.isEmpty ? 'Not provided' : text,
+          text.isEmpty ? context.tr('jobNotProvided') : text,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: const TextStyle(color: Color(0xFF657F8A), fontSize: 13),
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+            fontSize: 13,
+          ),
         ),
       ),
     ],
@@ -384,7 +403,7 @@ class _ViewJobRequestStatus extends StatelessWidget {
         borderRadius: BorderRadius.circular(6),
       ),
       child: Text(
-        isNew ? 'New request' : _statusLabel(status),
+        isNew ? context.tr('newRequest') : _statusLabel(context, status),
         style: TextStyle(
           color: color,
           fontSize: 11,
@@ -426,8 +445,8 @@ class _ViewJobRequestsMessage extends StatelessWidget {
   );
 }
 
-String _date(DateTime? value) {
-  if (value == null) return 'Not scheduled';
+String _date(BuildContext context, DateTime? value) {
+  if (value == null) return context.tr('jobNotScheduled');
   final local = value.toLocal();
   String two(int number) => number.toString().padLeft(2, '0');
   return '${two(local.day)}/${two(local.month)}/${local.year} - ${two(local.hour)}:${two(local.minute)}';
@@ -441,11 +460,11 @@ String _money(double value) {
   return '$formatted VND';
 }
 
-String _statusLabel(String status) => switch (status) {
-  'ACCEPTED' => 'Ongoing',
-  'DECLINED' => 'Declined',
-  'EXPIRED' => 'Expired',
-  'COMPLETED' => 'Completed',
-  'CANCELLED' => 'Cancelled',
+String _statusLabel(BuildContext context, String status) => switch (status) {
+  'ACCEPTED' => context.tr('statusOngoing'),
+  'DECLINED' => context.tr('statusDeclined'),
+  'EXPIRED' => context.tr('statusExpired'),
+  'COMPLETED' => context.tr('statusCompleted'),
+  'CANCELLED' => context.tr('statusCancelled'),
   _ => status,
 };

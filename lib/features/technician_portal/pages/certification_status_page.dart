@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../app/localization/app_strings.dart';
 import '../../../app/theme/coolcare_theme.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/network/api_exception.dart';
@@ -42,7 +43,7 @@ class _CertificationStatusPageState extends State<CertificationStatusPage> {
       if (mounted) setState(() => _error = error.message);
     } catch (_) {
       if (mounted) {
-        setState(() => _error = 'Unable to load verification status.');
+        setState(() => _error = context.tr('unableLoadVerificationStatus'));
       }
     } finally {
       if (mounted) setState(() => _loading = false);
@@ -57,9 +58,13 @@ class _CertificationStatusPageState extends State<CertificationStatusPage> {
     );
     if (submitted == true && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(certification == null
-            ? 'Đã gửi chứng chỉ để xét duyệt.'
-            : 'Đã tạo lần nộp mới và chuyển sang chờ duyệt.')),
+        SnackBar(
+          content: Text(
+            certification == null
+                ? context.tr('certificationSubmitted')
+                : context.tr('certificationResubmitted'),
+          ),
+        ),
       );
       await _load();
     }
@@ -67,15 +72,15 @@ class _CertificationStatusPageState extends State<CertificationStatusPage> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    backgroundColor: const Color(0xFFF7FAFA),
+    backgroundColor: Theme.of(context).scaffoldBackgroundColor,
     appBar: AppBar(
-      title: const Text('My Certifications'),
-      backgroundColor: Colors.white,
-      surfaceTintColor: Colors.white,
+      title: Text(context.tr('myCertifications')),
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      surfaceTintColor: Colors.transparent,
       actions: [
         IconButton(
           onPressed: _application == null ? null : () => _openForm(),
-          tooltip: 'Add certification',
+          tooltip: context.tr('addCertification'),
           icon: const Icon(Icons.add_rounded),
         ),
       ],
@@ -96,9 +101,9 @@ class _CertificationStatusPageState extends State<CertificationStatusPage> {
                   children: [
                     _ProfileVerificationCard(application: _application!),
                     const SizedBox(height: 20),
-                    const Text(
-                      'CERTIFICATIONS',
-                      style: TextStyle(
+                    Text(
+                      context.tr('certifications'),
+                      style: const TextStyle(
                         color: CoolCareColors.mutedText,
                         fontSize: 12,
                         fontWeight: FontWeight.w800,
@@ -126,7 +131,7 @@ class _CertificationStatusPageState extends State<CertificationStatusPage> {
                       child: OutlinedButton.icon(
                         onPressed: () => _openForm(),
                         icon: const Icon(Icons.add_rounded),
-                        label: const Text('Add New Certification'),
+                        label: Text(context.tr('addNewCertification')),
                       ),
                     ),
                   ],
@@ -142,12 +147,12 @@ class _ProfileVerificationCard extends StatelessWidget {
   final TechnicianApplicationStatus application;
   @override
   Widget build(BuildContext context) {
-    final style = _statusStyle(application.status);
+    final style = _statusStyle(context, application.status);
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border.all(color: CoolCareColors.border),
+        color: Theme.of(context).colorScheme.surface,
+        border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
@@ -160,20 +165,20 @@ class _ProfileVerificationCard extends StatelessWidget {
                 child: Icon(style.icon, color: style.color),
               ),
               const SizedBox(width: 12),
-              const Expanded(
+              Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Technician Verification',
-                      style: TextStyle(
+                      context.tr('technicianVerification'),
+                      style: const TextStyle(
                         fontWeight: FontWeight.w800,
                         fontSize: 16,
                       ),
                     ),
                     Text(
-                      'Identity and professional profile',
-                      style: TextStyle(
+                      context.tr('identityProfessionalProfile'),
+                      style: const TextStyle(
                         color: CoolCareColors.mutedText,
                         fontSize: 12,
                       ),
@@ -186,10 +191,16 @@ class _ProfileVerificationCard extends StatelessWidget {
           ),
           if (application.submittedAt != null) ...[
             const Divider(height: 28),
-            _InfoRow(label: 'Submitted', value: _date(application.submittedAt)),
+            _InfoRow(
+              label: context.tr('submitted'),
+              value: _date(application.submittedAt),
+            ),
           ],
           if (application.reviewedAt != null)
-            _InfoRow(label: 'Reviewed', value: _date(application.reviewedAt)),
+            _InfoRow(
+              label: context.tr('reviewedLabel'),
+              value: _date(application.reviewedAt),
+            ),
           if (application.status == 'REJECTED')
             _RejectionBox(reason: application.rejectionReason),
         ],
@@ -206,8 +217,8 @@ class _CertificationCard extends StatelessWidget {
   Widget build(BuildContext context) => Container(
     padding: const EdgeInsets.all(14),
     decoration: BoxDecoration(
-      color: Colors.white,
-      border: Border.all(color: CoolCareColors.border),
+      color: Theme.of(context).colorScheme.surface,
+      border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
       borderRadius: BorderRadius.circular(12),
     ),
     child: Column(
@@ -235,13 +246,19 @@ class _CertificationCard extends StatelessWidget {
         ),
         const SizedBox(height: 12),
         if (item.number?.isNotEmpty == true)
-          _InfoRow(label: 'Certificate No.', value: item.number!),
+          _InfoRow(label: context.tr('certificateNumber'), value: item.number!),
         if (item.issuedBy?.isNotEmpty == true)
-          _InfoRow(label: 'Issued by', value: item.issuedBy!),
+          _InfoRow(label: context.tr('issuedBy'), value: item.issuedBy!),
         if (item.issuedDate != null)
-          _InfoRow(label: 'Issue date', value: _date(item.issuedDate)),
+          _InfoRow(
+            label: context.tr('issueDate'),
+            value: _date(item.issuedDate),
+          ),
         if (item.expiryDate != null)
-          _InfoRow(label: 'Expiry date', value: _date(item.expiryDate)),
+          _InfoRow(
+            label: context.tr('expiryDate'),
+            value: _date(item.expiryDate),
+          ),
         if (item.status == 'REJECTED')
           _RejectionBox(reason: item.rejectionReason),
         if (onResubmit != null) ...[
@@ -251,7 +268,7 @@ class _CertificationCard extends StatelessWidget {
             child: FilledButton.icon(
               onPressed: onResubmit,
               icon: const Icon(Icons.refresh_rounded, size: 18),
-              label: const Text('Resubmit'),
+              label: Text(context.tr('resubmit')),
             ),
           ),
         ],
@@ -265,7 +282,7 @@ class _StatusBadge extends StatelessWidget {
   final String status;
   @override
   Widget build(BuildContext context) {
-    final style = _statusStyle(status);
+    final style = _statusStyle(context, status);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
       decoration: BoxDecoration(
@@ -297,7 +314,7 @@ class _RejectionBox extends StatelessWidget {
       borderRadius: BorderRadius.circular(10),
     ),
     child: Text(
-      'Rejection reason\n${reason?.trim().isNotEmpty == true ? reason!.trim() : 'No rejection reason was provided.'}',
+      '${context.tr('rejectionReason')}\n${reason?.trim().isNotEmpty == true ? reason!.trim() : context.tr('noRejectionReason')}',
       style: const TextStyle(
         color: Color(0xFFB91C1C),
         height: 1.45,
@@ -342,20 +359,20 @@ class _InfoRow extends StatelessWidget {
 class _NoCertifications extends StatelessWidget {
   const _NoCertifications();
   @override
-  Widget build(BuildContext context) => const _CenteredCard(
+  Widget build(BuildContext context) => _CenteredCard(
     icon: Icons.card_membership_outlined,
-    title: 'No certifications submitted',
-    message: 'Your professional certifications will appear here.',
+    title: context.tr('noCertificationsSubmitted'),
+    message: context.tr('certificationsAppearHere'),
   );
 }
 
 class _StatusEmpty extends StatelessWidget {
   const _StatusEmpty();
   @override
-  Widget build(BuildContext context) => const _CenteredCard(
+  Widget build(BuildContext context) => _CenteredCard(
     icon: Icons.person_search_outlined,
-    title: 'No technician profile',
-    message: 'Submit a technician application to view its verification status.',
+    title: context.tr('noTechnicianProfile'),
+    message: context.tr('submitApplicationForStatus'),
   );
 }
 
@@ -366,9 +383,12 @@ class _StatusError extends StatelessWidget {
   @override
   Widget build(BuildContext context) => _CenteredCard(
     icon: Icons.cloud_off_outlined,
-    title: 'Unable to load status',
+    title: context.tr('unableLoadStatus'),
     message: message,
-    action: FilledButton(onPressed: onRetry, child: const Text('Try Again')),
+    action: FilledButton(
+      onPressed: onRetry,
+      child: Text(context.tr('tryAgain')),
+    ),
   );
 }
 
@@ -410,24 +430,26 @@ class _CenteredCard extends StatelessWidget {
   );
 }
 
-({Color color, IconData icon, String label}) _statusStyle(String status) =>
-    switch (status) {
-      'VERIFIED' => (
-        color: const Color(0xFF16A34A),
-        icon: Icons.verified_rounded,
-        label: 'VERIFIED',
-      ),
-      'REJECTED' => (
-        color: const Color(0xFFDC2626),
-        icon: Icons.cancel_rounded,
-        label: 'REJECTED',
-      ),
-      _ => (
-        color: const Color(0xFFD97706),
-        icon: Icons.hourglass_top_rounded,
-        label: 'PENDING',
-      ),
-    };
+({Color color, IconData icon, String label}) _statusStyle(
+  BuildContext context,
+  String status,
+) => switch (status) {
+  'VERIFIED' => (
+    color: const Color(0xFF16A34A),
+    icon: Icons.verified_rounded,
+    label: context.tr('verificationStatus_VERIFIED'),
+  ),
+  'REJECTED' => (
+    color: const Color(0xFFDC2626),
+    icon: Icons.cancel_rounded,
+    label: context.tr('verificationStatus_REJECTED'),
+  ),
+  _ => (
+    color: const Color(0xFFD97706),
+    icon: Icons.hourglass_top_rounded,
+    label: context.tr('verificationStatus_PENDING'),
+  ),
+};
 String _date(DateTime? value) => value == null
     ? '—'
     : '${value.day.toString().padLeft(2, '0')}/${value.month.toString().padLeft(2, '0')}/${value.year}';

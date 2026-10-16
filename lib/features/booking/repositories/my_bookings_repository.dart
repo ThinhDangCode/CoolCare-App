@@ -4,8 +4,8 @@ import '../models/my_booking.dart';
 
 class MyBookingsRepository {
   MyBookingsRepository({ApiClient? apiClient, SecureSessionStore? sessionStore})
-      : _apiClient = apiClient ?? ApiClient.fromEnvironment(),
-        _sessionStore = sessionStore ?? const SecureSessionStore();
+    : _apiClient = apiClient ?? ApiClient.fromEnvironment(),
+      _sessionStore = sessionStore ?? const SecureSessionStore();
 
   final ApiClient _apiClient;
   final SecureSessionStore _sessionStore;
@@ -29,11 +29,13 @@ class MyBookingsRepository {
     if (data['items'] is! List) {
       throw const FormatException('Booking list is missing.');
     }
-    return (data['items'] as List).map((item) {
-      if (item is! Map<String, dynamic>) {
-        throw const FormatException('Invalid booking item.');
-      }
-      return MyBooking.fromJson(item);
-    }).toList(growable: false);
+    return (data['items'] as List)
+        .map((item) {
+          if (item is! Map<String, dynamic>) {
+            throw const FormatException('Invalid booking item.');
+          }
+          return MyBooking.fromJson(item);
+        })
+        .toList(growable: false);
   }
 }

@@ -92,7 +92,7 @@ class _CreateBookingPageState extends State<CreateBookingPage> {
       final error = controller.validateBooking();
 
       if (error != null) {
-        _showMessage(error);
+        _showMessage(_localizedBookingMessage(error));
         return;
       }
     }
@@ -116,7 +116,11 @@ class _CreateBookingPageState extends State<CreateBookingPage> {
     if (!mounted) return;
 
     if (!success) {
-      _showMessage(controller.formErrorMessage ?? context.tr('bookingUi54'));
+      _showMessage(
+        controller.formErrorMessage == null
+            ? context.tr('bookingUi54')
+            : _localizedBookingMessage(controller.formErrorMessage!),
+      );
       return;
     }
 
@@ -163,6 +167,14 @@ class _CreateBookingPageState extends State<CreateBookingPage> {
     ScaffoldMessenger.of(
       context,
     ).showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  String _localizedBookingMessage(String message) {
+    final separator = message.indexOf(':');
+    if (separator < 0) return context.tr(message);
+    final key = message.substring(0, separator);
+    final index = message.substring(separator + 1);
+    return context.trArgs(key, {'index': index});
   }
 
   // ------------------------------------------------------------
@@ -762,23 +774,35 @@ class _CreateBookingPageState extends State<CreateBookingPage> {
                     padding: const EdgeInsets.all(24),
                     child: Text(context.tr('bookingUi39')),
                   ),
-                ...controller.addresses.map((address) {
-                  return RadioListTile<String>(
-                    value: address['id'].toString(),
-                    groupValue: controller.customerAddressId,
-                    title: Text(address['recipient_name']?.toString() ?? ''),
-                    subtitle: Text(
-                      [
-                        address['address_line'],
-                        address['ward'],
-                        address['city'],
-                      ].where((value) => value != null).join(', '),
-                    ),
-                    onChanged: (_) {
-                      Navigator.pop(sheetContext, address);
-                    },
-                  );
-                }),
+                RadioGroup<String>(
+                  groupValue: controller.customerAddressId,
+                  onChanged: (value) {
+                    if (value == null) return;
+
+                    final address = controller.addresses.firstWhere(
+                      (item) => item['id'].toString() == value,
+                    );
+                    Navigator.pop(sheetContext, address);
+                  },
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: controller.addresses.map((address) {
+                      return RadioListTile<String>(
+                        value: address['id'].toString(),
+                        title: Text(
+                          address['recipient_name']?.toString() ?? '',
+                        ),
+                        subtitle: Text(
+                          [
+                            address['address_line'],
+                            address['ward'],
+                            address['city'],
+                          ].where((value) => value != null).join(', '),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
               ],
             ),
           ),

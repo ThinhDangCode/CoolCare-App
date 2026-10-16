@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../app/localization/app_strings.dart';
 import '../../../app/theme/coolcare_theme.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/network/api_exception.dart';
@@ -72,7 +73,7 @@ class _ManageServiceAreasPageState extends State<ManageServiceAreasPage> {
     } catch (_) {
       if (mounted) {
         setState(() {
-          _error = 'Không thể tải khu vực nhận việc.';
+          _error = context.tr('unableLoadServiceAreas');
           _loading = false;
         });
       }
@@ -104,7 +105,7 @@ class _ManageServiceAreasPageState extends State<ManageServiceAreasPage> {
         _selectedWards = {...wards};
       });
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Đã cập nhật khu vực nhận việc.')),
+        SnackBar(content: Text(context.tr('serviceAreasUpdated'))),
       );
     } on ApiException catch (error) {
       if (mounted) {
@@ -115,9 +116,7 @@ class _ManageServiceAreasPageState extends State<ManageServiceAreasPage> {
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Không thể lưu khu vực. Vui lòng thử lại.'),
-          ),
+          SnackBar(content: Text(context.tr('unableSaveServiceAreas'))),
         );
       }
     } finally {
@@ -132,10 +131,10 @@ class _ManageServiceAreasPageState extends State<ManageServiceAreasPage> {
       if (!didPop) _confirmDiscard();
     },
     child: Scaffold(
-      backgroundColor: const Color(0xFFF6F8F9),
+      backgroundColor: context.appBackground,
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        surfaceTintColor: Colors.white,
+        backgroundColor: context.appSurface,
+        surfaceTintColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 19),
@@ -145,9 +144,9 @@ class _ManageServiceAreasPageState extends State<ManageServiceAreasPage> {
               : () => Navigator.maybePop(context),
         ),
         titleSpacing: 0,
-        title: const Text(
-          'Khu vực nhận việc',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+        title: Text(
+          context.tr('serviceAreas'),
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
         ),
       ),
       body: _loading
@@ -178,7 +177,11 @@ class _ManageServiceAreasPageState extends State<ManageServiceAreasPage> {
                   selectedCount: _selectedWards.length,
                 ),
                 const SizedBox(height: 18),
-                _SectionTitle('ĐÃ CHỌN (${_selectedWards.length})'),
+                _SectionTitle(
+                  context.trArgs('selectedAreaCount', {
+                    'count': _selectedWards.length,
+                  }),
+                ),
                 const SizedBox(height: 8),
                 if (_selectedWards.isEmpty)
                   const _EmptySelection()
@@ -201,7 +204,7 @@ class _ManageServiceAreasPageState extends State<ManageServiceAreasPage> {
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
                             ),
-                            backgroundColor: const Color(0xFFEAF6F7),
+                            backgroundColor: context.appAccentSurface,
                             side: BorderSide.none,
                             shape: const StadiumBorder(),
                             visualDensity: VisualDensity.compact,
@@ -210,27 +213,27 @@ class _ManageServiceAreasPageState extends State<ManageServiceAreasPage> {
                         .toList(),
                   ),
                 const SizedBox(height: 22),
-                const _SectionTitle('THÊM PHƯỜNG/XÃ'),
+                _SectionTitle(context.tr('addWard').toUpperCase()),
                 const SizedBox(height: 8),
                 if (available.isEmpty)
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: Colors.white,
-                      border: Border.all(color: CoolCareColors.border),
+                      color: context.appSurface,
+                      border: Border.all(color: context.appBorder),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: const Row(
+                    child: Row(
                       children: [
-                        Icon(
+                        const Icon(
                           Icons.check_circle_outline_rounded,
                           size: 19,
                           color: CoolCareColors.primary,
                         ),
-                        SizedBox(width: 8),
+                        const SizedBox(width: 8),
                         Text(
-                          'Bạn đã chọn tất cả khu vực.',
-                          style: TextStyle(color: CoolCareColors.mutedText),
+                          context.tr('allAreasSelected'),
+                          style: TextStyle(color: context.appMuted),
                         ),
                       ],
                     ),
@@ -241,14 +244,14 @@ class _ManageServiceAreasPageState extends State<ManageServiceAreasPage> {
                     initialValue: null,
                     isExpanded: true,
                     menuMaxHeight: 320,
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       filled: true,
-                      fillColor: Colors.white,
-                      prefixIcon: Icon(
+                      fillColor: context.appSurface,
+                      prefixIcon: const Icon(
                         Icons.location_on_outlined,
                         color: CoolCareColors.primary,
                       ),
-                      hintText: 'Chọn phường/xã để thêm',
+                      hintText: context.tr('selectWardToAdd'),
                     ),
                     items: available
                         .map(
@@ -257,9 +260,9 @@ class _ManageServiceAreasPageState extends State<ManageServiceAreasPage> {
                             child: Text(
                               ward,
                               overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 13,
-                                color: CoolCareColors.text,
+                                color: context.appText,
                               ),
                             ),
                           ),
@@ -272,12 +275,9 @@ class _ManageServiceAreasPageState extends State<ManageServiceAreasPage> {
                           },
                   ),
                 const SizedBox(height: 6),
-                const Text(
-                  'Danh sách chỉ bao gồm các phường/xã thuộc Cần Thơ.',
-                  style: TextStyle(
-                    color: CoolCareColors.mutedText,
-                    fontSize: 11,
-                  ),
+                Text(
+                  context.tr('canThoAreasOnly'),
+                  style: TextStyle(color: context.appMuted, fontSize: 11),
                 ),
                 const SizedBox(height: 8),
               ],
@@ -285,7 +285,7 @@ class _ManageServiceAreasPageState extends State<ManageServiceAreasPage> {
           ),
         ),
         Container(
-          color: const Color(0xFFF6F8F9),
+          color: context.appBackground,
           padding: EdgeInsets.fromLTRB(
             16,
             10,
@@ -313,9 +313,9 @@ class _ManageServiceAreasPageState extends State<ManageServiceAreasPage> {
                         color: Colors.white,
                       ),
                     )
-                  : const Text(
-                      'Lưu khu vực',
-                      style: TextStyle(
+                  : Text(
+                      context.tr('saveServiceAreas'),
+                      style: const TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
                       ),
@@ -331,16 +331,16 @@ class _ManageServiceAreasPageState extends State<ManageServiceAreasPage> {
     final discard = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Bỏ thay đổi?'),
-        content: const Text('Các khu vực chưa lưu sẽ bị mất.'),
+        title: Text(context.tr('discardChangesTitle')),
+        content: Text(context.tr('discardServiceAreaChanges')),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Tiếp tục chỉnh sửa'),
+            child: Text(context.tr('continueEditing')),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Bỏ thay đổi'),
+            child: Text(context.tr('discardChanges')),
           ),
         ],
       ),
@@ -363,17 +363,17 @@ class _CanThoMapCard extends StatelessWidget {
       fit: StackFit.expand,
       children: [
         CustomPaint(painter: _MapPatternPainter()),
-        const Center(
+        Center(
           child: DecoratedBox(
             decoration: BoxDecoration(
               color: CoolCareColors.primary,
               borderRadius: BorderRadius.all(Radius.circular(20)),
             ),
             child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
               child: Text(
-                'KHU VỰC CẦN THƠ',
-                style: TextStyle(
+                context.tr('canThoArea').toUpperCase(),
+                style: const TextStyle(
                   color: Colors.white,
                   fontSize: 11,
                   fontWeight: FontWeight.w700,
@@ -427,8 +427,8 @@ class _ScopeCard extends StatelessWidget {
   Widget build(BuildContext context) => Container(
     padding: const EdgeInsets.all(12),
     decoration: BoxDecoration(
-      color: Colors.white,
-      border: Border.all(color: CoolCareColors.border),
+      color: context.appSurface,
+      border: Border.all(color: context.appBorder),
       borderRadius: BorderRadius.circular(12),
     ),
     child: Row(
@@ -446,15 +446,15 @@ class _ScopeCard extends StatelessWidget {
                   fontWeight: FontWeight.w700,
                 ),
               ),
-              const Text(
-                'CoolCare hiện chỉ hoạt động tại Cần Thơ',
-                style: TextStyle(fontSize: 11, color: CoolCareColors.mutedText),
+              Text(
+                context.tr('coolcareCanThoOnly'),
+                style: TextStyle(fontSize: 11, color: context.appMuted),
               ),
             ],
           ),
         ),
         Text(
-          '$selectedCount khu vực',
+          context.trArgs('areaCount', {'count': selectedCount}),
           style: const TextStyle(
             color: CoolCareColors.primary,
             fontSize: 12,
@@ -486,12 +486,19 @@ class _EmptySelection extends StatelessWidget {
   Widget build(BuildContext context) => Container(
     padding: const EdgeInsets.all(12),
     decoration: BoxDecoration(
-      color: const Color(0xFFFFF4E5),
+      color: context.isDarkMode
+          ? const Color(0xFF3A2D16)
+          : const Color(0xFFFFF4E5),
       borderRadius: BorderRadius.circular(8),
     ),
-    child: const Text(
-      'Hãy chọn ít nhất một phường/xã để có thể nhận việc.',
-      style: TextStyle(fontSize: 12, color: Color(0xFF8A5A00)),
+    child: Text(
+      context.tr('selectAtLeastOneArea'),
+      style: TextStyle(
+        fontSize: 12,
+        color: context.isDarkMode
+            ? const Color(0xFFFFD580)
+            : const Color(0xFF8A5A00),
+      ),
     ),
   );
 }
@@ -515,7 +522,10 @@ class _AreaError extends StatelessWidget {
           const SizedBox(height: 12),
           Text(message, textAlign: TextAlign.center),
           const SizedBox(height: 14),
-          OutlinedButton(onPressed: onRetry, child: const Text('Thử lại')),
+          OutlinedButton(
+            onPressed: onRetry,
+            child: Text(context.tr('tryAgain')),
+          ),
         ],
       ),
     ),

@@ -201,25 +201,42 @@ class CloudinaryImageUploader {
     );
     final client = HttpClient();
     try {
-      final request = await client.postUrl(uri).timeout(const Duration(seconds: 20));
-      request.headers.contentType = ContentType('multipart', 'form-data', parameters: {'boundary': boundary});
-      void addField(String name, String value) => request.add(utf8.encode(
-        '--$boundary\r\nContent-Disposition: form-data; name="$name"\r\n\r\n$value\r\n',
-      ));
+      final request = await client
+          .postUrl(uri)
+          .timeout(const Duration(seconds: 20));
+      request.headers.contentType = ContentType(
+        'multipart',
+        'form-data',
+        parameters: {'boundary': boundary},
+      );
+      void addField(String name, String value) => request.add(
+        utf8.encode(
+          '--$boundary\r\nContent-Disposition: form-data; name="$name"\r\n\r\n$value\r\n',
+        ),
+      );
       addField('upload_preset', uploadPreset.trim());
       addField('folder', targetFolder);
       final fileName = file.uri.pathSegments.last.replaceAll('"', '');
-      request.add(utf8.encode(
-        '--$boundary\r\nContent-Disposition: form-data; name="file"; filename="$fileName"\r\nContent-Type: $contentType\r\n\r\n',
-      ));
+      request.add(
+        utf8.encode(
+          '--$boundary\r\nContent-Disposition: form-data; name="file"; filename="$fileName"\r\nContent-Type: $contentType\r\n\r\n',
+        ),
+      );
       await request.addStream(file.openRead());
       request.add(utf8.encode('\r\n--$boundary--\r\n'));
-      final response = await request.close().timeout(const Duration(seconds: 45));
+      final response = await request.close().timeout(
+        const Duration(seconds: 45),
+      );
       final responseText = await utf8.decoder.bind(response).join();
       final decoded = responseText.isEmpty ? null : jsonDecode(responseText);
-      final payload = decoded is Map<String, dynamic> ? decoded : <String, dynamic>{};
+      final payload = decoded is Map<String, dynamic>
+          ? decoded
+          : <String, dynamic>{};
       final secureUrl = payload['secure_url']?.toString();
-      if (response.statusCode < 200 || response.statusCode >= 300 || secureUrl == null || secureUrl.isEmpty) {
+      if (response.statusCode < 200 ||
+          response.statusCode >= 300 ||
+          secureUrl == null ||
+          secureUrl.isEmpty) {
         throw ApiException(
           statusCode: response.statusCode,
           code: 'DOCUMENT_UPLOAD_FAILED',
@@ -230,9 +247,15 @@ class CloudinaryImageUploader {
     } on ApiException {
       rethrow;
     } on TimeoutException {
-      throw const ApiException(code: 'DOCUMENT_UPLOAD_TIMEOUT', message: 'Tải tệp quá thời gian. Vui lòng thử lại.');
+      throw const ApiException(
+        code: 'DOCUMENT_UPLOAD_TIMEOUT',
+        message: 'Tải tệp quá thời gian. Vui lòng thử lại.',
+      );
     } on SocketException {
-      throw const ApiException(code: 'DOCUMENT_UPLOAD_NETWORK_ERROR', message: 'Không thể tải tệp. Vui lòng kiểm tra mạng.');
+      throw const ApiException(
+        code: 'DOCUMENT_UPLOAD_NETWORK_ERROR',
+        message: 'Không thể tải tệp. Vui lòng kiểm tra mạng.',
+      );
     } finally {
       client.close(force: true);
     }

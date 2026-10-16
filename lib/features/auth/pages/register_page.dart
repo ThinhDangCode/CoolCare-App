@@ -95,7 +95,8 @@ class _RegisterPageState extends State<RegisterPage> {
                       icon: Icons.person_outline_rounded,
                       textInputAction: TextInputAction.next,
                       autofillHints: const [AutofillHints.name],
-                      validator: AuthValidators.fullName,
+                      validator: (value) =>
+                          AuthValidators.fullName(value, context: context),
                     ),
                     const SizedBox(height: 14),
                     AuthTextField(
@@ -109,7 +110,8 @@ class _RegisterPageState extends State<RegisterPage> {
                         AutofillHints.newUsername,
                         AutofillHints.email,
                       ],
-                      validator: AuthValidators.email,
+                      validator: (value) =>
+                          AuthValidators.email(value, context: context),
                     ),
                     const SizedBox(height: 14),
                     AuthTextField(
@@ -120,7 +122,8 @@ class _RegisterPageState extends State<RegisterPage> {
                       obscureText: true,
                       textInputAction: TextInputAction.next,
                       autofillHints: const [AutofillHints.newPassword],
-                      validator: AuthValidators.password,
+                      validator: (value) =>
+                          AuthValidators.password(value, context: context),
                     ),
                     const SizedBox(height: 14),
                     AuthTextField(
@@ -133,6 +136,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       validator: (value) => AuthValidators.confirmPassword(
                         value,
                         _passwordController.text,
+                        context: context,
                       ),
                       onFieldSubmitted: (_) => _submit(),
                     ),

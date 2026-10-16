@@ -7,8 +7,8 @@ class TechnicianMatchingApiService {
   TechnicianMatchingApiService({
     ApiClient? apiClient,
     SecureSessionStore? sessionStore,
-  })  : _apiClient = apiClient ?? ApiClient.fromEnvironment(),
-        _sessionStore = sessionStore ?? const SecureSessionStore();
+  }) : _apiClient = apiClient ?? ApiClient.fromEnvironment(),
+       _sessionStore = sessionStore ?? const SecureSessionStore();
 
   final ApiClient _apiClient;
   final SecureSessionStore _sessionStore;
@@ -32,8 +32,8 @@ class TechnicianMatchingApiService {
   ///
   /// GET /api/bookings/:bookingId/recommended-technicians
   Future<List<RecommendedTechnician>> getRecommendedTechnicians(
-      String bookingId,
-      ) async {
+    String bookingId,
+  ) async {
     if (bookingId.trim().isEmpty) {
       throw const ApiException(
         code: 'INVALID_BOOKING_ID',
@@ -73,27 +73,25 @@ class TechnicianMatchingApiService {
       );
     }
 
-    return items.map((item) {
-      if (item is! Map<String, dynamic>) {
-        throw const ApiException(
-          code: 'INVALID_RESPONSE',
-          message: 'Technician information is invalid.',
-        );
-      }
+    return items
+        .map((item) {
+          if (item is! Map<String, dynamic>) {
+            throw const ApiException(
+              code: 'INVALID_RESPONSE',
+              message: 'Technician information is invalid.',
+            );
+          }
 
-      return _parseTechnician(item);
-    }).toList(growable: false);
+          return _parseTechnician(item);
+        })
+        .toList(growable: false);
   }
 
   /// #40 - Select Technician
   ///
   /// POST /api/bookings/:bookingId/technician-selection
-  Future<void> selectTechnician(
-      String bookingId,
-      String technicianId,
-      ) async {
-    if (bookingId.trim().isEmpty ||
-        technicianId.trim().isEmpty) {
+  Future<void> selectTechnician(String bookingId, String technicianId) async {
+    if (bookingId.trim().isEmpty || technicianId.trim().isEmpty) {
       throw const ApiException(
         code: 'VALIDATION_ERROR',
         message: 'Booking ID and technician ID are required.',
@@ -106,9 +104,7 @@ class TechnicianMatchingApiService {
       await _apiClient.post(
         '/bookings/${Uri.encodeComponent(bookingId)}/technician-selection',
         bearerToken: token,
-        body: {
-          'technicianId': technicianId,
-        },
+        body: {'technicianId': technicianId},
       );
     } on ApiException catch (error) {
       if (error.code == 'TECHNICIAN_UNAVAILABLE' ||
@@ -121,9 +117,7 @@ class TechnicianMatchingApiService {
   }
 
   /// Convert API data into the model used by the existing page.
-  RecommendedTechnician _parseTechnician(
-      Map<String, dynamic> json,
-      ) {
+  RecommendedTechnician _parseTechnician(Map<String, dynamic> json) {
     final id = json['id']?.toString() ?? '';
     final name = json['name']?.toString() ?? '';
 

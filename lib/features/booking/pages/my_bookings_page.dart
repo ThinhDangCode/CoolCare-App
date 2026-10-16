@@ -74,9 +74,7 @@ class _MyBookingsPageState extends State<MyBookingsPage> {
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Unable to load this booking. Please try again.'),
-          ),
+          SnackBar(content: Text(context.tr('bookingUnableLoadForRebook'))),
         );
       }
     } finally {
@@ -362,7 +360,7 @@ class _BookingCard extends StatelessWidget {
                                 ),
                               )
                             : const Icon(Icons.refresh_rounded, size: 16),
-                        label: const Text('Re-book'),
+                        label: Text(context.tr('bookingRebook')),
                       ),
                     ),
                     const SizedBox(width: 8),

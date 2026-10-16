@@ -104,7 +104,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
     if (success && mounted) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text('Đã gửi lại mã OTP.')));
+      ).showSnackBar(SnackBar(content: Text(context.tr('otpResent'))));
     }
   }
 
@@ -158,7 +158,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
           icon: Icons.mail_outline_rounded,
           keyboardType: TextInputType.emailAddress,
           textInputAction: TextInputAction.done,
-          validator: AuthValidators.email,
+          validator: (value) => AuthValidators.email(value, context: context),
           onFieldSubmitted: (_) => _requestOtp(),
         ),
         const SizedBox(height: 18),
@@ -219,7 +219,8 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
           icon: Icons.lock_outline_rounded,
           obscureText: true,
           textInputAction: TextInputAction.next,
-          validator: AuthValidators.password,
+          validator: (value) =>
+              AuthValidators.password(value, context: context),
         ),
         const SizedBox(height: 14),
         AuthTextField(
@@ -229,8 +230,11 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
           icon: Icons.lock_reset_rounded,
           obscureText: true,
           textInputAction: TextInputAction.done,
-          validator: (value) =>
-              AuthValidators.confirmPassword(value, _passwordController.text),
+          validator: (value) => AuthValidators.confirmPassword(
+            value,
+            _passwordController.text,
+            context: context,
+          ),
           onFieldSubmitted: (_) => _resetPassword(),
         ),
         const SizedBox(height: 18),
@@ -324,7 +328,10 @@ class _OtpInputState extends State<_OtpInput> {
             ),
             onChanged: (value) => _changed(index, value),
             validator: index == 0
-                ? (_) => AuthValidators.otp(widget.controller.text)
+                ? (_) => AuthValidators.otp(
+                    widget.controller.text,
+                    context: context,
+                  )
                 : null,
           ),
         );

@@ -911,7 +911,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
       );
       return;
     }
-    if (phone.isNotEmpty && AuthValidators.phone(phone) != null) {
+    if (phone.isNotEmpty &&
+        AuthValidators.phone(phone, context: context) != null) {
       setState(
         () => _error =
             'Enter a valid Vietnamese phone number and avoid repeated digits.',
