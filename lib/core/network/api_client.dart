@@ -9,7 +9,7 @@ class ApiClient {
   factory ApiClient.fromEnvironment({HttpClient? httpClient}) {
     const baseUrl = String.fromEnvironment(
       'API_BASE_URL',
-      defaultValue: 'http://127.0.0.1:3000/api',
+      defaultValue: 'http://10.0.2.2:3000/api',
     );
 
     return ApiClient(

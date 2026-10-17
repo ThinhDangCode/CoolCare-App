@@ -265,8 +265,14 @@ class _BookingDetailPageState extends State<BookingDetailPage> {
             ? paymentSummary['payments'] as List
             : <dynamic>[];
         final paymentPaid = paymentRows.any((p) => p is Map && p['payment_status'] == 'SUCCESS' && (num.tryParse('${p['amount']}') ?? -1) == (num.tryParse('${(paymentSummary is Map ? paymentSummary['booking'] : null) is Map ? (paymentSummary['booking'] as Map)['total_amount'] : null}') ?? -2));
-        final awaitingPayment = status == 'COMPLETED' && paymentSummary is Map && !paymentPaid;
-        final paymentUnknown = status == 'COMPLETED' && paymentSummary == null;
+        final awaitingPayment =
+            status == 'COMPLETED' &&
+                paymentSummary is Map &&
+                !paymentPaid;
+
+        final paymentUnknown =
+            status == 'COMPLETED' &&
+                paymentSummary == null;
         final isVietnamese = Localizations.localeOf(context).languageCode == 'vi';
         String bilingual(String vi, String en) => isVietnamese ? vi : en;
         final address = data['address'] is Map
@@ -511,7 +517,13 @@ class _BookingDetailPageState extends State<BookingDetailPage> {
               )),
               if (status == 'COMPLETED') Padding(
                 padding: const EdgeInsets.only(bottom: 12),
-                child: awaitingPayment
+                child: paymentUnknown
+                    ? OutlinedButton.icon(
+                        onPressed: _reload,
+                        icon: const Icon(Icons.refresh_rounded),
+                        label: Text(bilingual('Kiểm tra lại thanh toán', 'Retry payment check')),
+                      )
+                    : awaitingPayment
                     ? FilledButton.icon(
                   onPressed: () async {
                     await Navigator.of(context).push(
@@ -553,7 +565,7 @@ class _BookingDetailPageState extends State<BookingDetailPage> {
                   icon: const Icon(Icons.cancel_outlined),
                   label: Text(context.tr('bookingDetailCancel')),
                 ),
-              if (data['canConfirmCompletion'] == true)
+              if (data['canConfirmCompletion'] == true || status == 'WAITING_CONFIRMATION')
                 FilledButton.icon(
                   onPressed: confirmingCompletion ? null : _confirmCompletion,
                   icon: confirmingCompletion
