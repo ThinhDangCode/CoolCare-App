@@ -265,14 +265,7 @@ class _BlogDetailPageState extends State<BlogDetailPage> {
                 style: TextStyle(color: context.appMuted, fontSize: 12),
               ),
               const Divider(height: 34),
-              Text(
-                _plainText(article.content),
-                style: TextStyle(
-                  color: context.appText,
-                  fontSize: 15,
-                  height: 1.65,
-                ),
-              ),
+              _ArticleContent(content: article.content),
             ],
           ),
         );
@@ -307,6 +300,119 @@ class _ArticleImage extends StatelessWidget {
       errorBuilder: (_, _, _) => fallback,
     );
   }
+}
+
+class _ArticleContent extends StatelessWidget {
+  const _ArticleContent({required this.content});
+
+  final String content;
+
+  @override
+  Widget build(BuildContext context) {
+    final textColor = context.appText;
+    final bodyStyle = TextStyle(color: textColor, fontSize: 15, height: 1.65);
+    final lines = _normaliseArticleContent(content).split('\n');
+    final blocks = <Widget>[];
+
+    for (final rawLine in lines) {
+      final line = rawLine.trim();
+      if (line.isEmpty) continue;
+
+      final heading = RegExp(r'^(#{1,6})\s+(.+)$').firstMatch(line);
+      if (heading != null) {
+        final level = heading.group(1)!.length;
+        final fontSize = level == 1 ? 22.0 : (level == 2 ? 19.0 : 17.0);
+        blocks.add(
+          Padding(
+            padding: EdgeInsets.only(top: blocks.isEmpty ? 0 : 8, bottom: 8),
+            child: Text.rich(
+              TextSpan(children: _inlineSpans(heading.group(2)!)),
+              style: bodyStyle.copyWith(
+                fontSize: fontSize,
+                height: 1.35,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ),
+        );
+        continue;
+      }
+
+      final unordered = RegExp(r'^[-*•]\s+(.+)$').firstMatch(line);
+      if (unordered != null) {
+        blocks.add(
+          _ArticleListItem(
+            marker: '•',
+            text: unordered.group(1)!,
+            style: bodyStyle,
+          ),
+        );
+        continue;
+      }
+
+      final ordered = RegExp(r'^(\d+)[.)]\s+(.+)$').firstMatch(line);
+      if (ordered != null) {
+        blocks.add(
+          _ArticleListItem(
+            marker: '${ordered.group(1)}.',
+            text: ordered.group(2)!,
+            style: bodyStyle,
+          ),
+        );
+        continue;
+      }
+
+      blocks.add(
+        Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: Text.rich(
+            TextSpan(children: _inlineSpans(line)),
+            style: bodyStyle,
+          ),
+        ),
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: blocks,
+    );
+  }
+}
+
+class _ArticleListItem extends StatelessWidget {
+  const _ArticleListItem({
+    required this.marker,
+    required this.text,
+    required this.style,
+  });
+
+  final String marker;
+  final String text;
+  final TextStyle style;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.only(left: 4, bottom: 8),
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          width: 28,
+          child: Text(
+            marker,
+            style: style.copyWith(fontWeight: FontWeight.w700),
+          ),
+        ),
+        Expanded(
+          child: Text.rich(
+            TextSpan(children: _inlineSpans(text)),
+            style: style,
+          ),
+        ),
+      ],
+    ),
+  );
 }
 
 class _MessageState extends StatelessWidget {
@@ -351,6 +457,62 @@ String _plainText(String value) => value
     .replaceAll(RegExp(r'<[^>]*>'), ' ')
     .replaceAll(RegExp(r'\s+'), ' ')
     .trim();
+
+String _normaliseArticleContent(String value) => value
+    .replaceAll(RegExp(r'<br\s*/?>', caseSensitive: false), '\n')
+    .replaceAll(RegExp(r'</p\s*>', caseSensitive: false), '\n\n')
+    .replaceAll(RegExp(r'<[^>]*>'), '')
+    .replaceAll('&nbsp;', ' ')
+    .replaceAll('\r\n', '\n')
+    .replaceAll('\r', '\n')
+    .trim();
+
+List<InlineSpan> _inlineSpans(String value) {
+  final spans = <InlineSpan>[];
+  final pattern = RegExp(r'(\*\*[^*]+\*\*|_[^_]+_|\[[^\]]+\]\([^)]+\))');
+  var cursor = 0;
+
+  for (final match in pattern.allMatches(value)) {
+    if (match.start > cursor) {
+      spans.add(TextSpan(text: value.substring(cursor, match.start)));
+    }
+
+    final token = match.group(0)!;
+    if (token.startsWith('**')) {
+      spans.add(
+        TextSpan(
+          text: token.substring(2, token.length - 2),
+          style: const TextStyle(fontWeight: FontWeight.w700),
+        ),
+      );
+    } else if (token.startsWith('_')) {
+      spans.add(
+        TextSpan(
+          text: token.substring(1, token.length - 1),
+          style: const TextStyle(fontStyle: FontStyle.italic),
+        ),
+      );
+    } else {
+      final separator = token.indexOf('](');
+      spans.add(
+        TextSpan(
+          text: token.substring(1, separator),
+          style: const TextStyle(
+            color: CoolCareColors.primary,
+            decoration: TextDecoration.underline,
+            decorationColor: CoolCareColors.primary,
+          ),
+        ),
+      );
+    }
+    cursor = match.end;
+  }
+
+  if (cursor < value.length) {
+    spans.add(TextSpan(text: value.substring(cursor)));
+  }
+  return spans;
+}
 
 String _date(DateTime? value) => value == null
     ? ''
