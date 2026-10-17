@@ -1,3 +1,5 @@
+import '../../payments/pages/payment_page.dart';
+import '../../quotations/pages/quotation_page.dart';
 import 'package:flutter/material.dart';
 
 import '../../../app/theme/coolcare_theme.dart';
@@ -135,6 +137,22 @@ class _ViewJobRequestDetailPageState extends State<ViewJobRequestDetailPage> {
                   ],
                 ),
               ],
+              if (request.status == 'ACCEPTED') ...[
+                const SizedBox(height: 12),
+                OutlinedButton.icon(
+                  onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) =>
+                    QuotationPage(bookingId: request.booking.id, technician: true))),
+                  icon: const Icon(Icons.receipt_long_outlined),
+                  label: const Text('Create / View Quotation'),
+                ),
+              ],
+              const SizedBox(height: 12),
+              OutlinedButton.icon(
+                onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) =>
+                  PaymentPage(bookingId: request.booking.id, technician: true))),
+                icon: const Icon(Icons.payments_outlined),
+                label: const Text('Xác nhận tiền mặt / Cash payment'),
+              ),
               const SizedBox(height: 14),
               _Section(
                 label: 'BOOKING INFORMATION',

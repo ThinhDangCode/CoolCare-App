@@ -4,6 +4,7 @@ import '../../../app/localization/app_strings.dart';
 import '../../../app/theme/coolcare_theme.dart';
 import '../../reviews/pages/review_pages.dart';
 import '../models/my_booking.dart';
+import '../../payments/repositories/payment_repository.dart';
 import '../repositories/my_bookings_repository.dart';
 import '../repositories/booking_detail_repository.dart';
 import 'booking_detail_page.dart';
@@ -20,6 +21,8 @@ class _MyBookingsPageState extends State<MyBookingsPage> {
   final _repository = MyBookingsRepository();
   late Future<List<MyBooking>> _bookings;
   bool _showReviews = false;
+  final _paymentRepo = PaymentRepository();
+  final Map<String, bool?> _paidByBooking = {};
   String _filter = 'all';
   String? _rebookingId;
 
@@ -27,10 +30,29 @@ class _MyBookingsPageState extends State<MyBookingsPage> {
   void initState() {
     super.initState();
     _bookings = _repository.getMyBookings();
+    _loadPaymentStatuses(_bookings);
+  }
+
+  Future<void> _loadPaymentStatuses(Future<List<MyBooking>> source) async {
+    try {
+      final bookings = await source;
+      await Future.wait(bookings.where((b) => b.status == 'COMPLETED').map((b) async {
+        try {
+          final summary = await _paymentRepo.summary(b.id);
+          final rows = summary['payments'] as List? ?? const [];
+          final paid = rows.any((p) => p is Map && p['payment_status'] == 'SUCCESS' && (num.tryParse('${p['amount']}') ?? -1) == (num.tryParse('${(summary['booking'] as Map?)?['total_amount']}') ?? -2));
+          if (mounted) setState(() => _paidByBooking[b.id] = paid);
+        } catch (_) {
+          if (mounted) setState(() => _paidByBooking[b.id] = null);
+        }
+      }));
+    } catch (_) {}
   }
 
   void _reload() {
     final next = _repository.getMyBookings();
+    _paidByBooking.clear();
+    _loadPaymentStatuses(next);
     if (!mounted) return;
     setState(() {
       _bookings = next;
@@ -39,6 +61,8 @@ class _MyBookingsPageState extends State<MyBookingsPage> {
 
   Future<void> _refresh() async {
     final next = _repository.getMyBookings();
+    _paidByBooking.clear();
+    _loadPaymentStatuses(next);
     if (!mounted) return;
     setState(() {
       _bookings = next;
@@ -188,6 +212,7 @@ class _MyBookingsPageState extends State<MyBookingsPage> {
                         itemCount: items.length,
                         itemBuilder: (_, index) => _BookingCard(
                           booking: items[index],
+                          paid: _paidByBooking[items[index].id],
                           onTap: () => _open(items[index]),
                           onRebook: items[index].status == 'CANCELLED'
                               ? () => _rebook(items[index])
@@ -233,11 +258,13 @@ class _MyBookingsPageState extends State<MyBookingsPage> {
 class _BookingCard extends StatelessWidget {
   const _BookingCard({
     required this.booking,
+    this.paid,
     required this.onTap,
     required this.rebooking,
     this.onRebook,
   });
   final MyBooking booking;
+  final bool? paid;
   final VoidCallback onTap;
   final VoidCallback? onRebook;
   final bool rebooking;
@@ -262,7 +289,9 @@ class _BookingCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final status = booking.status;
-    final warning = status == 'PENDING' || status == 'TECHNICIAN_SELECTED';
+    final awaitingPayment = status == 'COMPLETED' && paid == false;
+    final unknownPayment = status == 'COMPLETED' && paid == null;
+    final warning = awaitingPayment || unknownPayment || status == 'PENDING' || status == 'TECHNICIAN_SELECTED';
     final cancelled = status == 'CANCELLED';
     final color = cancelled
         ? const Color(0xFFB42318)
@@ -313,7 +342,13 @@ class _BookingCard extends StatelessWidget {
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
-                      context.tr('bookingStatus_$status'),
+                      awaitingPayment
+                          ? (Localizations.localeOf(context).languageCode == 'vi' ? 'Chưa thanh toán' : 'Unpaid')
+                          : unknownPayment
+                              ? (Localizations.localeOf(context).languageCode == 'vi' ? 'Đang kiểm tra thanh toán' : 'Checking payment')
+                              : status == 'COMPLETED' && paid == true
+                                  ? (Localizations.localeOf(context).languageCode == 'vi' ? 'Đã thanh toán' : 'Paid')
+                                  : context.tr('bookingStatus_$status'),
                       style: TextStyle(
                         color: color,
                         fontWeight: FontWeight.w700,
@@ -323,6 +358,10 @@ class _BookingCard extends StatelessWidget {
                   ),
                 ],
               ),
+              if (awaitingPayment) ...[
+                const SizedBox(height: 8),
+                const Text('Công việc đã hoàn thành · Cần thanh toán', style: TextStyle(fontSize: 12, color: Color(0xFF946500))),
+              ],
               const SizedBox(height: 12),
               _line(Icons.calendar_today_outlined, _date(booking.scheduledAt)),
               const SizedBox(height: 7),
