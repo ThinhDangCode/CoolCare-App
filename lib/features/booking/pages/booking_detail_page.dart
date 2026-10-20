@@ -14,9 +14,11 @@ class BookingDetailPage extends StatefulWidget {
     super.key,
     required this.bookingId,
     this.repository,
+    this.paymentRepository,
   });
   final String bookingId;
   final BookingDetailRepository? repository;
+  final PaymentRepository? paymentRepository;
 
   @override
   State<BookingDetailPage> createState() => _BookingDetailPageState();
@@ -25,7 +27,7 @@ class BookingDetailPage extends StatefulWidget {
 class _BookingDetailPageState extends State<BookingDetailPage> {
   static const teal = Color(0xFF078B96);
   late final BookingDetailRepository repo;
-  final PaymentRepository _paymentRepo = PaymentRepository();
+  late final PaymentRepository _paymentRepo;
   late Future<Map<String, dynamic>> detail;
   bool cancelling = false;
   bool confirmingCompletion = false;
@@ -35,6 +37,7 @@ class _BookingDetailPageState extends State<BookingDetailPage> {
   void initState() {
     super.initState();
     repo = widget.repository ?? BookingDetailRepository();
+    _paymentRepo = widget.paymentRepository ?? PaymentRepository();
     detail = _load();
   }
 

@@ -1,6 +1,7 @@
 import 'package:coolcare_mobile/core/network/api_client.dart';
 import 'package:coolcare_mobile/features/booking/pages/booking_detail_page.dart';
 import 'package:coolcare_mobile/features/booking/repositories/booking_detail_repository.dart';
+import 'package:coolcare_mobile/features/payments/repositories/payment_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -14,6 +15,7 @@ void main() {
         home: BookingDetailPage(
           bookingId: 'booking-id',
           repository: repository,
+          paymentRepository: _FakePaymentRepository(),
         ),
       ),
     );
@@ -31,10 +33,19 @@ void main() {
     await tester.tap(
       find.widgetWithText(FilledButton, 'Confirm completion').last,
     );
-    await tester.pumpAndSettle();
+    // PaymentPage polls periodically, so it intentionally never settles.
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
 
     expect(repository.confirmedBookingId, 'booking-id');
   });
+}
+
+class _FakePaymentRepository extends PaymentRepository {
+  _FakePaymentRepository() : super(apiClient: ApiClient(baseUrl: 'http://localhost'));
+
+  @override
+  Future<Map<String, dynamic>> summary(String bookingId) async => {};
 }
 
 class _FakeBookingDetailRepository extends BookingDetailRepository {
