@@ -51,9 +51,15 @@ class _BookingVouchersSheetState extends State<BookingVouchersSheet> {
         'VALIDATION_ERROR': 'voucherInvalidCode',
       };
       final key = known[error.code];
-      if (key != null) return context.tr(key);
-      if (error.statusCode == 401 || error.statusCode == 403) return context.tr('voucherErrorUnauthorized');
-      if (error.statusCode == 409 || error.statusCode == 422) return context.tr('voucherErrorNotEligible');
+      if (key != null) {
+        return context.tr(key);
+      }
+      if (error.statusCode == 401 || error.statusCode == 403) {
+        return context.tr('voucherErrorUnauthorized');
+      }
+      if (error.statusCode == 409 || error.statusCode == 422) {
+        return context.tr('voucherErrorNotEligible');
+      }
     }
     return context.tr('voucherApplyFailed');
   }
@@ -139,13 +145,17 @@ class _BookingVouchersSheetState extends State<BookingVouchersSheet> {
                 ),
               );
             }
-            if (!snapshot.hasData) return const Center(child: Padding(padding: EdgeInsets.all(24), child: CircularProgressIndicator()));
+            if (!snapshot.hasData) {
+              return const Center(child: Padding(padding: EdgeInsets.all(24), child: CircularProgressIndicator()));
+            }
             final items = snapshot.data!;
-            if (items.isEmpty) return Padding(padding: const EdgeInsets.all(20), child: Text(context.tr('voucherEmpty')));
+            if (items.isEmpty) {
+              return Padding(padding: const EdgeInsets.all(20), child: Text(context.tr('voucherEmpty')));
+            }
             return ListView.separated(
               shrinkWrap: true,
               itemCount: items.length,
-              separatorBuilder: (_, __) => const Divider(),
+              separatorBuilder: (_, _) => const Divider(),
               itemBuilder: (context, index) {
                 final v = items[index];
                 final eligible = v['eligible'] == true;

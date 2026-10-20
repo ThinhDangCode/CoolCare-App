@@ -21,9 +21,20 @@ class _QuotationPageState extends State<QuotationPage> {
 
   Future<void> _run(Future<void> Function() action) async {
     setState(() => busy = true);
-    try { await action(); if (mounted) _refresh(); }
-    catch (error) { if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$error'))); }
-    finally { if (mounted) setState(() => busy = false); }
+    try {
+      await action();
+      if (mounted) {
+        _refresh();
+      }
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$error')));
+      }
+    } finally {
+      if (mounted) {
+        setState(() => busy = false);
+      }
+    }
   }
 
   @override
@@ -46,13 +57,19 @@ class _QuotationPageState extends State<QuotationPage> {
       }, icon: const Icon(Icons.add), label: const Text('Tạo báo giá'),
     ) : null,
     body: FutureBuilder<List<Map<String, dynamic>>>(future: quotes, builder: (context, snapshot) {
-      if (snapshot.hasError) return Center(child: Column(mainAxisSize: MainAxisSize.min, children: [
-        Text('Không tải được báo giá: ${snapshot.error}', textAlign: TextAlign.center),
-        TextButton(onPressed: _refresh, child: const Text('Thử lại')),
-      ]));
-      if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
+      if (snapshot.hasError) {
+        return Center(child: Column(mainAxisSize: MainAxisSize.min, children: [
+          Text('Không tải được báo giá: ${snapshot.error}', textAlign: TextAlign.center),
+          TextButton(onPressed: _refresh, child: const Text('Thử lại')),
+        ]));
+      }
+      if (!snapshot.hasData) {
+        return const Center(child: CircularProgressIndicator());
+      }
       final data = snapshot.data!;
-      if (data.isEmpty) return const Center(child: Text('Chưa có báo giá. Booking vẫn sử dụng giá mặc định.'));
+      if (data.isEmpty) {
+        return const Center(child: Text('Chưa có báo giá. Booking vẫn sử dụng giá mặc định.'));
+      }
       return ListView.builder(padding: const EdgeInsets.all(16), itemCount: data.length, itemBuilder: (context, index) {
         final q = data[index];
         final status = q['status']?.toString() ?? '';
@@ -130,10 +147,18 @@ class _QuotationEditorState extends State<_QuotationEditor> {
     try {
       await widget.repository.create(widget.bookingId, type: widget.type, items: items,
         issueDescription: reason.text.trim(), note: note.text.trim());
-      if (mounted) Navigator.pop(context, true);
+      if (mounted) {
+        Navigator.pop(context, true);
+      }
     } catch (error) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$error')));
-    } finally { if (mounted) setState(() => sending = false); }
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$error')));
+      }
+    } finally {
+      if (mounted) {
+        setState(() => sending = false);
+      }
+    }
   }
 
   @override

@@ -327,16 +327,6 @@ class _PaymentPageState extends State<PaymentPage>
     final hasQr = qrData != null && qrData.isNotEmpty;
     final isCash = current?['payment_kind'] == 'CASH';
     final isWaiting = current != null;
-    final statusColor = paid
-        ? const Color(0xFF087C65)
-        : isWaiting
-            ? const Color(0xFF946500)
-            : Theme.of(context).colorScheme.onSurfaceVariant;
-    final statusBg = paid
-        ? const Color(0xFFE9F7F2)
-        : isWaiting
-            ? const Color(0xFFFFF6E3)
-            : Theme.of(context).colorScheme.surfaceContainerHighest;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -543,7 +533,7 @@ class _PaymentPageState extends State<PaymentPage>
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 17),
         decoration: BoxDecoration(
-          color: selected ? primary.withOpacity(.07) : Colors.white,
+          color: selected ? primary.withValues(alpha: .07) : Colors.white,
           border: Border.all(color: selected ? primary : const Color(0xFFE0E6EA), width: selected ? 2 : 1),
           borderRadius: BorderRadius.circular(16),
         ),
@@ -572,7 +562,7 @@ class _PaymentPageState extends State<PaymentPage>
         decoration: BoxDecoration(
           border: Border.all(color: selected ? primary : const Color(0xFFE0E6EA), width: selected ? 2 : 1),
           borderRadius: BorderRadius.circular(12),
-          color: selected ? primary.withOpacity(.06) : Colors.white,
+          color: selected ? primary.withValues(alpha: .06) : Colors.white,
         ),
         child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
           Icon(icon, color: primary, size: 20),
