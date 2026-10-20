@@ -1,3 +1,6 @@
+import '../../payments/pages/payment_page.dart';
+import '../../payments/repositories/payment_repository.dart';
+import '../../quotations/pages/quotation_page.dart';
 import 'package:flutter/material.dart';
 
 import '../../../app/localization/app_strings.dart';
@@ -23,6 +26,37 @@ class ViewJobRequestDetailPage extends StatefulWidget {
 
 class _ViewJobRequestDetailPageState extends State<ViewJobRequestDetailPage> {
   bool _submitting = false;
+  final PaymentRepository _paymentRepository = PaymentRepository();
+  bool? _isPaid;
+  bool _paymentPending = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPaymentStatus();
+  }
+
+  Future<void> _loadPaymentStatus() async {
+    try {
+      final summary = await _paymentRepository.technicianSummary(widget.request.booking.id);
+      final rows = (summary['payments'] as List? ?? []).whereType<Map>();
+      if (!mounted) return;
+      setState(() {
+        _isPaid = rows.any((p) => p['payment_status'] == 'SUCCESS');
+        _paymentPending = rows.any((p) =>
+            p['payment_status'] == 'PENDING' || p['payment_status'] == 'PROCESSING');
+      });
+    } catch (_) {
+      if (mounted) setState(() => _isPaid = null);
+    }
+  }
+
+  Future<void> _openPayment() async {
+    await Navigator.of(context).push(MaterialPageRoute(builder: (_) =>
+        PaymentPage(bookingId: widget.request.booking.id, technician: true)));
+    if (mounted) await _loadPaymentStatus();
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -134,6 +168,35 @@ class _ViewJobRequestDetailPageState extends State<ViewJobRequestDetailPage> {
                   ],
                 ),
               ],
+              if (request.status == 'ACCEPTED') ...[
+                const SizedBox(height: 12),
+                OutlinedButton.icon(
+                  onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) =>
+                    QuotationPage(bookingId: request.booking.id, technician: true))),
+                  icon: const Icon(Icons.receipt_long_outlined),
+                  label: const Text('Create / View Quotation'),
+                ),
+              ],
+              const SizedBox(height: 12),
+              _Section(label: 'PAYMENT STATUS', children: [
+                Row(children: [
+                  Icon(_isPaid == true ? Icons.verified_rounded :
+                       _paymentPending ? Icons.schedule_rounded : Icons.receipt_long_outlined,
+                       color: _isPaid == true ? const Color(0xFF15803D) : const Color(0xFFB45309)),
+                  const SizedBox(width: 10),
+                  Expanded(child: Text(_isPaid == true ? 'Paid' :
+                      _isPaid == null ? 'Payment status unavailable' :
+                      _paymentPending ? 'Pending payment' : 'Unpaid',
+                      style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16))),
+                ]),
+                const SizedBox(height: 12),
+                SizedBox(width: double.infinity, child: OutlinedButton.icon(
+                  onPressed: _openPayment,
+                  icon: Icon(_isPaid == true ? Icons.receipt_long_outlined : Icons.qr_code_2),
+                  label: Text(_isPaid == true ? 'View payment details' :
+                      _paymentPending ? 'Check payment / Show QR' : 'Cash / Generate QR'),
+                )),
+              ]),
               const SizedBox(height: 14),
               _Section(
                 label: context.tr('jobBookingInformation'),

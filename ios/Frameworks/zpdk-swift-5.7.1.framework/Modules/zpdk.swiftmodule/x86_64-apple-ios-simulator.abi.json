@@ -1,0 +1,5594 @@
+{
+  "ABIRoot": {
+    "kind": "Root",
+    "name": "TopLevel",
+    "printedName": "TopLevel",
+    "children": [
+      {
+        "kind": "Import",
+        "name": "Foundation",
+        "printedName": "Foundation",
+        "declKind": "Import",
+        "moduleName": "zpdk"
+      },
+      {
+        "kind": "TypeDecl",
+        "name": "FlushBehaviour",
+        "printedName": "FlushBehaviour",
+        "children": [
+          {
+            "kind": "Var",
+            "name": "auto",
+            "printedName": "auto",
+            "children": [
+              {
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(zpdk.FlushBehaviour.Type) -> zpdk.FlushBehaviour",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "FlushBehaviour",
+                    "printedName": "zpdk.FlushBehaviour",
+                    "usr": "s:4zpdk14FlushBehaviourO"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "zpdk.FlushBehaviour.Type",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "FlushBehaviour",
+                        "printedName": "zpdk.FlushBehaviour",
+                        "usr": "s:4zpdk14FlushBehaviourO"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "declKind": "EnumElement",
+            "usr": "s:4zpdk14FlushBehaviourO4autoyA2CmF",
+            "mangledName": "$s4zpdk14FlushBehaviourO4autoyA2CmF",
+            "moduleName": "zpdk",
+            "declAttributes": [
+              "RawDocComment"
+            ]
+          },
+          {
+            "kind": "Var",
+            "name": "explicitOnly",
+            "printedName": "explicitOnly",
+            "children": [
+              {
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(zpdk.FlushBehaviour.Type) -> zpdk.FlushBehaviour",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "FlushBehaviour",
+                    "printedName": "zpdk.FlushBehaviour",
+                    "usr": "s:4zpdk14FlushBehaviourO"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "zpdk.FlushBehaviour.Type",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "FlushBehaviour",
+                        "printedName": "zpdk.FlushBehaviour",
+                        "usr": "s:4zpdk14FlushBehaviourO"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "declKind": "EnumElement",
+            "usr": "s:4zpdk14FlushBehaviourO12explicitOnlyyA2CmF",
+            "mangledName": "$s4zpdk14FlushBehaviourO12explicitOnlyyA2CmF",
+            "moduleName": "zpdk",
+            "declAttributes": [
+              "RawDocComment"
+            ]
+          },
+          {
+            "kind": "Function",
+            "name": "==",
+            "printedName": "==(_:_:)",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Bool",
+                "printedName": "Swift.Bool",
+                "usr": "s:Sb"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "FlushBehaviour",
+                "printedName": "zpdk.FlushBehaviour",
+                "usr": "s:4zpdk14FlushBehaviourO"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "FlushBehaviour",
+                "printedName": "zpdk.FlushBehaviour",
+                "usr": "s:4zpdk14FlushBehaviourO"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "s:4zpdk14FlushBehaviourO2eeoiySbAC_ACtFZ",
+            "mangledName": "$s4zpdk14FlushBehaviourO2eeoiySbAC_ACtFZ",
+            "moduleName": "zpdk",
+            "static": true,
+            "implicit": true,
+            "funcSelfKind": "NonMutating"
+          },
+          {
+            "kind": "Var",
+            "name": "hashValue",
+            "printedName": "hashValue",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Int",
+                "printedName": "Swift.Int",
+                "usr": "s:Si"
+              }
+            ],
+            "declKind": "Var",
+            "usr": "s:4zpdk14FlushBehaviourO9hashValueSivp",
+            "mangledName": "$s4zpdk14FlushBehaviourO9hashValueSivp",
+            "moduleName": "zpdk",
+            "implicit": true,
+            "accessors": [
+              {
+                "kind": "Accessor",
+                "name": "Get",
+                "printedName": "Get()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Int",
+                    "printedName": "Swift.Int",
+                    "usr": "s:Si"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:4zpdk14FlushBehaviourO9hashValueSivg",
+                "mangledName": "$s4zpdk14FlushBehaviourO9hashValueSivg",
+                "moduleName": "zpdk",
+                "implicit": true,
+                "accessorKind": "get"
+              }
+            ]
+          },
+          {
+            "kind": "Function",
+            "name": "hash",
+            "printedName": "hash(into:)",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "Hasher",
+                "printedName": "Swift.Hasher",
+                "paramValueOwnership": "InOut",
+                "usr": "s:s6HasherV"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "s:4zpdk14FlushBehaviourO4hash4intoys6HasherVz_tF",
+            "mangledName": "$s4zpdk14FlushBehaviourO4hash4intoys6HasherVz_tF",
+            "moduleName": "zpdk",
+            "implicit": true,
+            "funcSelfKind": "NonMutating"
+          }
+        ],
+        "declKind": "Enum",
+        "usr": "s:4zpdk14FlushBehaviourO",
+        "mangledName": "$s4zpdk14FlushBehaviourO",
+        "moduleName": "zpdk",
+        "declAttributes": [
+          "AccessControl",
+          "RawDocComment"
+        ],
+        "conformances": [
+          {
+            "kind": "Conformance",
+            "name": "Equatable",
+            "printedName": "Equatable",
+            "usr": "s:SQ",
+            "mangledName": "$sSQ"
+          },
+          {
+            "kind": "Conformance",
+            "name": "Hashable",
+            "printedName": "Hashable",
+            "usr": "s:SH",
+            "mangledName": "$sSH"
+          }
+        ]
+      },
+      {
+        "kind": "Import",
+        "name": "Foundation",
+        "printedName": "Foundation",
+        "declKind": "Import",
+        "moduleName": "zpdk"
+      },
+      {
+        "kind": "TypeDecl",
+        "name": "TrackerType",
+        "printedName": "TrackerType",
+        "children": [
+          {
+            "kind": "Var",
+            "name": "userID",
+            "printedName": "userID",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Optional",
+                "printedName": "Swift.String?",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "String",
+                    "printedName": "Swift.String",
+                    "usr": "s:SS"
+                  }
+                ],
+                "usr": "s:Sq"
+              }
+            ],
+            "declKind": "Var",
+            "usr": "s:4zpdk11TrackerTypeP6userIDSSSgvp",
+            "mangledName": "$s4zpdk11TrackerTypeP6userIDSSSgvp",
+            "moduleName": "zpdk",
+            "protocolReq": true,
+            "declAttributes": [
+              "RawDocComment"
+            ],
+            "accessors": [
+              {
+                "kind": "Accessor",
+                "name": "Get",
+                "printedName": "Get()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Optional",
+                    "printedName": "Swift.String?",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "String",
+                        "printedName": "Swift.String",
+                        "usr": "s:SS"
+                      }
+                    ],
+                    "usr": "s:Sq"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:4zpdk11TrackerTypeP6userIDSSSgvg",
+                "mangledName": "$s4zpdk11TrackerTypeP6userIDSSSgvg",
+                "moduleName": "zpdk",
+                "genericSig": "<τ_0_0 where τ_0_0 : zpdk.TrackerType>",
+                "sugared_genericSig": "<Self where Self : zpdk.TrackerType>",
+                "protocolReq": true,
+                "reqNewWitnessTableEntry": true,
+                "accessorKind": "get"
+              },
+              {
+                "kind": "Accessor",
+                "name": "Set",
+                "printedName": "Set()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Optional",
+                    "printedName": "Swift.String?",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "String",
+                        "printedName": "Swift.String",
+                        "usr": "s:SS"
+                      }
+                    ],
+                    "usr": "s:Sq"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:4zpdk11TrackerTypeP6userIDSSSgvs",
+                "mangledName": "$s4zpdk11TrackerTypeP6userIDSSSgvs",
+                "moduleName": "zpdk",
+                "genericSig": "<τ_0_0 where τ_0_0 : zpdk.TrackerType>",
+                "sugared_genericSig": "<Self where Self : zpdk.TrackerType>",
+                "protocolReq": true,
+                "reqNewWitnessTableEntry": true,
+                "accessorKind": "set"
+              },
+              {
+                "kind": "Accessor",
+                "name": "Modify",
+                "printedName": "Modify()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:4zpdk11TrackerTypeP6userIDSSSgvM",
+                "mangledName": "$s4zpdk11TrackerTypeP6userIDSSSgvM",
+                "moduleName": "zpdk",
+                "genericSig": "<τ_0_0 where τ_0_0 : zpdk.TrackerType>",
+                "sugared_genericSig": "<Self where Self : zpdk.TrackerType>",
+                "protocolReq": true,
+                "implicit": true,
+                "reqNewWitnessTableEntry": true,
+                "accessorKind": "_modify"
+              }
+            ]
+          },
+          {
+            "kind": "Var",
+            "name": "additionalData",
+            "printedName": "additionalData",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Dictionary",
+                "printedName": "[Swift.String : Swift.String]",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "String",
+                    "printedName": "Swift.String",
+                    "usr": "s:SS"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "String",
+                    "printedName": "Swift.String",
+                    "usr": "s:SS"
+                  }
+                ],
+                "usr": "s:SD"
+              }
+            ],
+            "declKind": "Var",
+            "usr": "s:4zpdk11TrackerTypeP14additionalDataSDyS2SGvp",
+            "mangledName": "$s4zpdk11TrackerTypeP14additionalDataSDyS2SGvp",
+            "moduleName": "zpdk",
+            "protocolReq": true,
+            "declAttributes": [
+              "RawDocComment"
+            ],
+            "accessors": [
+              {
+                "kind": "Accessor",
+                "name": "Get",
+                "printedName": "Get()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Dictionary",
+                    "printedName": "[Swift.String : Swift.String]",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "String",
+                        "printedName": "Swift.String",
+                        "usr": "s:SS"
+                      },
+                      {
+                        "kind": "TypeNominal",
+                        "name": "String",
+                        "printedName": "Swift.String",
+                        "usr": "s:SS"
+                      }
+                    ],
+                    "usr": "s:SD"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:4zpdk11TrackerTypeP14additionalDataSDyS2SGvg",
+                "mangledName": "$s4zpdk11TrackerTypeP14additionalDataSDyS2SGvg",
+                "moduleName": "zpdk",
+                "genericSig": "<τ_0_0 where τ_0_0 : zpdk.TrackerType>",
+                "sugared_genericSig": "<Self where Self : zpdk.TrackerType>",
+                "protocolReq": true,
+                "reqNewWitnessTableEntry": true,
+                "accessorKind": "get"
+              },
+              {
+                "kind": "Accessor",
+                "name": "Set",
+                "printedName": "Set()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Dictionary",
+                    "printedName": "[Swift.String : Swift.String]",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "String",
+                        "printedName": "Swift.String",
+                        "usr": "s:SS"
+                      },
+                      {
+                        "kind": "TypeNominal",
+                        "name": "String",
+                        "printedName": "Swift.String",
+                        "usr": "s:SS"
+                      }
+                    ],
+                    "usr": "s:SD"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:4zpdk11TrackerTypeP14additionalDataSDyS2SGvs",
+                "mangledName": "$s4zpdk11TrackerTypeP14additionalDataSDyS2SGvs",
+                "moduleName": "zpdk",
+                "genericSig": "<τ_0_0 where τ_0_0 : zpdk.TrackerType>",
+                "sugared_genericSig": "<Self where Self : zpdk.TrackerType>",
+                "protocolReq": true,
+                "reqNewWitnessTableEntry": true,
+                "accessorKind": "set"
+              },
+              {
+                "kind": "Accessor",
+                "name": "Modify",
+                "printedName": "Modify()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:4zpdk11TrackerTypeP14additionalDataSDyS2SGvM",
+                "mangledName": "$s4zpdk11TrackerTypeP14additionalDataSDyS2SGvM",
+                "moduleName": "zpdk",
+                "genericSig": "<τ_0_0 where τ_0_0 : zpdk.TrackerType>",
+                "sugared_genericSig": "<Self where Self : zpdk.TrackerType>",
+                "protocolReq": true,
+                "implicit": true,
+                "reqNewWitnessTableEntry": true,
+                "accessorKind": "_modify"
+              }
+            ]
+          },
+          {
+            "kind": "Var",
+            "name": "flushBehaviour",
+            "printedName": "flushBehaviour",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "FlushBehaviour",
+                "printedName": "zpdk.FlushBehaviour",
+                "usr": "s:4zpdk14FlushBehaviourO"
+              }
+            ],
+            "declKind": "Var",
+            "usr": "s:4zpdk11TrackerTypeP14flushBehaviourAA05FlushE0Ovp",
+            "mangledName": "$s4zpdk11TrackerTypeP14flushBehaviourAA05FlushE0Ovp",
+            "moduleName": "zpdk",
+            "protocolReq": true,
+            "declAttributes": [
+              "RawDocComment"
+            ],
+            "accessors": [
+              {
+                "kind": "Accessor",
+                "name": "Get",
+                "printedName": "Get()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "FlushBehaviour",
+                    "printedName": "zpdk.FlushBehaviour",
+                    "usr": "s:4zpdk14FlushBehaviourO"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:4zpdk11TrackerTypeP14flushBehaviourAA05FlushE0Ovg",
+                "mangledName": "$s4zpdk11TrackerTypeP14flushBehaviourAA05FlushE0Ovg",
+                "moduleName": "zpdk",
+                "genericSig": "<τ_0_0 where τ_0_0 : zpdk.TrackerType>",
+                "sugared_genericSig": "<Self where Self : zpdk.TrackerType>",
+                "protocolReq": true,
+                "reqNewWitnessTableEntry": true,
+                "accessorKind": "get"
+              },
+              {
+                "kind": "Accessor",
+                "name": "Set",
+                "printedName": "Set()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "FlushBehaviour",
+                    "printedName": "zpdk.FlushBehaviour",
+                    "usr": "s:4zpdk14FlushBehaviourO"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:4zpdk11TrackerTypeP14flushBehaviourAA05FlushE0Ovs",
+                "mangledName": "$s4zpdk11TrackerTypeP14flushBehaviourAA05FlushE0Ovs",
+                "moduleName": "zpdk",
+                "genericSig": "<τ_0_0 where τ_0_0 : zpdk.TrackerType>",
+                "sugared_genericSig": "<Self where Self : zpdk.TrackerType>",
+                "protocolReq": true,
+                "reqNewWitnessTableEntry": true,
+                "accessorKind": "set"
+              },
+              {
+                "kind": "Accessor",
+                "name": "Modify",
+                "printedName": "Modify()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:4zpdk11TrackerTypeP14flushBehaviourAA05FlushE0OvM",
+                "mangledName": "$s4zpdk11TrackerTypeP14flushBehaviourAA05FlushE0OvM",
+                "moduleName": "zpdk",
+                "genericSig": "<τ_0_0 where τ_0_0 : zpdk.TrackerType>",
+                "sugared_genericSig": "<Self where Self : zpdk.TrackerType>",
+                "protocolReq": true,
+                "implicit": true,
+                "reqNewWitnessTableEntry": true,
+                "accessorKind": "_modify"
+              }
+            ]
+          },
+          {
+            "kind": "Function",
+            "name": "start",
+            "printedName": "start()",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "s:4zpdk11TrackerTypeP5startyyF",
+            "mangledName": "$s4zpdk11TrackerTypeP5startyyF",
+            "moduleName": "zpdk",
+            "genericSig": "<τ_0_0 where τ_0_0 : zpdk.TrackerType>",
+            "sugared_genericSig": "<Self where Self : zpdk.TrackerType>",
+            "protocolReq": true,
+            "declAttributes": [
+              "RawDocComment"
+            ],
+            "reqNewWitnessTableEntry": true,
+            "funcSelfKind": "NonMutating"
+          },
+          {
+            "kind": "Function",
+            "name": "track",
+            "printedName": "track(event:)",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "TrackerEventType",
+                "printedName": "zpdk.TrackerEventType",
+                "usr": "s:4zpdk16TrackerEventTypeP"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "s:4zpdk11TrackerTypeP5track5eventyAA0b5EventC0_p_tF",
+            "mangledName": "$s4zpdk11TrackerTypeP5track5eventyAA0b5EventC0_p_tF",
+            "moduleName": "zpdk",
+            "genericSig": "<τ_0_0 where τ_0_0 : zpdk.TrackerType>",
+            "sugared_genericSig": "<Self where Self : zpdk.TrackerType>",
+            "protocolReq": true,
+            "declAttributes": [
+              "RawDocComment"
+            ],
+            "reqNewWitnessTableEntry": true,
+            "funcSelfKind": "NonMutating"
+          },
+          {
+            "kind": "Function",
+            "name": "flush",
+            "printedName": "flush()",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "s:4zpdk11TrackerTypeP5flushyyF",
+            "mangledName": "$s4zpdk11TrackerTypeP5flushyyF",
+            "moduleName": "zpdk",
+            "genericSig": "<τ_0_0 where τ_0_0 : zpdk.TrackerType>",
+            "sugared_genericSig": "<Self where Self : zpdk.TrackerType>",
+            "protocolReq": true,
+            "declAttributes": [
+              "RawDocComment"
+            ],
+            "reqNewWitnessTableEntry": true,
+            "funcSelfKind": "NonMutating"
+          },
+          {
+            "kind": "Function",
+            "name": "of",
+            "printedName": "of(type:)",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "TypedTracker",
+                "printedName": "zpdk.TypedTracker<τ_1_0>",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "GenericTypeParam",
+                    "printedName": "τ_1_0"
+                  }
+                ],
+                "usr": "s:4zpdk12TypedTrackerV"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "Metatype",
+                "printedName": "τ_1_0.Type",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "GenericTypeParam",
+                    "printedName": "τ_1_0"
+                  }
+                ]
+              }
+            ],
+            "declKind": "Func",
+            "usr": "s:4zpdk11TrackerTypePAAE2of4typeAA05TypedB0Vyqd__Gqd__m_tAA0b5EventC0Rd__lF",
+            "mangledName": "$s4zpdk11TrackerTypePAAE2of4typeAA05TypedB0Vyqd__Gqd__m_tAA0b5EventC0Rd__lF",
+            "moduleName": "zpdk",
+            "genericSig": "<τ_0_0, τ_1_0 where τ_0_0 : zpdk.TrackerType, τ_1_0 : zpdk.TrackerEventType>",
+            "sugared_genericSig": "<Self, EventType where Self : zpdk.TrackerType, EventType : zpdk.TrackerEventType>",
+            "declAttributes": [
+              "RawDocComment"
+            ],
+            "isFromExtension": true,
+            "funcSelfKind": "NonMutating"
+          }
+        ],
+        "declKind": "Protocol",
+        "usr": "s:4zpdk11TrackerTypeP",
+        "mangledName": "$s4zpdk11TrackerTypeP",
+        "moduleName": "zpdk",
+        "genericSig": "<τ_0_0 : ObjectiveC.NSObjectProtocol>",
+        "sugared_genericSig": "<Self : ObjectiveC.NSObjectProtocol>",
+        "declAttributes": [
+          "AccessControl",
+          "RawDocComment"
+        ]
+      },
+      {
+        "kind": "TypeDecl",
+        "name": "TypedTrackerType",
+        "printedName": "TypedTrackerType",
+        "children": [
+          {
+            "kind": "AssociatedType",
+            "name": "EventType",
+            "printedName": "EventType",
+            "declKind": "AssociatedType",
+            "usr": "s:4zpdk16TypedTrackerTypeP05EventD0Qa",
+            "mangledName": "$s4zpdk16TypedTrackerTypeP05EventD0Qa",
+            "moduleName": "zpdk",
+            "protocolReq": true,
+            "declAttributes": [
+              "RawDocComment"
+            ]
+          },
+          {
+            "kind": "Var",
+            "name": "userID",
+            "printedName": "userID",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Optional",
+                "printedName": "Swift.String?",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "String",
+                    "printedName": "Swift.String",
+                    "usr": "s:SS"
+                  }
+                ],
+                "usr": "s:Sq"
+              }
+            ],
+            "declKind": "Var",
+            "usr": "s:4zpdk16TypedTrackerTypeP6userIDSSSgvp",
+            "mangledName": "$s4zpdk16TypedTrackerTypeP6userIDSSSgvp",
+            "moduleName": "zpdk",
+            "protocolReq": true,
+            "declAttributes": [
+              "RawDocComment"
+            ],
+            "accessors": [
+              {
+                "kind": "Accessor",
+                "name": "Get",
+                "printedName": "Get()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Optional",
+                    "printedName": "Swift.String?",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "String",
+                        "printedName": "Swift.String",
+                        "usr": "s:SS"
+                      }
+                    ],
+                    "usr": "s:Sq"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:4zpdk16TypedTrackerTypeP6userIDSSSgvg",
+                "mangledName": "$s4zpdk16TypedTrackerTypeP6userIDSSSgvg",
+                "moduleName": "zpdk",
+                "genericSig": "<τ_0_0 where τ_0_0 : zpdk.TypedTrackerType>",
+                "sugared_genericSig": "<Self where Self : zpdk.TypedTrackerType>",
+                "protocolReq": true,
+                "reqNewWitnessTableEntry": true,
+                "accessorKind": "get"
+              },
+              {
+                "kind": "Accessor",
+                "name": "Set",
+                "printedName": "Set()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Optional",
+                    "printedName": "Swift.String?",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "String",
+                        "printedName": "Swift.String",
+                        "usr": "s:SS"
+                      }
+                    ],
+                    "usr": "s:Sq"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:4zpdk16TypedTrackerTypeP6userIDSSSgvs",
+                "mangledName": "$s4zpdk16TypedTrackerTypeP6userIDSSSgvs",
+                "moduleName": "zpdk",
+                "genericSig": "<τ_0_0 where τ_0_0 : zpdk.TypedTrackerType>",
+                "sugared_genericSig": "<Self where Self : zpdk.TypedTrackerType>",
+                "protocolReq": true,
+                "reqNewWitnessTableEntry": true,
+                "accessorKind": "set"
+              },
+              {
+                "kind": "Accessor",
+                "name": "Modify",
+                "printedName": "Modify()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:4zpdk16TypedTrackerTypeP6userIDSSSgvM",
+                "mangledName": "$s4zpdk16TypedTrackerTypeP6userIDSSSgvM",
+                "moduleName": "zpdk",
+                "genericSig": "<τ_0_0 where τ_0_0 : zpdk.TypedTrackerType>",
+                "sugared_genericSig": "<Self where Self : zpdk.TypedTrackerType>",
+                "protocolReq": true,
+                "implicit": true,
+                "reqNewWitnessTableEntry": true,
+                "accessorKind": "_modify"
+              }
+            ]
+          },
+          {
+            "kind": "Var",
+            "name": "additionalData",
+            "printedName": "additionalData",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Dictionary",
+                "printedName": "[Swift.String : Swift.String]",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "String",
+                    "printedName": "Swift.String",
+                    "usr": "s:SS"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "String",
+                    "printedName": "Swift.String",
+                    "usr": "s:SS"
+                  }
+                ],
+                "usr": "s:SD"
+              }
+            ],
+            "declKind": "Var",
+            "usr": "s:4zpdk16TypedTrackerTypeP14additionalDataSDyS2SGvp",
+            "mangledName": "$s4zpdk16TypedTrackerTypeP14additionalDataSDyS2SGvp",
+            "moduleName": "zpdk",
+            "protocolReq": true,
+            "declAttributes": [
+              "RawDocComment"
+            ],
+            "accessors": [
+              {
+                "kind": "Accessor",
+                "name": "Get",
+                "printedName": "Get()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Dictionary",
+                    "printedName": "[Swift.String : Swift.String]",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "String",
+                        "printedName": "Swift.String",
+                        "usr": "s:SS"
+                      },
+                      {
+                        "kind": "TypeNominal",
+                        "name": "String",
+                        "printedName": "Swift.String",
+                        "usr": "s:SS"
+                      }
+                    ],
+                    "usr": "s:SD"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:4zpdk16TypedTrackerTypeP14additionalDataSDyS2SGvg",
+                "mangledName": "$s4zpdk16TypedTrackerTypeP14additionalDataSDyS2SGvg",
+                "moduleName": "zpdk",
+                "genericSig": "<τ_0_0 where τ_0_0 : zpdk.TypedTrackerType>",
+                "sugared_genericSig": "<Self where Self : zpdk.TypedTrackerType>",
+                "protocolReq": true,
+                "reqNewWitnessTableEntry": true,
+                "accessorKind": "get"
+              },
+              {
+                "kind": "Accessor",
+                "name": "Set",
+                "printedName": "Set()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Dictionary",
+                    "printedName": "[Swift.String : Swift.String]",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "String",
+                        "printedName": "Swift.String",
+                        "usr": "s:SS"
+                      },
+                      {
+                        "kind": "TypeNominal",
+                        "name": "String",
+                        "printedName": "Swift.String",
+                        "usr": "s:SS"
+                      }
+                    ],
+                    "usr": "s:SD"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:4zpdk16TypedTrackerTypeP14additionalDataSDyS2SGvs",
+                "mangledName": "$s4zpdk16TypedTrackerTypeP14additionalDataSDyS2SGvs",
+                "moduleName": "zpdk",
+                "genericSig": "<τ_0_0 where τ_0_0 : zpdk.TypedTrackerType>",
+                "sugared_genericSig": "<Self where Self : zpdk.TypedTrackerType>",
+                "protocolReq": true,
+                "reqNewWitnessTableEntry": true,
+                "accessorKind": "set"
+              },
+              {
+                "kind": "Accessor",
+                "name": "Modify",
+                "printedName": "Modify()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:4zpdk16TypedTrackerTypeP14additionalDataSDyS2SGvM",
+                "mangledName": "$s4zpdk16TypedTrackerTypeP14additionalDataSDyS2SGvM",
+                "moduleName": "zpdk",
+                "genericSig": "<τ_0_0 where τ_0_0 : zpdk.TypedTrackerType>",
+                "sugared_genericSig": "<Self where Self : zpdk.TypedTrackerType>",
+                "protocolReq": true,
+                "implicit": true,
+                "reqNewWitnessTableEntry": true,
+                "accessorKind": "_modify"
+              }
+            ]
+          },
+          {
+            "kind": "Var",
+            "name": "flushBehaviour",
+            "printedName": "flushBehaviour",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "FlushBehaviour",
+                "printedName": "zpdk.FlushBehaviour",
+                "usr": "s:4zpdk14FlushBehaviourO"
+              }
+            ],
+            "declKind": "Var",
+            "usr": "s:4zpdk16TypedTrackerTypeP14flushBehaviourAA05FlushF0Ovp",
+            "mangledName": "$s4zpdk16TypedTrackerTypeP14flushBehaviourAA05FlushF0Ovp",
+            "moduleName": "zpdk",
+            "protocolReq": true,
+            "declAttributes": [
+              "RawDocComment"
+            ],
+            "accessors": [
+              {
+                "kind": "Accessor",
+                "name": "Get",
+                "printedName": "Get()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "FlushBehaviour",
+                    "printedName": "zpdk.FlushBehaviour",
+                    "usr": "s:4zpdk14FlushBehaviourO"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:4zpdk16TypedTrackerTypeP14flushBehaviourAA05FlushF0Ovg",
+                "mangledName": "$s4zpdk16TypedTrackerTypeP14flushBehaviourAA05FlushF0Ovg",
+                "moduleName": "zpdk",
+                "genericSig": "<τ_0_0 where τ_0_0 : zpdk.TypedTrackerType>",
+                "sugared_genericSig": "<Self where Self : zpdk.TypedTrackerType>",
+                "protocolReq": true,
+                "reqNewWitnessTableEntry": true,
+                "accessorKind": "get"
+              },
+              {
+                "kind": "Accessor",
+                "name": "Set",
+                "printedName": "Set()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "FlushBehaviour",
+                    "printedName": "zpdk.FlushBehaviour",
+                    "usr": "s:4zpdk14FlushBehaviourO"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:4zpdk16TypedTrackerTypeP14flushBehaviourAA05FlushF0Ovs",
+                "mangledName": "$s4zpdk16TypedTrackerTypeP14flushBehaviourAA05FlushF0Ovs",
+                "moduleName": "zpdk",
+                "genericSig": "<τ_0_0 where τ_0_0 : zpdk.TypedTrackerType>",
+                "sugared_genericSig": "<Self where Self : zpdk.TypedTrackerType>",
+                "protocolReq": true,
+                "reqNewWitnessTableEntry": true,
+                "accessorKind": "set"
+              },
+              {
+                "kind": "Accessor",
+                "name": "Modify",
+                "printedName": "Modify()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:4zpdk16TypedTrackerTypeP14flushBehaviourAA05FlushF0OvM",
+                "mangledName": "$s4zpdk16TypedTrackerTypeP14flushBehaviourAA05FlushF0OvM",
+                "moduleName": "zpdk",
+                "genericSig": "<τ_0_0 where τ_0_0 : zpdk.TypedTrackerType>",
+                "sugared_genericSig": "<Self where Self : zpdk.TypedTrackerType>",
+                "protocolReq": true,
+                "implicit": true,
+                "reqNewWitnessTableEntry": true,
+                "accessorKind": "_modify"
+              }
+            ]
+          },
+          {
+            "kind": "Function",
+            "name": "start",
+            "printedName": "start()",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "s:4zpdk16TypedTrackerTypeP5startyyF",
+            "mangledName": "$s4zpdk16TypedTrackerTypeP5startyyF",
+            "moduleName": "zpdk",
+            "genericSig": "<τ_0_0 where τ_0_0 : zpdk.TypedTrackerType>",
+            "sugared_genericSig": "<Self where Self : zpdk.TypedTrackerType>",
+            "protocolReq": true,
+            "declAttributes": [
+              "RawDocComment"
+            ],
+            "reqNewWitnessTableEntry": true,
+            "funcSelfKind": "NonMutating"
+          },
+          {
+            "kind": "Function",
+            "name": "track",
+            "printedName": "track(event:)",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "DependentMember",
+                "printedName": "τ_0_0.EventType"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "s:4zpdk16TypedTrackerTypeP5track5eventy05EventD0Qz_tF",
+            "mangledName": "$s4zpdk16TypedTrackerTypeP5track5eventy05EventD0Qz_tF",
+            "moduleName": "zpdk",
+            "genericSig": "<τ_0_0 where τ_0_0 : zpdk.TypedTrackerType>",
+            "sugared_genericSig": "<Self where Self : zpdk.TypedTrackerType>",
+            "protocolReq": true,
+            "declAttributes": [
+              "RawDocComment"
+            ],
+            "reqNewWitnessTableEntry": true,
+            "funcSelfKind": "NonMutating"
+          },
+          {
+            "kind": "Function",
+            "name": "flush",
+            "printedName": "flush()",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "s:4zpdk16TypedTrackerTypeP5flushyyF",
+            "mangledName": "$s4zpdk16TypedTrackerTypeP5flushyyF",
+            "moduleName": "zpdk",
+            "genericSig": "<τ_0_0 where τ_0_0 : zpdk.TypedTrackerType>",
+            "sugared_genericSig": "<Self where Self : zpdk.TypedTrackerType>",
+            "protocolReq": true,
+            "declAttributes": [
+              "RawDocComment"
+            ],
+            "reqNewWitnessTableEntry": true,
+            "funcSelfKind": "NonMutating"
+          }
+        ],
+        "declKind": "Protocol",
+        "usr": "s:4zpdk16TypedTrackerTypeP",
+        "mangledName": "$s4zpdk16TypedTrackerTypeP",
+        "moduleName": "zpdk",
+        "genericSig": "<τ_0_0.EventType : zpdk.TrackerEventType>",
+        "sugared_genericSig": "<Self.EventType : zpdk.TrackerEventType>",
+        "declAttributes": [
+          "AccessControl",
+          "RawDocComment"
+        ]
+      },
+      {
+        "kind": "Import",
+        "name": "Foundation",
+        "printedName": "Foundation",
+        "declKind": "Import",
+        "moduleName": "zpdk"
+      },
+      {
+        "kind": "Import",
+        "name": "Foundation",
+        "printedName": "Foundation",
+        "declKind": "Import",
+        "moduleName": "zpdk"
+      },
+      {
+        "kind": "Import",
+        "name": "Foundation",
+        "printedName": "Foundation",
+        "declKind": "Import",
+        "moduleName": "zpdk"
+      },
+      {
+        "kind": "TypeDecl",
+        "name": "DefaultTrackerServer",
+        "printedName": "DefaultTrackerServer",
+        "children": [
+          {
+            "kind": "Var",
+            "name": "additionalHttpHeaders",
+            "printedName": "additionalHttpHeaders",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Dictionary",
+                "printedName": "[Swift.String : Swift.String]",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "String",
+                    "printedName": "Swift.String",
+                    "usr": "s:SS"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "String",
+                    "printedName": "Swift.String",
+                    "usr": "s:SS"
+                  }
+                ],
+                "usr": "s:SD"
+              }
+            ],
+            "declKind": "Var",
+            "usr": "s:4zpdk20DefaultTrackerServerC21additionalHttpHeadersSDyS2SGvp",
+            "mangledName": "$s4zpdk20DefaultTrackerServerC21additionalHttpHeadersSDyS2SGvp",
+            "moduleName": "zpdk",
+            "declAttributes": [
+              "HasInitialValue",
+              "Final",
+              "HasStorage",
+              "AccessControl",
+              "RawDocComment"
+            ],
+            "hasStorage": true,
+            "accessors": [
+              {
+                "kind": "Accessor",
+                "name": "Get",
+                "printedName": "Get()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Dictionary",
+                    "printedName": "[Swift.String : Swift.String]",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "String",
+                        "printedName": "Swift.String",
+                        "usr": "s:SS"
+                      },
+                      {
+                        "kind": "TypeNominal",
+                        "name": "String",
+                        "printedName": "Swift.String",
+                        "usr": "s:SS"
+                      }
+                    ],
+                    "usr": "s:SD"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:4zpdk20DefaultTrackerServerC21additionalHttpHeadersSDyS2SGvg",
+                "mangledName": "$s4zpdk20DefaultTrackerServerC21additionalHttpHeadersSDyS2SGvg",
+                "moduleName": "zpdk",
+                "implicit": true,
+                "declAttributes": [
+                  "Final"
+                ],
+                "accessorKind": "get"
+              },
+              {
+                "kind": "Accessor",
+                "name": "Set",
+                "printedName": "Set()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Dictionary",
+                    "printedName": "[Swift.String : Swift.String]",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "String",
+                        "printedName": "Swift.String",
+                        "usr": "s:SS"
+                      },
+                      {
+                        "kind": "TypeNominal",
+                        "name": "String",
+                        "printedName": "Swift.String",
+                        "usr": "s:SS"
+                      }
+                    ],
+                    "usr": "s:SD"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:4zpdk20DefaultTrackerServerC21additionalHttpHeadersSDyS2SGvs",
+                "mangledName": "$s4zpdk20DefaultTrackerServerC21additionalHttpHeadersSDyS2SGvs",
+                "moduleName": "zpdk",
+                "implicit": true,
+                "declAttributes": [
+                  "Final"
+                ],
+                "accessorKind": "set"
+              },
+              {
+                "kind": "Accessor",
+                "name": "Modify",
+                "printedName": "Modify()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:4zpdk20DefaultTrackerServerC21additionalHttpHeadersSDyS2SGvM",
+                "mangledName": "$s4zpdk20DefaultTrackerServerC21additionalHttpHeadersSDyS2SGvM",
+                "moduleName": "zpdk",
+                "implicit": true,
+                "declAttributes": [
+                  "Final"
+                ],
+                "accessorKind": "_modify"
+              }
+            ]
+          },
+          {
+            "kind": "Constructor",
+            "name": "init",
+            "printedName": "init(remoteURL:)",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "DefaultTrackerServer",
+                "printedName": "zpdk.DefaultTrackerServer",
+                "usr": "s:4zpdk20DefaultTrackerServerC"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "URL",
+                "printedName": "Foundation.URL",
+                "hasDefaultArg": true,
+                "usr": "s:10Foundation3URLV"
+              }
+            ],
+            "declKind": "Constructor",
+            "usr": "s:4zpdk20DefaultTrackerServerC9remoteURLAC10Foundation0F0V_tcfc",
+            "mangledName": "$s4zpdk20DefaultTrackerServerC9remoteURLAC10Foundation0F0V_tcfc",
+            "moduleName": "zpdk",
+            "declAttributes": [
+              "AccessControl",
+              "RawDocComment"
+            ],
+            "init_kind": "Designated"
+          },
+          {
+            "kind": "Function",
+            "name": "flush",
+            "printedName": "flush(data:sessionID:completion:)",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Optional",
+                "printedName": "zpdk.Cancellable?",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Cancellable",
+                    "printedName": "zpdk.Cancellable",
+                    "usr": "s:4zpdk11CancellableP"
+                  }
+                ],
+                "usr": "s:Sq"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "Data",
+                "printedName": "Foundation.Data",
+                "usr": "s:10Foundation4DataV"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "String",
+                "printedName": "Swift.String",
+                "usr": "s:SS"
+              },
+              {
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(zpdk.FlushResult) -> ()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "FlushResult",
+                    "printedName": "zpdk.FlushResult",
+                    "usr": "s:4zpdk11FlushResultO"
+                  }
+                ]
+              }
+            ],
+            "declKind": "Func",
+            "usr": "s:4zpdk20DefaultTrackerServerC5flush4data9sessionID10completionAA11Cancellable_pSg10Foundation4DataV_SSyAA11FlushResultOctF",
+            "mangledName": "$s4zpdk20DefaultTrackerServerC5flush4data9sessionID10completionAA11Cancellable_pSg10Foundation4DataV_SSyAA11FlushResultOctF",
+            "moduleName": "zpdk",
+            "declAttributes": [
+              "Final",
+              "AccessControl",
+              "DiscardableResult",
+              "RawDocComment"
+            ],
+            "funcSelfKind": "NonMutating"
+          }
+        ],
+        "declKind": "Class",
+        "usr": "s:4zpdk20DefaultTrackerServerC",
+        "mangledName": "$s4zpdk20DefaultTrackerServerC",
+        "moduleName": "zpdk",
+        "declAttributes": [
+          "Final",
+          "AccessControl",
+          "RawDocComment"
+        ],
+        "conformances": [
+          {
+            "kind": "Conformance",
+            "name": "TrackerServer",
+            "printedName": "TrackerServer",
+            "usr": "s:4zpdk13TrackerServerP",
+            "mangledName": "$s4zpdk13TrackerServerP"
+          }
+        ]
+      },
+      {
+        "kind": "Import",
+        "name": "Foundation",
+        "printedName": "Foundation",
+        "declKind": "Import",
+        "moduleName": "zpdk"
+      },
+      {
+        "kind": "TypeDecl",
+        "name": "TypedTracker",
+        "printedName": "TypedTracker",
+        "children": [
+          {
+            "kind": "Var",
+            "name": "userID",
+            "printedName": "userID",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Optional",
+                "printedName": "Swift.String?",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "String",
+                    "printedName": "Swift.String",
+                    "usr": "s:SS"
+                  }
+                ],
+                "usr": "s:Sq"
+              }
+            ],
+            "declKind": "Var",
+            "usr": "s:4zpdk12TypedTrackerV6userIDSSSgvp",
+            "mangledName": "$s4zpdk12TypedTrackerV6userIDSSSgvp",
+            "moduleName": "zpdk",
+            "declAttributes": [
+              "AccessControl",
+              "RawDocComment"
+            ],
+            "accessors": [
+              {
+                "kind": "Accessor",
+                "name": "Get",
+                "printedName": "Get()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Optional",
+                    "printedName": "Swift.String?",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "String",
+                        "printedName": "Swift.String",
+                        "usr": "s:SS"
+                      }
+                    ],
+                    "usr": "s:Sq"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:4zpdk12TypedTrackerV6userIDSSSgvg",
+                "mangledName": "$s4zpdk12TypedTrackerV6userIDSSSgvg",
+                "moduleName": "zpdk",
+                "genericSig": "<τ_0_0 where τ_0_0 : zpdk.TrackerEventType>",
+                "sugared_genericSig": "<EventType where EventType : zpdk.TrackerEventType>",
+                "accessorKind": "get"
+              },
+              {
+                "kind": "Accessor",
+                "name": "Set",
+                "printedName": "Set()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Optional",
+                    "printedName": "Swift.String?",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "String",
+                        "printedName": "Swift.String",
+                        "usr": "s:SS"
+                      }
+                    ],
+                    "usr": "s:Sq"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:4zpdk12TypedTrackerV6userIDSSSgvs",
+                "mangledName": "$s4zpdk12TypedTrackerV6userIDSSSgvs",
+                "moduleName": "zpdk",
+                "genericSig": "<τ_0_0 where τ_0_0 : zpdk.TrackerEventType>",
+                "sugared_genericSig": "<EventType where EventType : zpdk.TrackerEventType>",
+                "accessorKind": "set"
+              },
+              {
+                "kind": "Accessor",
+                "name": "Modify",
+                "printedName": "Modify()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:4zpdk12TypedTrackerV6userIDSSSgvM",
+                "mangledName": "$s4zpdk12TypedTrackerV6userIDSSSgvM",
+                "moduleName": "zpdk",
+                "genericSig": "<τ_0_0 where τ_0_0 : zpdk.TrackerEventType>",
+                "sugared_genericSig": "<EventType where EventType : zpdk.TrackerEventType>",
+                "implicit": true,
+                "accessorKind": "_modify"
+              }
+            ]
+          },
+          {
+            "kind": "Var",
+            "name": "additionalData",
+            "printedName": "additionalData",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Dictionary",
+                "printedName": "[Swift.String : Swift.String]",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "String",
+                    "printedName": "Swift.String",
+                    "usr": "s:SS"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "String",
+                    "printedName": "Swift.String",
+                    "usr": "s:SS"
+                  }
+                ],
+                "usr": "s:SD"
+              }
+            ],
+            "declKind": "Var",
+            "usr": "s:4zpdk12TypedTrackerV14additionalDataSDyS2SGvp",
+            "mangledName": "$s4zpdk12TypedTrackerV14additionalDataSDyS2SGvp",
+            "moduleName": "zpdk",
+            "declAttributes": [
+              "AccessControl"
+            ],
+            "accessors": [
+              {
+                "kind": "Accessor",
+                "name": "Get",
+                "printedName": "Get()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Dictionary",
+                    "printedName": "[Swift.String : Swift.String]",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "String",
+                        "printedName": "Swift.String",
+                        "usr": "s:SS"
+                      },
+                      {
+                        "kind": "TypeNominal",
+                        "name": "String",
+                        "printedName": "Swift.String",
+                        "usr": "s:SS"
+                      }
+                    ],
+                    "usr": "s:SD"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:4zpdk12TypedTrackerV14additionalDataSDyS2SGvg",
+                "mangledName": "$s4zpdk12TypedTrackerV14additionalDataSDyS2SGvg",
+                "moduleName": "zpdk",
+                "genericSig": "<τ_0_0 where τ_0_0 : zpdk.TrackerEventType>",
+                "sugared_genericSig": "<EventType where EventType : zpdk.TrackerEventType>",
+                "accessorKind": "get"
+              },
+              {
+                "kind": "Accessor",
+                "name": "Set",
+                "printedName": "Set()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Dictionary",
+                    "printedName": "[Swift.String : Swift.String]",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "String",
+                        "printedName": "Swift.String",
+                        "usr": "s:SS"
+                      },
+                      {
+                        "kind": "TypeNominal",
+                        "name": "String",
+                        "printedName": "Swift.String",
+                        "usr": "s:SS"
+                      }
+                    ],
+                    "usr": "s:SD"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:4zpdk12TypedTrackerV14additionalDataSDyS2SGvs",
+                "mangledName": "$s4zpdk12TypedTrackerV14additionalDataSDyS2SGvs",
+                "moduleName": "zpdk",
+                "genericSig": "<τ_0_0 where τ_0_0 : zpdk.TrackerEventType>",
+                "sugared_genericSig": "<EventType where EventType : zpdk.TrackerEventType>",
+                "accessorKind": "set"
+              },
+              {
+                "kind": "Accessor",
+                "name": "Modify",
+                "printedName": "Modify()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:4zpdk12TypedTrackerV14additionalDataSDyS2SGvM",
+                "mangledName": "$s4zpdk12TypedTrackerV14additionalDataSDyS2SGvM",
+                "moduleName": "zpdk",
+                "genericSig": "<τ_0_0 where τ_0_0 : zpdk.TrackerEventType>",
+                "sugared_genericSig": "<EventType where EventType : zpdk.TrackerEventType>",
+                "implicit": true,
+                "accessorKind": "_modify"
+              }
+            ]
+          },
+          {
+            "kind": "Var",
+            "name": "flushBehaviour",
+            "printedName": "flushBehaviour",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "FlushBehaviour",
+                "printedName": "zpdk.FlushBehaviour",
+                "usr": "s:4zpdk14FlushBehaviourO"
+              }
+            ],
+            "declKind": "Var",
+            "usr": "s:4zpdk12TypedTrackerV14flushBehaviourAA05FlushE0Ovp",
+            "mangledName": "$s4zpdk12TypedTrackerV14flushBehaviourAA05FlushE0Ovp",
+            "moduleName": "zpdk",
+            "declAttributes": [
+              "AccessControl",
+              "RawDocComment"
+            ],
+            "accessors": [
+              {
+                "kind": "Accessor",
+                "name": "Get",
+                "printedName": "Get()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "FlushBehaviour",
+                    "printedName": "zpdk.FlushBehaviour",
+                    "usr": "s:4zpdk14FlushBehaviourO"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:4zpdk12TypedTrackerV14flushBehaviourAA05FlushE0Ovg",
+                "mangledName": "$s4zpdk12TypedTrackerV14flushBehaviourAA05FlushE0Ovg",
+                "moduleName": "zpdk",
+                "genericSig": "<τ_0_0 where τ_0_0 : zpdk.TrackerEventType>",
+                "sugared_genericSig": "<EventType where EventType : zpdk.TrackerEventType>",
+                "accessorKind": "get"
+              },
+              {
+                "kind": "Accessor",
+                "name": "Set",
+                "printedName": "Set()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "FlushBehaviour",
+                    "printedName": "zpdk.FlushBehaviour",
+                    "usr": "s:4zpdk14FlushBehaviourO"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:4zpdk12TypedTrackerV14flushBehaviourAA05FlushE0Ovs",
+                "mangledName": "$s4zpdk12TypedTrackerV14flushBehaviourAA05FlushE0Ovs",
+                "moduleName": "zpdk",
+                "genericSig": "<τ_0_0 where τ_0_0 : zpdk.TrackerEventType>",
+                "sugared_genericSig": "<EventType where EventType : zpdk.TrackerEventType>",
+                "accessorKind": "set"
+              },
+              {
+                "kind": "Accessor",
+                "name": "Modify",
+                "printedName": "Modify()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:4zpdk12TypedTrackerV14flushBehaviourAA05FlushE0OvM",
+                "mangledName": "$s4zpdk12TypedTrackerV14flushBehaviourAA05FlushE0OvM",
+                "moduleName": "zpdk",
+                "genericSig": "<τ_0_0 where τ_0_0 : zpdk.TrackerEventType>",
+                "sugared_genericSig": "<EventType where EventType : zpdk.TrackerEventType>",
+                "implicit": true,
+                "accessorKind": "_modify"
+              }
+            ]
+          },
+          {
+            "kind": "Constructor",
+            "name": "init",
+            "printedName": "init(tracker:)",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "TypedTracker",
+                "printedName": "zpdk.TypedTracker<τ_0_0>",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "GenericTypeParam",
+                    "printedName": "τ_0_0"
+                  }
+                ],
+                "usr": "s:4zpdk12TypedTrackerV"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "TrackerType",
+                "printedName": "zpdk.TrackerType",
+                "usr": "s:4zpdk11TrackerTypeP"
+              }
+            ],
+            "declKind": "Constructor",
+            "usr": "s:4zpdk12TypedTrackerV7trackerACyxGAA0C4Type_p_tcfc",
+            "mangledName": "$s4zpdk12TypedTrackerV7trackerACyxGAA0C4Type_p_tcfc",
+            "moduleName": "zpdk",
+            "genericSig": "<τ_0_0 where τ_0_0 : zpdk.TrackerEventType>",
+            "sugared_genericSig": "<EventType where EventType : zpdk.TrackerEventType>",
+            "declAttributes": [
+              "AccessControl",
+              "RawDocComment"
+            ],
+            "init_kind": "Designated"
+          },
+          {
+            "kind": "Function",
+            "name": "start",
+            "printedName": "start()",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "s:4zpdk12TypedTrackerV5startyyF",
+            "mangledName": "$s4zpdk12TypedTrackerV5startyyF",
+            "moduleName": "zpdk",
+            "genericSig": "<τ_0_0 where τ_0_0 : zpdk.TrackerEventType>",
+            "sugared_genericSig": "<EventType where EventType : zpdk.TrackerEventType>",
+            "declAttributes": [
+              "AccessControl",
+              "RawDocComment"
+            ],
+            "funcSelfKind": "NonMutating"
+          },
+          {
+            "kind": "Function",
+            "name": "track",
+            "printedName": "track(event:)",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "GenericTypeParam",
+                "printedName": "τ_0_0"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "s:4zpdk12TypedTrackerV5track5eventyx_tF",
+            "mangledName": "$s4zpdk12TypedTrackerV5track5eventyx_tF",
+            "moduleName": "zpdk",
+            "genericSig": "<τ_0_0 where τ_0_0 : zpdk.TrackerEventType>",
+            "sugared_genericSig": "<EventType where EventType : zpdk.TrackerEventType>",
+            "declAttributes": [
+              "AccessControl",
+              "RawDocComment"
+            ],
+            "funcSelfKind": "NonMutating"
+          },
+          {
+            "kind": "Function",
+            "name": "flush",
+            "printedName": "flush()",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "s:4zpdk12TypedTrackerV5flushyyF",
+            "mangledName": "$s4zpdk12TypedTrackerV5flushyyF",
+            "moduleName": "zpdk",
+            "genericSig": "<τ_0_0 where τ_0_0 : zpdk.TrackerEventType>",
+            "sugared_genericSig": "<EventType where EventType : zpdk.TrackerEventType>",
+            "declAttributes": [
+              "AccessControl",
+              "RawDocComment"
+            ],
+            "funcSelfKind": "NonMutating"
+          }
+        ],
+        "declKind": "Struct",
+        "usr": "s:4zpdk12TypedTrackerV",
+        "mangledName": "$s4zpdk12TypedTrackerV",
+        "moduleName": "zpdk",
+        "genericSig": "<τ_0_0 where τ_0_0 : zpdk.TrackerEventType>",
+        "sugared_genericSig": "<EventType where EventType : zpdk.TrackerEventType>",
+        "declAttributes": [
+          "AccessControl",
+          "RawDocComment"
+        ],
+        "conformances": [
+          {
+            "kind": "Conformance",
+            "name": "TypedTrackerType",
+            "printedName": "TypedTrackerType",
+            "children": [
+              {
+                "kind": "TypeWitness",
+                "name": "EventType",
+                "printedName": "EventType",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "GenericTypeParam",
+                    "printedName": "τ_0_0"
+                  }
+                ]
+              }
+            ],
+            "usr": "s:4zpdk16TypedTrackerTypeP",
+            "mangledName": "$s4zpdk16TypedTrackerTypeP"
+          }
+        ]
+      },
+      {
+        "kind": "Import",
+        "name": "Foundation",
+        "printedName": "Foundation",
+        "declKind": "Import",
+        "moduleName": "zpdk"
+      },
+      {
+        "kind": "TypeDecl",
+        "name": "Configuration",
+        "printedName": "Configuration",
+        "children": [
+          {
+            "kind": "Var",
+            "name": "default",
+            "printedName": "default",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Configuration",
+                "printedName": "zpdk.Configuration",
+                "usr": "s:4zpdk13ConfigurationV"
+              }
+            ],
+            "declKind": "Var",
+            "usr": "s:4zpdk13ConfigurationV7defaultACvpZ",
+            "mangledName": "$s4zpdk13ConfigurationV7defaultACvpZ",
+            "moduleName": "zpdk",
+            "static": true,
+            "declAttributes": [
+              "HasInitialValue",
+              "HasStorage",
+              "AccessControl",
+              "RawDocComment"
+            ],
+            "isLet": true,
+            "hasStorage": true,
+            "accessors": [
+              {
+                "kind": "Accessor",
+                "name": "Get",
+                "printedName": "Get()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Configuration",
+                    "printedName": "zpdk.Configuration",
+                    "usr": "s:4zpdk13ConfigurationV"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:4zpdk13ConfigurationV7defaultACvgZ",
+                "mangledName": "$s4zpdk13ConfigurationV7defaultACvgZ",
+                "moduleName": "zpdk",
+                "static": true,
+                "implicit": true,
+                "accessorKind": "get"
+              }
+            ]
+          },
+          {
+            "kind": "Var",
+            "name": "flushInterval",
+            "printedName": "flushInterval",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Double",
+                "printedName": "Swift.Double",
+                "usr": "s:Sd"
+              }
+            ],
+            "declKind": "Var",
+            "usr": "s:4zpdk13ConfigurationV13flushIntervalSdvp",
+            "mangledName": "$s4zpdk13ConfigurationV13flushIntervalSdvp",
+            "moduleName": "zpdk",
+            "declAttributes": [
+              "HasStorage",
+              "AccessControl",
+              "RawDocComment"
+            ],
+            "hasStorage": true,
+            "accessors": [
+              {
+                "kind": "Accessor",
+                "name": "Get",
+                "printedName": "Get()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Double",
+                    "printedName": "Swift.Double",
+                    "usr": "s:Sd"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:4zpdk13ConfigurationV13flushIntervalSdvg",
+                "mangledName": "$s4zpdk13ConfigurationV13flushIntervalSdvg",
+                "moduleName": "zpdk",
+                "implicit": true,
+                "accessorKind": "get"
+              },
+              {
+                "kind": "Accessor",
+                "name": "Set",
+                "printedName": "Set()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Double",
+                    "printedName": "Swift.Double",
+                    "usr": "s:Sd"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:4zpdk13ConfigurationV13flushIntervalSdvs",
+                "mangledName": "$s4zpdk13ConfigurationV13flushIntervalSdvs",
+                "moduleName": "zpdk",
+                "implicit": true,
+                "accessorKind": "set"
+              },
+              {
+                "kind": "Accessor",
+                "name": "Modify",
+                "printedName": "Modify()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:4zpdk13ConfigurationV13flushIntervalSdvM",
+                "mangledName": "$s4zpdk13ConfigurationV13flushIntervalSdvM",
+                "moduleName": "zpdk",
+                "implicit": true,
+                "accessorKind": "_modify"
+              }
+            ]
+          },
+          {
+            "kind": "Var",
+            "name": "numEventsToTryToFlush",
+            "printedName": "numEventsToTryToFlush",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Int",
+                "printedName": "Swift.Int",
+                "usr": "s:Si"
+              }
+            ],
+            "declKind": "Var",
+            "usr": "s:4zpdk13ConfigurationV014numEventsToTryE5FlushSivp",
+            "mangledName": "$s4zpdk13ConfigurationV014numEventsToTryE5FlushSivp",
+            "moduleName": "zpdk",
+            "declAttributes": [
+              "HasStorage",
+              "AccessControl",
+              "RawDocComment"
+            ],
+            "hasStorage": true,
+            "accessors": [
+              {
+                "kind": "Accessor",
+                "name": "Get",
+                "printedName": "Get()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Int",
+                    "printedName": "Swift.Int",
+                    "usr": "s:Si"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:4zpdk13ConfigurationV014numEventsToTryE5FlushSivg",
+                "mangledName": "$s4zpdk13ConfigurationV014numEventsToTryE5FlushSivg",
+                "moduleName": "zpdk",
+                "implicit": true,
+                "accessorKind": "get"
+              },
+              {
+                "kind": "Accessor",
+                "name": "Set",
+                "printedName": "Set()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Int",
+                    "printedName": "Swift.Int",
+                    "usr": "s:Si"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:4zpdk13ConfigurationV014numEventsToTryE5FlushSivs",
+                "mangledName": "$s4zpdk13ConfigurationV014numEventsToTryE5FlushSivs",
+                "moduleName": "zpdk",
+                "implicit": true,
+                "accessorKind": "set"
+              },
+              {
+                "kind": "Accessor",
+                "name": "Modify",
+                "printedName": "Modify()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:4zpdk13ConfigurationV014numEventsToTryE5FlushSivM",
+                "mangledName": "$s4zpdk13ConfigurationV014numEventsToTryE5FlushSivM",
+                "moduleName": "zpdk",
+                "implicit": true,
+                "accessorKind": "_modify"
+              }
+            ]
+          },
+          {
+            "kind": "Var",
+            "name": "maxEventsPerSession",
+            "printedName": "maxEventsPerSession",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Int",
+                "printedName": "Swift.Int",
+                "usr": "s:Si"
+              }
+            ],
+            "declKind": "Var",
+            "usr": "s:4zpdk13ConfigurationV19maxEventsPerSessionSivp",
+            "mangledName": "$s4zpdk13ConfigurationV19maxEventsPerSessionSivp",
+            "moduleName": "zpdk",
+            "declAttributes": [
+              "HasStorage",
+              "AccessControl",
+              "RawDocComment"
+            ],
+            "hasStorage": true,
+            "accessors": [
+              {
+                "kind": "Accessor",
+                "name": "Get",
+                "printedName": "Get()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Int",
+                    "printedName": "Swift.Int",
+                    "usr": "s:Si"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:4zpdk13ConfigurationV19maxEventsPerSessionSivg",
+                "mangledName": "$s4zpdk13ConfigurationV19maxEventsPerSessionSivg",
+                "moduleName": "zpdk",
+                "implicit": true,
+                "accessorKind": "get"
+              },
+              {
+                "kind": "Accessor",
+                "name": "Set",
+                "printedName": "Set()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Int",
+                    "printedName": "Swift.Int",
+                    "usr": "s:Si"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:4zpdk13ConfigurationV19maxEventsPerSessionSivs",
+                "mangledName": "$s4zpdk13ConfigurationV19maxEventsPerSessionSivs",
+                "moduleName": "zpdk",
+                "implicit": true,
+                "accessorKind": "set"
+              },
+              {
+                "kind": "Accessor",
+                "name": "Modify",
+                "printedName": "Modify()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:4zpdk13ConfigurationV19maxEventsPerSessionSivM",
+                "mangledName": "$s4zpdk13ConfigurationV19maxEventsPerSessionSivM",
+                "moduleName": "zpdk",
+                "implicit": true,
+                "accessorKind": "_modify"
+              }
+            ]
+          },
+          {
+            "kind": "Constructor",
+            "name": "init",
+            "printedName": "init(flushInterval:numEventsToTryToFlush:maxEventsPerSession:)",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Configuration",
+                "printedName": "zpdk.Configuration",
+                "usr": "s:4zpdk13ConfigurationV"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "Double",
+                "printedName": "Swift.Double",
+                "usr": "s:Sd"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "Int",
+                "printedName": "Swift.Int",
+                "usr": "s:Si"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "Int",
+                "printedName": "Swift.Int",
+                "usr": "s:Si"
+              }
+            ],
+            "declKind": "Constructor",
+            "usr": "s:4zpdk13ConfigurationV13flushInterval014numEventsToTryG5Flush03maxF10PerSessionACSd_S2itcfc",
+            "mangledName": "$s4zpdk13ConfigurationV13flushInterval014numEventsToTryG5Flush03maxF10PerSessionACSd_S2itcfc",
+            "moduleName": "zpdk",
+            "declAttributes": [
+              "AccessControl",
+              "RawDocComment"
+            ],
+            "init_kind": "Designated"
+          }
+        ],
+        "declKind": "Struct",
+        "usr": "s:4zpdk13ConfigurationV",
+        "mangledName": "$s4zpdk13ConfigurationV",
+        "moduleName": "zpdk",
+        "declAttributes": [
+          "AccessControl",
+          "RawDocComment"
+        ]
+      },
+      {
+        "kind": "Import",
+        "name": "Foundation",
+        "printedName": "Foundation",
+        "declKind": "Import",
+        "moduleName": "zpdk"
+      },
+      {
+        "kind": "Import",
+        "name": "Foundation",
+        "printedName": "Foundation",
+        "declKind": "Import",
+        "moduleName": "zpdk"
+      },
+      {
+        "kind": "TypeDecl",
+        "name": "ApplicationEvent",
+        "printedName": "ApplicationEvent",
+        "children": [
+          {
+            "kind": "Var",
+            "name": "initSession",
+            "printedName": "initSession",
+            "children": [
+              {
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(zpdk.ApplicationEvent.Type) -> ([Swift.String : Any]?) -> zpdk.ApplicationEvent",
+                "children": [
+                  {
+                    "kind": "TypeFunc",
+                    "name": "Function",
+                    "printedName": "([Swift.String : Any]?) -> zpdk.ApplicationEvent",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "ApplicationEvent",
+                        "printedName": "zpdk.ApplicationEvent",
+                        "usr": "s:4zpdk16ApplicationEventO"
+                      },
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Tuple",
+                        "printedName": "(sessionInfo: [Swift.String : Any]?)",
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "Optional",
+                            "printedName": "[Swift.String : Any]?",
+                            "children": [
+                              {
+                                "kind": "TypeNominal",
+                                "name": "Dictionary",
+                                "printedName": "[Swift.String : Any]",
+                                "children": [
+                                  {
+                                    "kind": "TypeNominal",
+                                    "name": "String",
+                                    "printedName": "Swift.String",
+                                    "usr": "s:SS"
+                                  },
+                                  {
+                                    "kind": "TypeNominal",
+                                    "name": "ProtocolComposition",
+                                    "printedName": "Any"
+                                  }
+                                ],
+                                "usr": "s:SD"
+                              }
+                            ],
+                            "usr": "s:Sq"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "zpdk.ApplicationEvent.Type",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "ApplicationEvent",
+                        "printedName": "zpdk.ApplicationEvent",
+                        "usr": "s:4zpdk16ApplicationEventO"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "declKind": "EnumElement",
+            "usr": "s:4zpdk16ApplicationEventO11initSessionyACSDySSypGSg_tcACmF",
+            "mangledName": "$s4zpdk16ApplicationEventO11initSessionyACSDySSypGSg_tcACmF",
+            "moduleName": "zpdk",
+            "declAttributes": [
+              "RawDocComment"
+            ]
+          },
+          {
+            "kind": "Var",
+            "name": "linkOpen",
+            "printedName": "linkOpen",
+            "children": [
+              {
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(zpdk.ApplicationEvent.Type) -> ([Swift.String : Any]?) -> zpdk.ApplicationEvent",
+                "children": [
+                  {
+                    "kind": "TypeFunc",
+                    "name": "Function",
+                    "printedName": "([Swift.String : Any]?) -> zpdk.ApplicationEvent",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "ApplicationEvent",
+                        "printedName": "zpdk.ApplicationEvent",
+                        "usr": "s:4zpdk16ApplicationEventO"
+                      },
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Tuple",
+                        "printedName": "(queryItems: [Swift.String : Any]?)",
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "Optional",
+                            "printedName": "[Swift.String : Any]?",
+                            "children": [
+                              {
+                                "kind": "TypeNominal",
+                                "name": "Dictionary",
+                                "printedName": "[Swift.String : Any]",
+                                "children": [
+                                  {
+                                    "kind": "TypeNominal",
+                                    "name": "String",
+                                    "printedName": "Swift.String",
+                                    "usr": "s:SS"
+                                  },
+                                  {
+                                    "kind": "TypeNominal",
+                                    "name": "ProtocolComposition",
+                                    "printedName": "Any"
+                                  }
+                                ],
+                                "usr": "s:SD"
+                              }
+                            ],
+                            "usr": "s:Sq"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "zpdk.ApplicationEvent.Type",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "ApplicationEvent",
+                        "printedName": "zpdk.ApplicationEvent",
+                        "usr": "s:4zpdk16ApplicationEventO"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "declKind": "EnumElement",
+            "usr": "s:4zpdk16ApplicationEventO8linkOpenyACSDySSypGSg_tcACmF",
+            "mangledName": "$s4zpdk16ApplicationEventO8linkOpenyACSDySSypGSg_tcACmF",
+            "moduleName": "zpdk",
+            "declAttributes": [
+              "RawDocComment"
+            ]
+          },
+          {
+            "kind": "Var",
+            "name": "id",
+            "printedName": "id",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "String",
+                "printedName": "Swift.String",
+                "usr": "s:SS"
+              }
+            ],
+            "declKind": "Var",
+            "usr": "s:4zpdk16ApplicationEventO2idSSvp",
+            "mangledName": "$s4zpdk16ApplicationEventO2idSSvp",
+            "moduleName": "zpdk",
+            "declAttributes": [
+              "AccessControl"
+            ],
+            "isFromExtension": true,
+            "accessors": [
+              {
+                "kind": "Accessor",
+                "name": "Get",
+                "printedName": "Get()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "String",
+                    "printedName": "Swift.String",
+                    "usr": "s:SS"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:4zpdk16ApplicationEventO2idSSvg",
+                "mangledName": "$s4zpdk16ApplicationEventO2idSSvg",
+                "moduleName": "zpdk",
+                "isFromExtension": true,
+                "accessorKind": "get"
+              }
+            ]
+          },
+          {
+            "kind": "Var",
+            "name": "metadata",
+            "printedName": "metadata",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Optional",
+                "printedName": "[Swift.String : Any]?",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Dictionary",
+                    "printedName": "[Swift.String : Any]",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "String",
+                        "printedName": "Swift.String",
+                        "usr": "s:SS"
+                      },
+                      {
+                        "kind": "TypeNominal",
+                        "name": "ProtocolComposition",
+                        "printedName": "Any"
+                      }
+                    ],
+                    "usr": "s:SD"
+                  }
+                ],
+                "usr": "s:Sq"
+              }
+            ],
+            "declKind": "Var",
+            "usr": "s:4zpdk16ApplicationEventO8metadataSDySSypGSgvp",
+            "mangledName": "$s4zpdk16ApplicationEventO8metadataSDySSypGSgvp",
+            "moduleName": "zpdk",
+            "declAttributes": [
+              "AccessControl"
+            ],
+            "isFromExtension": true,
+            "accessors": [
+              {
+                "kind": "Accessor",
+                "name": "Get",
+                "printedName": "Get()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Optional",
+                    "printedName": "[Swift.String : Any]?",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Dictionary",
+                        "printedName": "[Swift.String : Any]",
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "String",
+                            "printedName": "Swift.String",
+                            "usr": "s:SS"
+                          },
+                          {
+                            "kind": "TypeNominal",
+                            "name": "ProtocolComposition",
+                            "printedName": "Any"
+                          }
+                        ],
+                        "usr": "s:SD"
+                      }
+                    ],
+                    "usr": "s:Sq"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:4zpdk16ApplicationEventO8metadataSDySSypGSgvg",
+                "mangledName": "$s4zpdk16ApplicationEventO8metadataSDySSypGSgvg",
+                "moduleName": "zpdk",
+                "isFromExtension": true,
+                "accessorKind": "get"
+              }
+            ]
+          },
+          {
+            "kind": "Function",
+            "name": "getLinkOpenEvent",
+            "printedName": "getLinkOpenEvent(from:)",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "ApplicationEvent",
+                "printedName": "zpdk.ApplicationEvent",
+                "usr": "s:4zpdk16ApplicationEventO"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "URL",
+                "printedName": "Foundation.URL",
+                "usr": "s:10Foundation3URLV"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "s:4zpdk16ApplicationEventO011getLinkOpenC04fromAC10Foundation3URLV_tFZ",
+            "mangledName": "$s4zpdk16ApplicationEventO011getLinkOpenC04fromAC10Foundation3URLV_tFZ",
+            "moduleName": "zpdk",
+            "static": true,
+            "isFromExtension": true,
+            "funcSelfKind": "NonMutating"
+          }
+        ],
+        "declKind": "Enum",
+        "usr": "s:4zpdk16ApplicationEventO",
+        "mangledName": "$s4zpdk16ApplicationEventO",
+        "moduleName": "zpdk",
+        "declAttributes": [
+          "AccessControl",
+          "RawDocComment"
+        ],
+        "conformances": [
+          {
+            "kind": "Conformance",
+            "name": "TrackerEventType",
+            "printedName": "TrackerEventType",
+            "usr": "s:4zpdk16TrackerEventTypeP",
+            "mangledName": "$s4zpdk16TrackerEventTypeP"
+          }
+        ]
+      },
+      {
+        "kind": "Import",
+        "name": "Foundation",
+        "printedName": "Foundation",
+        "declKind": "Import",
+        "moduleName": "zpdk"
+      },
+      {
+        "kind": "TypeDecl",
+        "name": "ZPTrackingEvent",
+        "printedName": "ZPTrackingEvent",
+        "children": [
+          {
+            "kind": "Var",
+            "name": "id",
+            "printedName": "id",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "String",
+                "printedName": "Swift.String",
+                "usr": "s:SS"
+              }
+            ],
+            "declKind": "Var",
+            "usr": "s:4zpdk15ZPTrackingEventV2idSSvp",
+            "mangledName": "$s4zpdk15ZPTrackingEventV2idSSvp",
+            "moduleName": "zpdk",
+            "declAttributes": [
+              "HasStorage",
+              "AccessControl",
+              "RawDocComment"
+            ],
+            "isLet": true,
+            "hasStorage": true,
+            "accessors": [
+              {
+                "kind": "Accessor",
+                "name": "Get",
+                "printedName": "Get()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "String",
+                    "printedName": "Swift.String",
+                    "usr": "s:SS"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:4zpdk15ZPTrackingEventV2idSSvg",
+                "mangledName": "$s4zpdk15ZPTrackingEventV2idSSvg",
+                "moduleName": "zpdk",
+                "implicit": true,
+                "accessorKind": "get"
+              }
+            ]
+          },
+          {
+            "kind": "Var",
+            "name": "metadata",
+            "printedName": "metadata",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Optional",
+                "printedName": "[Swift.String : Any]?",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Dictionary",
+                    "printedName": "[Swift.String : Any]",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "String",
+                        "printedName": "Swift.String",
+                        "usr": "s:SS"
+                      },
+                      {
+                        "kind": "TypeNominal",
+                        "name": "ProtocolComposition",
+                        "printedName": "Any"
+                      }
+                    ],
+                    "usr": "s:SD"
+                  }
+                ],
+                "usr": "s:Sq"
+              }
+            ],
+            "declKind": "Var",
+            "usr": "s:4zpdk15ZPTrackingEventV8metadataSDySSypGSgvp",
+            "mangledName": "$s4zpdk15ZPTrackingEventV8metadataSDySSypGSgvp",
+            "moduleName": "zpdk",
+            "declAttributes": [
+              "HasStorage",
+              "AccessControl",
+              "RawDocComment"
+            ],
+            "isLet": true,
+            "hasStorage": true,
+            "accessors": [
+              {
+                "kind": "Accessor",
+                "name": "Get",
+                "printedName": "Get()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Optional",
+                    "printedName": "[Swift.String : Any]?",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Dictionary",
+                        "printedName": "[Swift.String : Any]",
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "String",
+                            "printedName": "Swift.String",
+                            "usr": "s:SS"
+                          },
+                          {
+                            "kind": "TypeNominal",
+                            "name": "ProtocolComposition",
+                            "printedName": "Any"
+                          }
+                        ],
+                        "usr": "s:SD"
+                      }
+                    ],
+                    "usr": "s:Sq"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:4zpdk15ZPTrackingEventV8metadataSDySSypGSgvg",
+                "mangledName": "$s4zpdk15ZPTrackingEventV8metadataSDySSypGSgvg",
+                "moduleName": "zpdk",
+                "implicit": true,
+                "accessorKind": "get"
+              }
+            ]
+          },
+          {
+            "kind": "Constructor",
+            "name": "init",
+            "printedName": "init(id:metadata:)",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "ZPTrackingEvent",
+                "printedName": "zpdk.ZPTrackingEvent",
+                "usr": "s:4zpdk15ZPTrackingEventV"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "String",
+                "printedName": "Swift.String",
+                "usr": "s:SS"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "Optional",
+                "printedName": "[Swift.String : Any]?",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Dictionary",
+                    "printedName": "[Swift.String : Any]",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "String",
+                        "printedName": "Swift.String",
+                        "usr": "s:SS"
+                      },
+                      {
+                        "kind": "TypeNominal",
+                        "name": "ProtocolComposition",
+                        "printedName": "Any"
+                      }
+                    ],
+                    "usr": "s:SD"
+                  }
+                ],
+                "hasDefaultArg": true,
+                "usr": "s:Sq"
+              }
+            ],
+            "declKind": "Constructor",
+            "usr": "s:4zpdk15ZPTrackingEventV2id8metadataACSS_SDySSypGSgtcfc",
+            "mangledName": "$s4zpdk15ZPTrackingEventV2id8metadataACSS_SDySSypGSgtcfc",
+            "moduleName": "zpdk",
+            "declAttributes": [
+              "AccessControl"
+            ],
+            "init_kind": "Designated"
+          }
+        ],
+        "declKind": "Struct",
+        "usr": "s:4zpdk15ZPTrackingEventV",
+        "mangledName": "$s4zpdk15ZPTrackingEventV",
+        "moduleName": "zpdk",
+        "declAttributes": [
+          "AccessControl",
+          "RawDocComment"
+        ],
+        "conformances": [
+          {
+            "kind": "Conformance",
+            "name": "TrackerEventType",
+            "printedName": "TrackerEventType",
+            "usr": "s:4zpdk16TrackerEventTypeP",
+            "mangledName": "$s4zpdk16TrackerEventTypeP"
+          }
+        ]
+      },
+      {
+        "kind": "Import",
+        "name": "Foundation",
+        "printedName": "Foundation",
+        "declKind": "Import",
+        "moduleName": "zpdk",
+        "declAttributes": [
+          "RawDocComment"
+        ]
+      },
+      {
+        "kind": "TypeDecl",
+        "name": "APIEventTrackingProtocol",
+        "printedName": "APIEventTrackingProtocol",
+        "children": [
+          {
+            "kind": "Function",
+            "name": "trackAPI",
+            "printedName": "trackAPI(_:startTime:response:)",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "Tuple",
+                "printedName": "(host: Swift.String, path: Swift.String)",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "String",
+                    "printedName": "Swift.String",
+                    "usr": "s:SS"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "String",
+                    "printedName": "Swift.String",
+                    "usr": "s:SS"
+                  }
+                ]
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "Date",
+                "printedName": "Foundation.Date",
+                "usr": "s:10Foundation4DateV"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "Result",
+                "printedName": "Swift.Result<τ_1_0, Swift.Error>",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "GenericTypeParam",
+                    "printedName": "τ_1_0"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Error",
+                    "printedName": "Swift.Error",
+                    "usr": "s:s5ErrorP"
+                  }
+                ],
+                "usr": "s:s6ResultO"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "s:4zpdk24APIEventTrackingProtocolP8trackAPI_9startTime8responseySS4host_SS4patht_10Foundation4DateVs6ResultOyqd__s5Error_pGtAA18ProviderObjectTypeRd__lF",
+            "mangledName": "$s4zpdk24APIEventTrackingProtocolP8trackAPI_9startTime8responseySS4host_SS4patht_10Foundation4DateVs6ResultOyqd__s5Error_pGtAA18ProviderObjectTypeRd__lF",
+            "moduleName": "zpdk",
+            "genericSig": "<τ_0_0, τ_1_0 where τ_0_0 : zpdk.APIEventTrackingProtocol, τ_1_0 : zpdk.ProviderObjectType>",
+            "sugared_genericSig": "<Self, T where Self : zpdk.APIEventTrackingProtocol, T : zpdk.ProviderObjectType>",
+            "protocolReq": true,
+            "reqNewWitnessTableEntry": true,
+            "funcSelfKind": "NonMutating"
+          }
+        ],
+        "declKind": "Protocol",
+        "usr": "s:4zpdk24APIEventTrackingProtocolP",
+        "mangledName": "$s4zpdk24APIEventTrackingProtocolP",
+        "moduleName": "zpdk",
+        "genericSig": "<τ_0_0 : AnyObject>",
+        "sugared_genericSig": "<Self : AnyObject>",
+        "declAttributes": [
+          "AccessControl"
+        ]
+      },
+      {
+        "kind": "Import",
+        "name": "Foundation",
+        "printedName": "Foundation",
+        "declKind": "Import",
+        "moduleName": "zpdk"
+      },
+      {
+        "kind": "Import",
+        "name": "Foundation",
+        "printedName": "Foundation",
+        "declKind": "Import",
+        "moduleName": "zpdk"
+      },
+      {
+        "kind": "TypeDecl",
+        "name": "Cancellable",
+        "printedName": "Cancellable",
+        "children": [
+          {
+            "kind": "Var",
+            "name": "isCancelled",
+            "printedName": "isCancelled",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Bool",
+                "printedName": "Swift.Bool",
+                "usr": "s:Sb"
+              }
+            ],
+            "declKind": "Var",
+            "usr": "s:4zpdk11CancellableP11isCancelledSbvp",
+            "mangledName": "$s4zpdk11CancellableP11isCancelledSbvp",
+            "moduleName": "zpdk",
+            "protocolReq": true,
+            "accessors": [
+              {
+                "kind": "Accessor",
+                "name": "Get",
+                "printedName": "Get()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Bool",
+                    "printedName": "Swift.Bool",
+                    "usr": "s:Sb"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:4zpdk11CancellableP11isCancelledSbvg",
+                "mangledName": "$s4zpdk11CancellableP11isCancelledSbvg",
+                "moduleName": "zpdk",
+                "genericSig": "<τ_0_0 where τ_0_0 : zpdk.Cancellable>",
+                "sugared_genericSig": "<Self where Self : zpdk.Cancellable>",
+                "protocolReq": true,
+                "reqNewWitnessTableEntry": true,
+                "accessorKind": "get"
+              }
+            ]
+          },
+          {
+            "kind": "Function",
+            "name": "cancel",
+            "printedName": "cancel()",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "s:4zpdk11CancellableP6cancelyyF",
+            "mangledName": "$s4zpdk11CancellableP6cancelyyF",
+            "moduleName": "zpdk",
+            "genericSig": "<τ_0_0 where τ_0_0 : zpdk.Cancellable>",
+            "sugared_genericSig": "<Self where Self : zpdk.Cancellable>",
+            "protocolReq": true,
+            "reqNewWitnessTableEntry": true,
+            "funcSelfKind": "NonMutating"
+          }
+        ],
+        "declKind": "Protocol",
+        "usr": "s:4zpdk11CancellableP",
+        "mangledName": "$s4zpdk11CancellableP",
+        "moduleName": "zpdk",
+        "declAttributes": [
+          "AccessControl"
+        ]
+      },
+      {
+        "kind": "TypeDecl",
+        "name": "FlagCancellable",
+        "printedName": "FlagCancellable",
+        "children": [
+          {
+            "kind": "Var",
+            "name": "isCancelled",
+            "printedName": "isCancelled",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Bool",
+                "printedName": "Swift.Bool",
+                "usr": "s:Sb"
+              }
+            ],
+            "declKind": "Var",
+            "usr": "s:4zpdk15FlagCancellableC11isCancelledSbvp",
+            "mangledName": "$s4zpdk15FlagCancellableC11isCancelledSbvp",
+            "moduleName": "zpdk",
+            "declAttributes": [
+              "HasInitialValue",
+              "HasStorage",
+              "SetterAccess",
+              "AccessControl"
+            ],
+            "hasStorage": true,
+            "accessors": [
+              {
+                "kind": "Accessor",
+                "name": "Get",
+                "printedName": "Get()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Bool",
+                    "printedName": "Swift.Bool",
+                    "usr": "s:Sb"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:4zpdk15FlagCancellableC11isCancelledSbvg",
+                "mangledName": "$s4zpdk15FlagCancellableC11isCancelledSbvg",
+                "moduleName": "zpdk",
+                "implicit": true,
+                "accessorKind": "get"
+              }
+            ]
+          },
+          {
+            "kind": "Constructor",
+            "name": "init",
+            "printedName": "init()",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "FlagCancellable",
+                "printedName": "zpdk.FlagCancellable",
+                "usr": "s:4zpdk15FlagCancellableC"
+              }
+            ],
+            "declKind": "Constructor",
+            "usr": "s:4zpdk15FlagCancellableCACycfc",
+            "mangledName": "$s4zpdk15FlagCancellableCACycfc",
+            "moduleName": "zpdk",
+            "declAttributes": [
+              "AccessControl"
+            ],
+            "init_kind": "Designated"
+          },
+          {
+            "kind": "Function",
+            "name": "cancel",
+            "printedName": "cancel()",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "s:4zpdk15FlagCancellableC6cancelyyF",
+            "mangledName": "$s4zpdk15FlagCancellableC6cancelyyF",
+            "moduleName": "zpdk",
+            "declAttributes": [
+              "AccessControl"
+            ],
+            "funcSelfKind": "NonMutating"
+          }
+        ],
+        "declKind": "Class",
+        "usr": "s:4zpdk15FlagCancellableC",
+        "mangledName": "$s4zpdk15FlagCancellableC",
+        "moduleName": "zpdk",
+        "declAttributes": [
+          "AccessControl"
+        ],
+        "conformances": [
+          {
+            "kind": "Conformance",
+            "name": "Cancellable",
+            "printedName": "Cancellable",
+            "usr": "s:4zpdk11CancellableP",
+            "mangledName": "$s4zpdk11CancellableP"
+          }
+        ]
+      },
+      {
+        "kind": "TypeDecl",
+        "name": "MessageReceiverCancellable",
+        "printedName": "MessageReceiverCancellable",
+        "children": [
+          {
+            "kind": "Var",
+            "name": "isCancelled",
+            "printedName": "isCancelled",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Bool",
+                "printedName": "Swift.Bool",
+                "usr": "s:Sb"
+              }
+            ],
+            "declKind": "Var",
+            "usr": "s:4zpdk26MessageReceiverCancellableC11isCancelledSbvp",
+            "mangledName": "$s4zpdk26MessageReceiverCancellableC11isCancelledSbvp",
+            "moduleName": "zpdk",
+            "declAttributes": [
+              "HasInitialValue",
+              "HasStorage",
+              "SetterAccess",
+              "AccessControl"
+            ],
+            "hasStorage": true,
+            "accessors": [
+              {
+                "kind": "Accessor",
+                "name": "Get",
+                "printedName": "Get()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Bool",
+                    "printedName": "Swift.Bool",
+                    "usr": "s:Sb"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:4zpdk26MessageReceiverCancellableC11isCancelledSbvg",
+                "mangledName": "$s4zpdk26MessageReceiverCancellableC11isCancelledSbvg",
+                "moduleName": "zpdk",
+                "implicit": true,
+                "accessorKind": "get"
+              }
+            ]
+          },
+          {
+            "kind": "Constructor",
+            "name": "init",
+            "printedName": "init(_:)",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "MessageReceiverCancellable",
+                "printedName": "zpdk.MessageReceiverCancellable",
+                "usr": "s:4zpdk26MessageReceiverCancellableC"
+              },
+              {
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "() -> ()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  }
+                ]
+              }
+            ],
+            "declKind": "Constructor",
+            "usr": "s:4zpdk26MessageReceiverCancellableCyACyyccfc",
+            "mangledName": "$s4zpdk26MessageReceiverCancellableCyACyyccfc",
+            "moduleName": "zpdk",
+            "declAttributes": [
+              "AccessControl"
+            ],
+            "init_kind": "Designated"
+          },
+          {
+            "kind": "Function",
+            "name": "cancel",
+            "printedName": "cancel()",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "s:4zpdk26MessageReceiverCancellableC6cancelyyF",
+            "mangledName": "$s4zpdk26MessageReceiverCancellableC6cancelyyF",
+            "moduleName": "zpdk",
+            "declAttributes": [
+              "AccessControl"
+            ],
+            "funcSelfKind": "NonMutating"
+          }
+        ],
+        "declKind": "Class",
+        "usr": "s:4zpdk26MessageReceiverCancellableC",
+        "mangledName": "$s4zpdk26MessageReceiverCancellableC",
+        "moduleName": "zpdk",
+        "declAttributes": [
+          "AccessControl"
+        ],
+        "conformances": [
+          {
+            "kind": "Conformance",
+            "name": "Cancellable",
+            "printedName": "Cancellable",
+            "usr": "s:4zpdk11CancellableP",
+            "mangledName": "$s4zpdk11CancellableP"
+          }
+        ]
+      },
+      {
+        "kind": "Import",
+        "name": "Foundation",
+        "printedName": "Foundation",
+        "declKind": "Import",
+        "moduleName": "zpdk"
+      },
+      {
+        "kind": "TypeDecl",
+        "name": "TrackerEventType",
+        "printedName": "TrackerEventType",
+        "declKind": "Protocol",
+        "usr": "s:4zpdk16TrackerEventTypeP",
+        "mangledName": "$s4zpdk16TrackerEventTypeP",
+        "moduleName": "zpdk",
+        "declAttributes": [
+          "AccessControl",
+          "RawDocComment"
+        ]
+      },
+      {
+        "kind": "Import",
+        "name": "Foundation",
+        "printedName": "Foundation",
+        "declKind": "Import",
+        "moduleName": "zpdk"
+      },
+      {
+        "kind": "TypeDecl",
+        "name": "ProviderObjectType",
+        "printedName": "ProviderObjectType",
+        "declKind": "Protocol",
+        "usr": "s:4zpdk18ProviderObjectTypeP",
+        "mangledName": "$s4zpdk18ProviderObjectTypeP",
+        "moduleName": "zpdk",
+        "genericSig": "<τ_0_0 : Swift.Decodable, τ_0_0 : Swift.Encodable>",
+        "sugared_genericSig": "<Self : Swift.Decodable, Self : Swift.Encodable>",
+        "declAttributes": [
+          "AccessControl"
+        ],
+        "conformances": [
+          {
+            "kind": "Conformance",
+            "name": "Decodable",
+            "printedName": "Decodable",
+            "usr": "s:Se",
+            "mangledName": "$sSe"
+          },
+          {
+            "kind": "Conformance",
+            "name": "Encodable",
+            "printedName": "Encodable",
+            "usr": "s:SE",
+            "mangledName": "$sSE"
+          }
+        ]
+      },
+      {
+        "kind": "Import",
+        "name": "Foundation",
+        "printedName": "Foundation",
+        "declKind": "Import",
+        "moduleName": "zpdk"
+      },
+      {
+        "kind": "TypeDecl",
+        "name": "FlushResult",
+        "printedName": "FlushResult",
+        "children": [
+          {
+            "kind": "Var",
+            "name": "success",
+            "printedName": "success",
+            "children": [
+              {
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(zpdk.FlushResult.Type) -> zpdk.FlushResult",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "FlushResult",
+                    "printedName": "zpdk.FlushResult",
+                    "usr": "s:4zpdk11FlushResultO"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "zpdk.FlushResult.Type",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "FlushResult",
+                        "printedName": "zpdk.FlushResult",
+                        "usr": "s:4zpdk11FlushResultO"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "declKind": "EnumElement",
+            "usr": "s:4zpdk11FlushResultO7successyA2CmF",
+            "mangledName": "$s4zpdk11FlushResultO7successyA2CmF",
+            "moduleName": "zpdk",
+            "declAttributes": [
+              "RawDocComment"
+            ]
+          },
+          {
+            "kind": "Var",
+            "name": "serverError",
+            "printedName": "serverError",
+            "children": [
+              {
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(zpdk.FlushResult.Type) -> zpdk.FlushResult",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "FlushResult",
+                    "printedName": "zpdk.FlushResult",
+                    "usr": "s:4zpdk11FlushResultO"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "zpdk.FlushResult.Type",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "FlushResult",
+                        "printedName": "zpdk.FlushResult",
+                        "usr": "s:4zpdk11FlushResultO"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "declKind": "EnumElement",
+            "usr": "s:4zpdk11FlushResultO11serverErroryA2CmF",
+            "mangledName": "$s4zpdk11FlushResultO11serverErroryA2CmF",
+            "moduleName": "zpdk",
+            "declAttributes": [
+              "RawDocComment"
+            ]
+          },
+          {
+            "kind": "Var",
+            "name": "noConnectivity",
+            "printedName": "noConnectivity",
+            "children": [
+              {
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(zpdk.FlushResult.Type) -> zpdk.FlushResult",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "FlushResult",
+                    "printedName": "zpdk.FlushResult",
+                    "usr": "s:4zpdk11FlushResultO"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "zpdk.FlushResult.Type",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "FlushResult",
+                        "printedName": "zpdk.FlushResult",
+                        "usr": "s:4zpdk11FlushResultO"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "declKind": "EnumElement",
+            "usr": "s:4zpdk11FlushResultO14noConnectivityyA2CmF",
+            "mangledName": "$s4zpdk11FlushResultO14noConnectivityyA2CmF",
+            "moduleName": "zpdk",
+            "declAttributes": [
+              "RawDocComment"
+            ]
+          },
+          {
+            "kind": "Function",
+            "name": "==",
+            "printedName": "==(_:_:)",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Bool",
+                "printedName": "Swift.Bool",
+                "usr": "s:Sb"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "FlushResult",
+                "printedName": "zpdk.FlushResult",
+                "usr": "s:4zpdk11FlushResultO"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "FlushResult",
+                "printedName": "zpdk.FlushResult",
+                "usr": "s:4zpdk11FlushResultO"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "s:4zpdk11FlushResultO2eeoiySbAC_ACtFZ",
+            "mangledName": "$s4zpdk11FlushResultO2eeoiySbAC_ACtFZ",
+            "moduleName": "zpdk",
+            "static": true,
+            "implicit": true,
+            "funcSelfKind": "NonMutating"
+          },
+          {
+            "kind": "Var",
+            "name": "hashValue",
+            "printedName": "hashValue",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Int",
+                "printedName": "Swift.Int",
+                "usr": "s:Si"
+              }
+            ],
+            "declKind": "Var",
+            "usr": "s:4zpdk11FlushResultO9hashValueSivp",
+            "mangledName": "$s4zpdk11FlushResultO9hashValueSivp",
+            "moduleName": "zpdk",
+            "implicit": true,
+            "accessors": [
+              {
+                "kind": "Accessor",
+                "name": "Get",
+                "printedName": "Get()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Int",
+                    "printedName": "Swift.Int",
+                    "usr": "s:Si"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:4zpdk11FlushResultO9hashValueSivg",
+                "mangledName": "$s4zpdk11FlushResultO9hashValueSivg",
+                "moduleName": "zpdk",
+                "implicit": true,
+                "accessorKind": "get"
+              }
+            ]
+          },
+          {
+            "kind": "Function",
+            "name": "hash",
+            "printedName": "hash(into:)",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "Hasher",
+                "printedName": "Swift.Hasher",
+                "paramValueOwnership": "InOut",
+                "usr": "s:s6HasherV"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "s:4zpdk11FlushResultO4hash4intoys6HasherVz_tF",
+            "mangledName": "$s4zpdk11FlushResultO4hash4intoys6HasherVz_tF",
+            "moduleName": "zpdk",
+            "implicit": true,
+            "funcSelfKind": "NonMutating"
+          }
+        ],
+        "declKind": "Enum",
+        "usr": "s:4zpdk11FlushResultO",
+        "mangledName": "$s4zpdk11FlushResultO",
+        "moduleName": "zpdk",
+        "declAttributes": [
+          "AccessControl",
+          "RawDocComment"
+        ],
+        "conformances": [
+          {
+            "kind": "Conformance",
+            "name": "Equatable",
+            "printedName": "Equatable",
+            "usr": "s:SQ",
+            "mangledName": "$sSQ"
+          },
+          {
+            "kind": "Conformance",
+            "name": "Hashable",
+            "printedName": "Hashable",
+            "usr": "s:SH",
+            "mangledName": "$sSH"
+          }
+        ]
+      },
+      {
+        "kind": "TypeDecl",
+        "name": "TrackerServer",
+        "printedName": "TrackerServer",
+        "children": [
+          {
+            "kind": "Function",
+            "name": "flush",
+            "printedName": "flush(data:sessionID:completion:)",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Optional",
+                "printedName": "zpdk.Cancellable?",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Cancellable",
+                    "printedName": "zpdk.Cancellable",
+                    "usr": "s:4zpdk11CancellableP"
+                  }
+                ],
+                "usr": "s:Sq"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "Data",
+                "printedName": "Foundation.Data",
+                "usr": "s:10Foundation4DataV"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "String",
+                "printedName": "Swift.String",
+                "usr": "s:SS"
+              },
+              {
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(zpdk.FlushResult) -> ()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "FlushResult",
+                    "printedName": "zpdk.FlushResult",
+                    "usr": "s:4zpdk11FlushResultO"
+                  }
+                ]
+              }
+            ],
+            "declKind": "Func",
+            "usr": "s:4zpdk13TrackerServerP5flush4data9sessionID10completionAA11Cancellable_pSg10Foundation4DataV_SSyAA11FlushResultOctF",
+            "mangledName": "$s4zpdk13TrackerServerP5flush4data9sessionID10completionAA11Cancellable_pSg10Foundation4DataV_SSyAA11FlushResultOctF",
+            "moduleName": "zpdk",
+            "genericSig": "<τ_0_0 where τ_0_0 : zpdk.TrackerServer>",
+            "sugared_genericSig": "<Self where Self : zpdk.TrackerServer>",
+            "protocolReq": true,
+            "declAttributes": [
+              "RawDocComment"
+            ],
+            "reqNewWitnessTableEntry": true,
+            "funcSelfKind": "NonMutating"
+          }
+        ],
+        "declKind": "Protocol",
+        "usr": "s:4zpdk13TrackerServerP",
+        "mangledName": "$s4zpdk13TrackerServerP",
+        "moduleName": "zpdk",
+        "declAttributes": [
+          "AccessControl",
+          "RawDocComment"
+        ]
+      },
+      {
+        "kind": "Import",
+        "name": "Foundation",
+        "printedName": "Foundation",
+        "declKind": "Import",
+        "moduleName": "zpdk"
+      },
+      {
+        "kind": "Import",
+        "name": "Foundation",
+        "printedName": "Foundation",
+        "declKind": "Import",
+        "moduleName": "zpdk"
+      },
+      {
+        "kind": "Import",
+        "name": "UIKit",
+        "printedName": "UIKit",
+        "declKind": "Import",
+        "moduleName": "zpdk"
+      },
+      {
+        "kind": "TypeDecl",
+        "name": "Tracker",
+        "printedName": "Tracker",
+        "children": [
+          {
+            "kind": "Var",
+            "name": "currentSessionID",
+            "printedName": "currentSessionID",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "String",
+                "printedName": "Swift.String",
+                "usr": "s:SS"
+              }
+            ],
+            "declKind": "Var",
+            "usr": "s:4zpdk7TrackerC16currentSessionIDSSvp",
+            "mangledName": "$s4zpdk7TrackerC16currentSessionIDSSvp",
+            "moduleName": "zpdk",
+            "declAttributes": [
+              "HasInitialValue",
+              "Final",
+              "HasStorage",
+              "AccessControl",
+              "SetterAccess"
+            ],
+            "hasStorage": true,
+            "accessors": [
+              {
+                "kind": "Accessor",
+                "name": "Get",
+                "printedName": "Get()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "String",
+                    "printedName": "Swift.String",
+                    "usr": "s:SS"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:4zpdk7TrackerC16currentSessionIDSSvg",
+                "mangledName": "$s4zpdk7TrackerC16currentSessionIDSSvg",
+                "moduleName": "zpdk",
+                "implicit": true,
+                "declAttributes": [
+                  "Final"
+                ],
+                "accessorKind": "get"
+              }
+            ]
+          },
+          {
+            "kind": "Var",
+            "name": "userID",
+            "printedName": "userID",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Optional",
+                "printedName": "Swift.String?",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "String",
+                    "printedName": "Swift.String",
+                    "usr": "s:SS"
+                  }
+                ],
+                "usr": "s:Sq"
+              }
+            ],
+            "declKind": "Var",
+            "usr": "s:4zpdk7TrackerC6userIDSSSgvp",
+            "mangledName": "$s4zpdk7TrackerC6userIDSSSgvp",
+            "moduleName": "zpdk",
+            "declAttributes": [
+              "HasInitialValue",
+              "Final",
+              "HasStorage",
+              "AccessControl",
+              "RawDocComment"
+            ],
+            "hasStorage": true,
+            "accessors": [
+              {
+                "kind": "Accessor",
+                "name": "Get",
+                "printedName": "Get()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Optional",
+                    "printedName": "Swift.String?",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "String",
+                        "printedName": "Swift.String",
+                        "usr": "s:SS"
+                      }
+                    ],
+                    "usr": "s:Sq"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:4zpdk7TrackerC6userIDSSSgvg",
+                "mangledName": "$s4zpdk7TrackerC6userIDSSSgvg",
+                "moduleName": "zpdk",
+                "implicit": true,
+                "declAttributes": [
+                  "Final"
+                ],
+                "accessorKind": "get"
+              },
+              {
+                "kind": "Accessor",
+                "name": "Set",
+                "printedName": "Set()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Optional",
+                    "printedName": "Swift.String?",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "String",
+                        "printedName": "Swift.String",
+                        "usr": "s:SS"
+                      }
+                    ],
+                    "usr": "s:Sq"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:4zpdk7TrackerC6userIDSSSgvs",
+                "mangledName": "$s4zpdk7TrackerC6userIDSSSgvs",
+                "moduleName": "zpdk",
+                "implicit": true,
+                "declAttributes": [
+                  "Final"
+                ],
+                "accessorKind": "set"
+              },
+              {
+                "kind": "Accessor",
+                "name": "Modify",
+                "printedName": "Modify()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:4zpdk7TrackerC6userIDSSSgvM",
+                "mangledName": "$s4zpdk7TrackerC6userIDSSSgvM",
+                "moduleName": "zpdk",
+                "implicit": true,
+                "declAttributes": [
+                  "Final"
+                ],
+                "accessorKind": "_modify"
+              }
+            ]
+          },
+          {
+            "kind": "Var",
+            "name": "additionalData",
+            "printedName": "additionalData",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Dictionary",
+                "printedName": "[Swift.String : Swift.String]",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "String",
+                    "printedName": "Swift.String",
+                    "usr": "s:SS"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "String",
+                    "printedName": "Swift.String",
+                    "usr": "s:SS"
+                  }
+                ],
+                "usr": "s:SD"
+              }
+            ],
+            "declKind": "Var",
+            "usr": "s:4zpdk7TrackerC14additionalDataSDyS2SGvp",
+            "mangledName": "$s4zpdk7TrackerC14additionalDataSDyS2SGvp",
+            "moduleName": "zpdk",
+            "declAttributes": [
+              "HasInitialValue",
+              "Final",
+              "HasStorage",
+              "AccessControl",
+              "RawDocComment"
+            ],
+            "hasStorage": true,
+            "accessors": [
+              {
+                "kind": "Accessor",
+                "name": "Get",
+                "printedName": "Get()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Dictionary",
+                    "printedName": "[Swift.String : Swift.String]",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "String",
+                        "printedName": "Swift.String",
+                        "usr": "s:SS"
+                      },
+                      {
+                        "kind": "TypeNominal",
+                        "name": "String",
+                        "printedName": "Swift.String",
+                        "usr": "s:SS"
+                      }
+                    ],
+                    "usr": "s:SD"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:4zpdk7TrackerC14additionalDataSDyS2SGvg",
+                "mangledName": "$s4zpdk7TrackerC14additionalDataSDyS2SGvg",
+                "moduleName": "zpdk",
+                "implicit": true,
+                "declAttributes": [
+                  "Final"
+                ],
+                "accessorKind": "get"
+              },
+              {
+                "kind": "Accessor",
+                "name": "Set",
+                "printedName": "Set()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Dictionary",
+                    "printedName": "[Swift.String : Swift.String]",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "String",
+                        "printedName": "Swift.String",
+                        "usr": "s:SS"
+                      },
+                      {
+                        "kind": "TypeNominal",
+                        "name": "String",
+                        "printedName": "Swift.String",
+                        "usr": "s:SS"
+                      }
+                    ],
+                    "usr": "s:SD"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:4zpdk7TrackerC14additionalDataSDyS2SGvs",
+                "mangledName": "$s4zpdk7TrackerC14additionalDataSDyS2SGvs",
+                "moduleName": "zpdk",
+                "implicit": true,
+                "declAttributes": [
+                  "Final"
+                ],
+                "accessorKind": "set"
+              },
+              {
+                "kind": "Accessor",
+                "name": "Modify",
+                "printedName": "Modify()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:4zpdk7TrackerC14additionalDataSDyS2SGvM",
+                "mangledName": "$s4zpdk7TrackerC14additionalDataSDyS2SGvM",
+                "moduleName": "zpdk",
+                "implicit": true,
+                "declAttributes": [
+                  "Final"
+                ],
+                "accessorKind": "_modify"
+              }
+            ]
+          },
+          {
+            "kind": "Var",
+            "name": "flushBehaviour",
+            "printedName": "flushBehaviour",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "FlushBehaviour",
+                "printedName": "zpdk.FlushBehaviour",
+                "usr": "s:4zpdk14FlushBehaviourO"
+              }
+            ],
+            "declKind": "Var",
+            "usr": "s:4zpdk7TrackerC14flushBehaviourAA05FlushD0Ovp",
+            "mangledName": "$s4zpdk7TrackerC14flushBehaviourAA05FlushD0Ovp",
+            "moduleName": "zpdk",
+            "declAttributes": [
+              "HasInitialValue",
+              "Final",
+              "HasStorage",
+              "AccessControl",
+              "RawDocComment"
+            ],
+            "hasStorage": true,
+            "accessors": [
+              {
+                "kind": "Accessor",
+                "name": "Get",
+                "printedName": "Get()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "FlushBehaviour",
+                    "printedName": "zpdk.FlushBehaviour",
+                    "usr": "s:4zpdk14FlushBehaviourO"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:4zpdk7TrackerC14flushBehaviourAA05FlushD0Ovg",
+                "mangledName": "$s4zpdk7TrackerC14flushBehaviourAA05FlushD0Ovg",
+                "moduleName": "zpdk",
+                "implicit": true,
+                "declAttributes": [
+                  "Final"
+                ],
+                "accessorKind": "get"
+              },
+              {
+                "kind": "Accessor",
+                "name": "Set",
+                "printedName": "Set()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "FlushBehaviour",
+                    "printedName": "zpdk.FlushBehaviour",
+                    "usr": "s:4zpdk14FlushBehaviourO"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:4zpdk7TrackerC14flushBehaviourAA05FlushD0Ovs",
+                "mangledName": "$s4zpdk7TrackerC14flushBehaviourAA05FlushD0Ovs",
+                "moduleName": "zpdk",
+                "implicit": true,
+                "declAttributes": [
+                  "Final"
+                ],
+                "accessorKind": "set"
+              },
+              {
+                "kind": "Accessor",
+                "name": "Modify",
+                "printedName": "Modify()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:4zpdk7TrackerC14flushBehaviourAA05FlushD0OvM",
+                "mangledName": "$s4zpdk7TrackerC14flushBehaviourAA05FlushD0OvM",
+                "moduleName": "zpdk",
+                "implicit": true,
+                "declAttributes": [
+                  "Final"
+                ],
+                "accessorKind": "_modify"
+              }
+            ]
+          },
+          {
+            "kind": "Function",
+            "name": "start",
+            "printedName": "start()",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "c:@M@zpdk@objc(cs)Tracker(im)start",
+            "mangledName": "$s4zpdk7TrackerC5startyyF",
+            "moduleName": "zpdk",
+            "declAttributes": [
+              "Final",
+              "AccessControl",
+              "ObjC",
+              "RawDocComment"
+            ],
+            "funcSelfKind": "NonMutating"
+          },
+          {
+            "kind": "Function",
+            "name": "track",
+            "printedName": "track(event:)",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "TrackerEventType",
+                "printedName": "zpdk.TrackerEventType",
+                "usr": "s:4zpdk16TrackerEventTypeP"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "s:4zpdk7TrackerC5track5eventyAA0B9EventType_p_tF",
+            "mangledName": "$s4zpdk7TrackerC5track5eventyAA0B9EventType_p_tF",
+            "moduleName": "zpdk",
+            "declAttributes": [
+              "Final",
+              "AccessControl",
+              "RawDocComment"
+            ],
+            "funcSelfKind": "NonMutating"
+          },
+          {
+            "kind": "Function",
+            "name": "flush",
+            "printedName": "flush()",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "s:4zpdk7TrackerC5flushyyF",
+            "mangledName": "$s4zpdk7TrackerC5flushyyF",
+            "moduleName": "zpdk",
+            "declAttributes": [
+              "Final",
+              "AccessControl",
+              "RawDocComment"
+            ],
+            "funcSelfKind": "NonMutating"
+          },
+          {
+            "kind": "Constructor",
+            "name": "init",
+            "printedName": "init()",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Tracker",
+                "printedName": "zpdk.Tracker",
+                "usr": "c:@M@zpdk@objc(cs)Tracker"
+              }
+            ],
+            "declKind": "Constructor",
+            "usr": "c:@M@zpdk@objc(cs)Tracker(im)init",
+            "mangledName": "$s4zpdk7TrackerCACycfc",
+            "moduleName": "zpdk",
+            "overriding": true,
+            "implicit": true,
+            "objc_name": "init",
+            "declAttributes": [
+              "Dynamic",
+              "ObjC",
+              "Override"
+            ],
+            "init_kind": "Designated"
+          },
+          {
+            "kind": "Var",
+            "name": "shared",
+            "printedName": "shared",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Tracker",
+                "printedName": "zpdk.Tracker",
+                "usr": "c:@M@zpdk@objc(cs)Tracker"
+              }
+            ],
+            "declKind": "Var",
+            "usr": "c:@CM@zpdk@objc(cs)Tracker(cpy)shared",
+            "mangledName": "$s4zpdk7TrackerC6sharedACvpZ",
+            "moduleName": "zpdk",
+            "static": true,
+            "declAttributes": [
+              "HasInitialValue",
+              "Final",
+              "HasStorage",
+              "ObjC"
+            ],
+            "isFromExtension": true,
+            "isLet": true,
+            "hasStorage": true,
+            "accessors": [
+              {
+                "kind": "Accessor",
+                "name": "Get",
+                "printedName": "Get()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Tracker",
+                    "printedName": "zpdk.Tracker",
+                    "usr": "c:@M@zpdk@objc(cs)Tracker"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "c:@CM@zpdk@objc(cs)Tracker(cm)shared",
+                "mangledName": "$s4zpdk7TrackerC6sharedACvgZ",
+                "moduleName": "zpdk",
+                "static": true,
+                "implicit": true,
+                "declAttributes": [
+                  "ObjC",
+                  "Final"
+                ],
+                "isFromExtension": true,
+                "accessorKind": "get"
+              }
+            ]
+          },
+          {
+            "kind": "Function",
+            "name": "trackEvent",
+            "printedName": "trackEvent(_:metadata:)",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "String",
+                "printedName": "Swift.String",
+                "usr": "s:SS"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "Optional",
+                "printedName": "[Swift.String : Any]?",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Dictionary",
+                    "printedName": "[Swift.String : Any]",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "String",
+                        "printedName": "Swift.String",
+                        "usr": "s:SS"
+                      },
+                      {
+                        "kind": "TypeNominal",
+                        "name": "ProtocolComposition",
+                        "printedName": "Any"
+                      }
+                    ],
+                    "usr": "s:SD"
+                  }
+                ],
+                "usr": "s:Sq"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "c:@CM@zpdk@objc(cs)Tracker(im)trackEvent:metadata:",
+            "mangledName": "$s4zpdk7TrackerC10trackEvent_8metadataySS_SDySSypGSgtF",
+            "moduleName": "zpdk",
+            "declAttributes": [
+              "Final",
+              "ObjC"
+            ],
+            "isFromExtension": true,
+            "funcSelfKind": "NonMutating"
+          },
+          {
+            "kind": "Function",
+            "name": "startAndTrackSession",
+            "printedName": "startAndTrackSession(url:)",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "Optional",
+                "printedName": "Foundation.URL?",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "URL",
+                    "printedName": "Foundation.URL",
+                    "usr": "s:10Foundation3URLV"
+                  }
+                ],
+                "hasDefaultArg": true,
+                "usr": "s:Sq"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "s:4zpdk7TrackerC20startAndTrackSession3urly10Foundation3URLVSg_tF",
+            "mangledName": "$s4zpdk7TrackerC20startAndTrackSession3urly10Foundation3URLVSg_tF",
+            "moduleName": "zpdk",
+            "declAttributes": [
+              "Final"
+            ],
+            "isFromExtension": true,
+            "funcSelfKind": "NonMutating"
+          },
+          {
+            "kind": "Var",
+            "name": "zaloID",
+            "printedName": "zaloID",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Optional",
+                "printedName": "Swift.String?",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "String",
+                    "printedName": "Swift.String",
+                    "usr": "s:SS"
+                  }
+                ],
+                "usr": "s:Sq"
+              }
+            ],
+            "declKind": "Var",
+            "usr": "s:4zpdk7TrackerC6zaloIDSSSgvp",
+            "mangledName": "$s4zpdk7TrackerC6zaloIDSSSgvp",
+            "moduleName": "zpdk",
+            "declAttributes": [
+              "Final"
+            ],
+            "isFromExtension": true,
+            "accessors": [
+              {
+                "kind": "Accessor",
+                "name": "Get",
+                "printedName": "Get()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Optional",
+                    "printedName": "Swift.String?",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "String",
+                        "printedName": "Swift.String",
+                        "usr": "s:SS"
+                      }
+                    ],
+                    "usr": "s:Sq"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:4zpdk7TrackerC6zaloIDSSSgvg",
+                "mangledName": "$s4zpdk7TrackerC6zaloIDSSSgvg",
+                "moduleName": "zpdk",
+                "declAttributes": [
+                  "Final"
+                ],
+                "isFromExtension": true,
+                "accessorKind": "get"
+              },
+              {
+                "kind": "Accessor",
+                "name": "Set",
+                "printedName": "Set()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Optional",
+                    "printedName": "Swift.String?",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "String",
+                        "printedName": "Swift.String",
+                        "usr": "s:SS"
+                      }
+                    ],
+                    "usr": "s:Sq"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:4zpdk7TrackerC6zaloIDSSSgvs",
+                "mangledName": "$s4zpdk7TrackerC6zaloIDSSSgvs",
+                "moduleName": "zpdk",
+                "declAttributes": [
+                  "Final"
+                ],
+                "isFromExtension": true,
+                "accessorKind": "set"
+              },
+              {
+                "kind": "Accessor",
+                "name": "Modify",
+                "printedName": "Modify()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:4zpdk7TrackerC6zaloIDSSSgvM",
+                "mangledName": "$s4zpdk7TrackerC6zaloIDSSSgvM",
+                "moduleName": "zpdk",
+                "implicit": true,
+                "declAttributes": [
+                  "Final"
+                ],
+                "isFromExtension": true,
+                "accessorKind": "_modify"
+              }
+            ]
+          }
+        ],
+        "declKind": "Class",
+        "usr": "c:@M@zpdk@objc(cs)Tracker",
+        "mangledName": "$s4zpdk7TrackerC",
+        "moduleName": "zpdk",
+        "declAttributes": [
+          "Final",
+          "AccessControl",
+          "RawDocComment",
+          "ObjC"
+        ],
+        "superclassUsr": "c:objc(cs)NSObject",
+        "inheritsConvenienceInitializers": true,
+        "superclassNames": [
+          "ObjectiveC.NSObject"
+        ],
+        "conformances": [
+          {
+            "kind": "Conformance",
+            "name": "TrackerType",
+            "printedName": "TrackerType",
+            "usr": "s:4zpdk11TrackerTypeP",
+            "mangledName": "$s4zpdk11TrackerTypeP"
+          },
+          {
+            "kind": "Conformance",
+            "name": "Equatable",
+            "printedName": "Equatable",
+            "usr": "s:SQ",
+            "mangledName": "$sSQ"
+          },
+          {
+            "kind": "Conformance",
+            "name": "Hashable",
+            "printedName": "Hashable",
+            "usr": "s:SH",
+            "mangledName": "$sSH"
+          },
+          {
+            "kind": "Conformance",
+            "name": "CVarArg",
+            "printedName": "CVarArg",
+            "usr": "s:s7CVarArgP",
+            "mangledName": "$ss7CVarArgP"
+          },
+          {
+            "kind": "Conformance",
+            "name": "_KeyValueCodingAndObservingPublishing",
+            "printedName": "_KeyValueCodingAndObservingPublishing",
+            "usr": "s:10Foundation37_KeyValueCodingAndObservingPublishingP",
+            "mangledName": "$s10Foundation37_KeyValueCodingAndObservingPublishingP"
+          },
+          {
+            "kind": "Conformance",
+            "name": "_KeyValueCodingAndObserving",
+            "printedName": "_KeyValueCodingAndObserving",
+            "usr": "s:10Foundation27_KeyValueCodingAndObservingP",
+            "mangledName": "$s10Foundation27_KeyValueCodingAndObservingP"
+          },
+          {
+            "kind": "Conformance",
+            "name": "CustomStringConvertible",
+            "printedName": "CustomStringConvertible",
+            "usr": "s:s23CustomStringConvertibleP",
+            "mangledName": "$ss23CustomStringConvertibleP"
+          },
+          {
+            "kind": "Conformance",
+            "name": "CustomDebugStringConvertible",
+            "printedName": "CustomDebugStringConvertible",
+            "usr": "s:s28CustomDebugStringConvertibleP",
+            "mangledName": "$ss28CustomDebugStringConvertibleP"
+          }
+        ]
+      },
+      {
+        "kind": "TypeDecl",
+        "name": "UIDevice",
+        "printedName": "UIDevice",
+        "children": [
+          {
+            "kind": "Var",
+            "name": "modelName",
+            "printedName": "modelName",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "String",
+                "printedName": "Swift.String",
+                "usr": "s:SS"
+              }
+            ],
+            "declKind": "Var",
+            "usr": "s:So8UIDeviceC4zpdkE9modelNameSSvp",
+            "mangledName": "$sSo8UIDeviceC4zpdkE9modelNameSSvp",
+            "moduleName": "zpdk",
+            "declAttributes": [
+              "Custom"
+            ],
+            "isFromExtension": true,
+            "accessors": [
+              {
+                "kind": "Accessor",
+                "name": "Get",
+                "printedName": "Get()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "String",
+                    "printedName": "Swift.String",
+                    "usr": "s:SS"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:So8UIDeviceC4zpdkE9modelNameSSvg",
+                "mangledName": "$sSo8UIDeviceC4zpdkE9modelNameSSvg",
+                "moduleName": "zpdk",
+                "isFromExtension": true,
+                "accessorKind": "get"
+              }
+            ]
+          }
+        ],
+        "declKind": "Class",
+        "usr": "c:objc(cs)UIDevice",
+        "moduleName": "UIKit",
+        "isOpen": true,
+        "intro_iOS": "2.0",
+        "objc_name": "UIDevice",
+        "declAttributes": [
+          "Available",
+          "ObjC",
+          "NonSendable",
+          "Custom",
+          "Dynamic"
+        ],
+        "superclassUsr": "c:objc(cs)NSObject",
+        "isExternal": true,
+        "inheritsConvenienceInitializers": true,
+        "superclassNames": [
+          "ObjectiveC.NSObject"
+        ],
+        "conformances": [
+          {
+            "kind": "Conformance",
+            "name": "Equatable",
+            "printedName": "Equatable",
+            "usr": "s:SQ",
+            "mangledName": "$sSQ"
+          },
+          {
+            "kind": "Conformance",
+            "name": "Hashable",
+            "printedName": "Hashable",
+            "usr": "s:SH",
+            "mangledName": "$sSH"
+          },
+          {
+            "kind": "Conformance",
+            "name": "CVarArg",
+            "printedName": "CVarArg",
+            "usr": "s:s7CVarArgP",
+            "mangledName": "$ss7CVarArgP"
+          },
+          {
+            "kind": "Conformance",
+            "name": "_KeyValueCodingAndObservingPublishing",
+            "printedName": "_KeyValueCodingAndObservingPublishing",
+            "usr": "s:10Foundation37_KeyValueCodingAndObservingPublishingP",
+            "mangledName": "$s10Foundation37_KeyValueCodingAndObservingPublishingP"
+          },
+          {
+            "kind": "Conformance",
+            "name": "_KeyValueCodingAndObserving",
+            "printedName": "_KeyValueCodingAndObserving",
+            "usr": "s:10Foundation27_KeyValueCodingAndObservingP",
+            "mangledName": "$s10Foundation27_KeyValueCodingAndObservingP"
+          },
+          {
+            "kind": "Conformance",
+            "name": "CustomStringConvertible",
+            "printedName": "CustomStringConvertible",
+            "usr": "s:s23CustomStringConvertibleP",
+            "mangledName": "$ss23CustomStringConvertibleP"
+          },
+          {
+            "kind": "Conformance",
+            "name": "CustomDebugStringConvertible",
+            "printedName": "CustomDebugStringConvertible",
+            "usr": "s:s28CustomDebugStringConvertibleP",
+            "mangledName": "$ss28CustomDebugStringConvertibleP"
+          }
+        ]
+      },
+      {
+        "kind": "TypeDecl",
+        "name": "Array",
+        "printedName": "Array",
+        "declKind": "Struct",
+        "usr": "s:Sa",
+        "mangledName": "$sSa",
+        "moduleName": "Swift",
+        "genericSig": "<τ_0_0>",
+        "sugared_genericSig": "<Element>",
+        "declAttributes": [
+          "Frozen"
+        ],
+        "isExternal": true,
+        "conformances": [
+          {
+            "kind": "Conformance",
+            "name": "_DestructorSafeContainer",
+            "printedName": "_DestructorSafeContainer",
+            "usr": "s:s24_DestructorSafeContainerP",
+            "mangledName": "$ss24_DestructorSafeContainerP"
+          },
+          {
+            "kind": "Conformance",
+            "name": "ProviderObjectType",
+            "printedName": "ProviderObjectType",
+            "usr": "s:4zpdk18ProviderObjectTypeP",
+            "mangledName": "$s4zpdk18ProviderObjectTypeP"
+          },
+          {
+            "kind": "Conformance",
+            "name": "Equatable",
+            "printedName": "Equatable",
+            "usr": "s:SQ",
+            "mangledName": "$sSQ"
+          },
+          {
+            "kind": "Conformance",
+            "name": "_ArrayProtocol",
+            "printedName": "_ArrayProtocol",
+            "children": [
+              {
+                "kind": "TypeWitness",
+                "name": "_Buffer",
+                "printedName": "_Buffer",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "_ArrayBuffer",
+                    "printedName": "Swift._ArrayBuffer<τ_0_0>",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "GenericTypeParam",
+                        "printedName": "τ_0_0"
+                      }
+                    ],
+                    "usr": "s:s12_ArrayBufferV"
+                  }
+                ]
+              }
+            ],
+            "usr": "s:s14_ArrayProtocolP",
+            "mangledName": "$ss14_ArrayProtocolP"
+          },
+          {
+            "kind": "Conformance",
+            "name": "RandomAccessCollection",
+            "printedName": "RandomAccessCollection",
+            "children": [
+              {
+                "kind": "TypeWitness",
+                "name": "Element",
+                "printedName": "Element",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "GenericTypeParam",
+                    "printedName": "τ_0_0"
+                  }
+                ]
+              },
+              {
+                "kind": "TypeWitness",
+                "name": "Index",
+                "printedName": "Index",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Int",
+                    "printedName": "Swift.Int",
+                    "usr": "s:Si"
+                  }
+                ]
+              },
+              {
+                "kind": "TypeWitness",
+                "name": "SubSequence",
+                "printedName": "SubSequence",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "ArraySlice",
+                    "printedName": "Swift.ArraySlice<τ_0_0>",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "GenericTypeParam",
+                        "printedName": "τ_0_0"
+                      }
+                    ],
+                    "usr": "s:s10ArraySliceV"
+                  }
+                ]
+              },
+              {
+                "kind": "TypeWitness",
+                "name": "Indices",
+                "printedName": "Indices",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Range",
+                    "printedName": "Swift.Range<Swift.Int>",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Int",
+                        "printedName": "Swift.Int",
+                        "usr": "s:Si"
+                      }
+                    ],
+                    "usr": "s:Sn"
+                  }
+                ]
+              }
+            ],
+            "usr": "s:Sk",
+            "mangledName": "$sSk"
+          },
+          {
+            "kind": "Conformance",
+            "name": "MutableCollection",
+            "printedName": "MutableCollection",
+            "children": [
+              {
+                "kind": "TypeWitness",
+                "name": "Element",
+                "printedName": "Element",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "GenericTypeParam",
+                    "printedName": "τ_0_0"
+                  }
+                ]
+              },
+              {
+                "kind": "TypeWitness",
+                "name": "Index",
+                "printedName": "Index",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Int",
+                    "printedName": "Swift.Int",
+                    "usr": "s:Si"
+                  }
+                ]
+              },
+              {
+                "kind": "TypeWitness",
+                "name": "SubSequence",
+                "printedName": "SubSequence",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "ArraySlice",
+                    "printedName": "Swift.ArraySlice<τ_0_0>",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "GenericTypeParam",
+                        "printedName": "τ_0_0"
+                      }
+                    ],
+                    "usr": "s:s10ArraySliceV"
+                  }
+                ]
+              }
+            ],
+            "usr": "s:SM",
+            "mangledName": "$sSM"
+          },
+          {
+            "kind": "Conformance",
+            "name": "BidirectionalCollection",
+            "printedName": "BidirectionalCollection",
+            "children": [
+              {
+                "kind": "TypeWitness",
+                "name": "Element",
+                "printedName": "Element",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "GenericTypeParam",
+                    "printedName": "τ_0_0"
+                  }
+                ]
+              },
+              {
+                "kind": "TypeWitness",
+                "name": "Index",
+                "printedName": "Index",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Int",
+                    "printedName": "Swift.Int",
+                    "usr": "s:Si"
+                  }
+                ]
+              },
+              {
+                "kind": "TypeWitness",
+                "name": "SubSequence",
+                "printedName": "SubSequence",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "ArraySlice",
+                    "printedName": "Swift.ArraySlice<τ_0_0>",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "GenericTypeParam",
+                        "printedName": "τ_0_0"
+                      }
+                    ],
+                    "usr": "s:s10ArraySliceV"
+                  }
+                ]
+              },
+              {
+                "kind": "TypeWitness",
+                "name": "Indices",
+                "printedName": "Indices",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Range",
+                    "printedName": "Swift.Range<Swift.Int>",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Int",
+                        "printedName": "Swift.Int",
+                        "usr": "s:Si"
+                      }
+                    ],
+                    "usr": "s:Sn"
+                  }
+                ]
+              }
+            ],
+            "usr": "s:SK",
+            "mangledName": "$sSK"
+          },
+          {
+            "kind": "Conformance",
+            "name": "Collection",
+            "printedName": "Collection",
+            "children": [
+              {
+                "kind": "TypeWitness",
+                "name": "Element",
+                "printedName": "Element",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "GenericTypeParam",
+                    "printedName": "τ_0_0"
+                  }
+                ]
+              },
+              {
+                "kind": "TypeWitness",
+                "name": "Index",
+                "printedName": "Index",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Int",
+                    "printedName": "Swift.Int",
+                    "usr": "s:Si"
+                  }
+                ]
+              },
+              {
+                "kind": "TypeWitness",
+                "name": "Iterator",
+                "printedName": "Iterator",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "IndexingIterator",
+                    "printedName": "Swift.IndexingIterator<[τ_0_0]>",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Array",
+                        "printedName": "[τ_0_0]",
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "GenericTypeParam",
+                            "printedName": "τ_0_0"
+                          }
+                        ],
+                        "usr": "s:Sa"
+                      }
+                    ],
+                    "usr": "s:s16IndexingIteratorV"
+                  }
+                ]
+              },
+              {
+                "kind": "TypeWitness",
+                "name": "SubSequence",
+                "printedName": "SubSequence",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "ArraySlice",
+                    "printedName": "Swift.ArraySlice<τ_0_0>",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "GenericTypeParam",
+                        "printedName": "τ_0_0"
+                      }
+                    ],
+                    "usr": "s:s10ArraySliceV"
+                  }
+                ]
+              },
+              {
+                "kind": "TypeWitness",
+                "name": "Indices",
+                "printedName": "Indices",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Range",
+                    "printedName": "Swift.Range<Swift.Int>",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Int",
+                        "printedName": "Swift.Int",
+                        "usr": "s:Si"
+                      }
+                    ],
+                    "usr": "s:Sn"
+                  }
+                ]
+              }
+            ],
+            "usr": "s:Sl",
+            "mangledName": "$sSl"
+          },
+          {
+            "kind": "Conformance",
+            "name": "Sequence",
+            "printedName": "Sequence",
+            "children": [
+              {
+                "kind": "TypeWitness",
+                "name": "Element",
+                "printedName": "Element",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "GenericTypeParam",
+                    "printedName": "τ_0_0"
+                  }
+                ]
+              },
+              {
+                "kind": "TypeWitness",
+                "name": "Iterator",
+                "printedName": "Iterator",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "IndexingIterator",
+                    "printedName": "Swift.IndexingIterator<[τ_0_0]>",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Array",
+                        "printedName": "[τ_0_0]",
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "GenericTypeParam",
+                            "printedName": "τ_0_0"
+                          }
+                        ],
+                        "usr": "s:Sa"
+                      }
+                    ],
+                    "usr": "s:s16IndexingIteratorV"
+                  }
+                ]
+              }
+            ],
+            "usr": "s:ST",
+            "mangledName": "$sST"
+          },
+          {
+            "kind": "Conformance",
+            "name": "ExpressibleByArrayLiteral",
+            "printedName": "ExpressibleByArrayLiteral",
+            "children": [
+              {
+                "kind": "TypeWitness",
+                "name": "ArrayLiteralElement",
+                "printedName": "ArrayLiteralElement",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "GenericTypeParam",
+                    "printedName": "τ_0_0"
+                  }
+                ]
+              }
+            ],
+            "usr": "s:s25ExpressibleByArrayLiteralP",
+            "mangledName": "$ss25ExpressibleByArrayLiteralP"
+          },
+          {
+            "kind": "Conformance",
+            "name": "RangeReplaceableCollection",
+            "printedName": "RangeReplaceableCollection",
+            "children": [
+              {
+                "kind": "TypeWitness",
+                "name": "SubSequence",
+                "printedName": "SubSequence",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "ArraySlice",
+                    "printedName": "Swift.ArraySlice<τ_0_0>",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "GenericTypeParam",
+                        "printedName": "τ_0_0"
+                      }
+                    ],
+                    "usr": "s:s10ArraySliceV"
+                  }
+                ]
+              }
+            ],
+            "usr": "s:Sm",
+            "mangledName": "$sSm"
+          },
+          {
+            "kind": "Conformance",
+            "name": "CustomReflectable",
+            "printedName": "CustomReflectable",
+            "usr": "s:s17CustomReflectableP",
+            "mangledName": "$ss17CustomReflectableP"
+          },
+          {
+            "kind": "Conformance",
+            "name": "CustomStringConvertible",
+            "printedName": "CustomStringConvertible",
+            "usr": "s:s23CustomStringConvertibleP",
+            "mangledName": "$ss23CustomStringConvertibleP"
+          },
+          {
+            "kind": "Conformance",
+            "name": "CustomDebugStringConvertible",
+            "printedName": "CustomDebugStringConvertible",
+            "usr": "s:s28CustomDebugStringConvertibleP",
+            "mangledName": "$ss28CustomDebugStringConvertibleP"
+          },
+          {
+            "kind": "Conformance",
+            "name": "Hashable",
+            "printedName": "Hashable",
+            "usr": "s:SH",
+            "mangledName": "$sSH"
+          },
+          {
+            "kind": "Conformance",
+            "name": "_HasCustomAnyHashableRepresentation",
+            "printedName": "_HasCustomAnyHashableRepresentation",
+            "usr": "s:s35_HasCustomAnyHashableRepresentationP",
+            "mangledName": "$ss35_HasCustomAnyHashableRepresentationP"
+          },
+          {
+            "kind": "Conformance",
+            "name": "Sendable",
+            "printedName": "Sendable",
+            "usr": "s:s8SendableP",
+            "mangledName": "$ss8SendableP"
+          },
+          {
+            "kind": "Conformance",
+            "name": "Encodable",
+            "printedName": "Encodable",
+            "usr": "s:SE",
+            "mangledName": "$sSE"
+          },
+          {
+            "kind": "Conformance",
+            "name": "Decodable",
+            "printedName": "Decodable",
+            "usr": "s:Se",
+            "mangledName": "$sSe"
+          },
+          {
+            "kind": "Conformance",
+            "name": "_HasContiguousBytes",
+            "printedName": "_HasContiguousBytes",
+            "usr": "s:s19_HasContiguousBytesP",
+            "mangledName": "$ss19_HasContiguousBytesP"
+          },
+          {
+            "kind": "Conformance",
+            "name": "DataProtocol",
+            "printedName": "DataProtocol",
+            "children": [
+              {
+                "kind": "TypeWitness",
+                "name": "Regions",
+                "printedName": "Regions",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "CollectionOfOne",
+                    "printedName": "Swift.CollectionOfOne<[Swift.UInt8]>",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Array",
+                        "printedName": "[Swift.UInt8]",
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "UInt8",
+                            "printedName": "Swift.UInt8",
+                            "usr": "s:s5UInt8V"
+                          }
+                        ],
+                        "usr": "s:Sa"
+                      }
+                    ],
+                    "usr": "s:s15CollectionOfOneV"
+                  }
+                ]
+              }
+            ],
+            "usr": "s:10Foundation12DataProtocolP",
+            "mangledName": "$s10Foundation12DataProtocolP"
+          },
+          {
+            "kind": "Conformance",
+            "name": "MutableDataProtocol",
+            "printedName": "MutableDataProtocol",
+            "usr": "s:10Foundation19MutableDataProtocolP",
+            "mangledName": "$s10Foundation19MutableDataProtocolP"
+          },
+          {
+            "kind": "Conformance",
+            "name": "EncodableWithConfiguration",
+            "printedName": "EncodableWithConfiguration",
+            "children": [
+              {
+                "kind": "TypeWitness",
+                "name": "EncodingConfiguration",
+                "printedName": "EncodingConfiguration",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "DependentMember",
+                    "printedName": "τ_0_0.EncodingConfiguration"
+                  }
+                ]
+              }
+            ],
+            "usr": "s:10Foundation26EncodableWithConfigurationP",
+            "mangledName": "$s10Foundation26EncodableWithConfigurationP"
+          },
+          {
+            "kind": "Conformance",
+            "name": "DecodableWithConfiguration",
+            "printedName": "DecodableWithConfiguration",
+            "children": [
+              {
+                "kind": "TypeWitness",
+                "name": "DecodingConfiguration",
+                "printedName": "DecodingConfiguration",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "DependentMember",
+                    "printedName": "τ_0_0.DecodingConfiguration"
+                  }
+                ]
+              }
+            ],
+            "usr": "s:10Foundation26DecodableWithConfigurationP",
+            "mangledName": "$s10Foundation26DecodableWithConfigurationP"
+          },
+          {
+            "kind": "Conformance",
+            "name": "_ObjectiveCBridgeable",
+            "printedName": "_ObjectiveCBridgeable",
+            "children": [
+              {
+                "kind": "TypeWitness",
+                "name": "_ObjectiveCType",
+                "printedName": "_ObjectiveCType",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "NSArray",
+                    "printedName": "Foundation.NSArray",
+                    "usr": "c:objc(cs)NSArray"
+                  }
+                ]
+              }
+            ],
+            "usr": "s:s21_ObjectiveCBridgeableP",
+            "mangledName": "$ss21_ObjectiveCBridgeableP"
+          },
+          {
+            "kind": "Conformance",
+            "name": "CVarArg",
+            "printedName": "CVarArg",
+            "usr": "s:s7CVarArgP",
+            "mangledName": "$ss7CVarArgP"
+          },
+          {
+            "kind": "Conformance",
+            "name": "ContiguousBytes",
+            "printedName": "ContiguousBytes",
+            "usr": "s:10Foundation15ContiguousBytesP",
+            "mangledName": "$s10Foundation15ContiguousBytesP"
+          }
+        ]
+      }
+    ],
+    "json_format_version": 8
+  },
+  "ConstValues": [
+    {
+      "filePath": "\/Users\/lap14554\/Desktop\/sdk-zpdk\/iosv3\/Tracker\/SessionStore.swift",
+      "kind": "BooleanLiteral",
+      "offset": 205,
+      "length": 5,
+      "value": "false"
+    },
+    {
+      "filePath": "\/Users\/lap14554\/Desktop\/sdk-zpdk\/iosv3\/Tracker\/Log.swift",
+      "kind": "StringLiteral",
+      "offset": 70,
+      "length": 3,
+      "value": "\" \""
+    },
+    {
+      "filePath": "\/Users\/lap14554\/Desktop\/sdk-zpdk\/iosv3\/Tracker\/Log.swift",
+      "kind": "StringLiteral",
+      "offset": 96,
+      "length": 4,
+      "value": "\"\n\""
+    },
+    {
+      "filePath": "\/Users\/lap14554\/Desktop\/sdk-zpdk\/iosv3\/Tracker\/TrackerServer+Default.swift",
+      "kind": "Dictionary",
+      "offset": 680,
+      "length": 3,
+      "value": "[]"
+    },
+    {
+      "filePath": "\/Users\/lap14554\/Desktop\/sdk-zpdk\/iosv3\/Tracker\/TrackerServer+Default.swift",
+      "kind": "StringLiteral",
+      "offset": 824,
+      "length": 43,
+      "value": "\"https:\/\/api.zalopay.vn\/v2\/tracking\/events\""
+    },
+    {
+      "filePath": "\/Users\/lap14554\/Desktop\/sdk-zpdk\/iosv3\/Tracker\/Configuration.swift",
+      "kind": "IntegerLiteral",
+      "offset": 307,
+      "length": 1,
+      "value": "3"
+    },
+    {
+      "filePath": "\/Users\/lap14554\/Desktop\/sdk-zpdk\/iosv3\/Tracker\/Configuration.swift",
+      "kind": "IntegerLiteral",
+      "offset": 341,
+      "length": 2,
+      "value": "15"
+    },
+    {
+      "filePath": "\/Users\/lap14554\/Desktop\/sdk-zpdk\/iosv3\/Tracker\/Configuration.swift",
+      "kind": "IntegerLiteral",
+      "offset": 374,
+      "length": 5,
+      "value": "1000"
+    },
+    {
+      "filePath": "\/Users\/lap14554\/Desktop\/sdk-zpdk\/iosv3\/Tracker\/TrackerExtension.swift",
+      "kind": "StringLiteral",
+      "offset": 108,
+      "length": 29,
+      "value": "\"https:\/\/tracking.zalopay.vn\""
+    },
+    {
+      "filePath": "\/Users\/lap14554\/Desktop\/sdk-zpdk\/iosv3\/Tracker\/TrackerExtension.swift",
+      "kind": "StringLiteral",
+      "offset": 338,
+      "length": 20,
+      "value": "\"v2\/tracking\/events\""
+    },
+    {
+      "filePath": "\/Users\/lap14554\/Desktop\/sdk-zpdk\/iosv3\/Tracker\/TrackerExtension.swift",
+      "kind": "StringLiteral",
+      "offset": 604,
+      "length": 16,
+      "value": "\"x-device-model\""
+    },
+    {
+      "filePath": "\/Users\/lap14554\/Desktop\/sdk-zpdk\/iosv3\/Tracker\/TrackerExtension.swift",
+      "kind": "StringLiteral",
+      "offset": 733,
+      "length": 15,
+      "value": "\"x-app-version\""
+    },
+    {
+      "filePath": "\/Users\/lap14554\/Desktop\/sdk-zpdk\/iosv3\/Tracker\/TrackerExtension.swift",
+      "kind": "StringLiteral",
+      "offset": 778,
+      "length": 28,
+      "value": "\"CFBundleShortVersionString\""
+    },
+    {
+      "filePath": "\/Users\/lap14554\/Desktop\/sdk-zpdk\/iosv3\/Tracker\/TrackerExtension.swift",
+      "kind": "StringLiteral",
+      "offset": 822,
+      "length": 2,
+      "value": "\"\""
+    },
+    {
+      "filePath": "\/Users\/lap14554\/Desktop\/sdk-zpdk\/iosv3\/Tracker\/Protocol\/Cancellable.swift",
+      "kind": "BooleanLiteral",
+      "offset": 191,
+      "length": 5,
+      "value": "false"
+    },
+    {
+      "filePath": "\/Users\/lap14554\/Desktop\/sdk-zpdk\/iosv3\/Tracker\/Protocol\/Cancellable.swift",
+      "kind": "BooleanLiteral",
+      "offset": 384,
+      "length": 5,
+      "value": "false"
+    },
+    {
+      "filePath": "\/Users\/lap14554\/Desktop\/sdk-zpdk\/iosv3\/Tracker\/Session.swift",
+      "kind": "IntegerLiteral",
+      "offset": 484,
+      "length": 1,
+      "value": "0"
+    },
+    {
+      "filePath": "\/Users\/lap14554\/Desktop\/sdk-zpdk\/iosv3\/Tracker\/Session.swift",
+      "kind": "StringLiteral",
+      "offset": 3177,
+      "length": 32,
+      "value": "\"yyyy-MM-dd'T'HH:mm:ss.SSSXXXXX\""
+    },
+    {
+      "filePath": "\/Users\/lap14554\/Desktop\/sdk-zpdk\/iosv3\/Tracker\/Events\/EventType.swift",
+      "kind": "IntegerLiteral",
+      "offset": 657,
+      "length": 1,
+      "value": "1"
+    },
+    {
+      "filePath": "\/Users\/lap14554\/Desktop\/sdk-zpdk\/iosv3\/Tracker\/Events\/EventType.swift",
+      "kind": "IntegerLiteral",
+      "offset": 705,
+      "length": 1,
+      "value": "2"
+    },
+    {
+      "filePath": "\/Users\/lap14554\/Desktop\/sdk-zpdk\/iosv3\/Tracker\/Events\/EventType.swift",
+      "kind": "IntegerLiteral",
+      "offset": 763,
+      "length": 1,
+      "value": "3"
+    },
+    {
+      "filePath": "\/Users\/lap14554\/Desktop\/sdk-zpdk\/iosv3\/Tracker\/Events\/EventType.swift",
+      "kind": "IntegerLiteral",
+      "offset": 657,
+      "length": 1,
+      "value": "1"
+    },
+    {
+      "filePath": "\/Users\/lap14554\/Desktop\/sdk-zpdk\/iosv3\/Tracker\/Events\/EventType.swift",
+      "kind": "IntegerLiteral",
+      "offset": 705,
+      "length": 1,
+      "value": "2"
+    },
+    {
+      "filePath": "\/Users\/lap14554\/Desktop\/sdk-zpdk\/iosv3\/Tracker\/Events\/EventType.swift",
+      "kind": "IntegerLiteral",
+      "offset": 763,
+      "length": 1,
+      "value": "3"
+    },
+    {
+      "filePath": "\/Users\/lap14554\/Desktop\/sdk-zpdk\/iosv3\/Tracker\/Events\/EventType.swift",
+      "kind": "IntegerLiteral",
+      "offset": 657,
+      "length": 1,
+      "value": "1"
+    },
+    {
+      "filePath": "\/Users\/lap14554\/Desktop\/sdk-zpdk\/iosv3\/Tracker\/Events\/EventType.swift",
+      "kind": "IntegerLiteral",
+      "offset": 705,
+      "length": 1,
+      "value": "2"
+    },
+    {
+      "filePath": "\/Users\/lap14554\/Desktop\/sdk-zpdk\/iosv3\/Tracker\/Events\/EventType.swift",
+      "kind": "IntegerLiteral",
+      "offset": 763,
+      "length": 1,
+      "value": "3"
+    },
+    {
+      "filePath": "\/Users\/lap14554\/Desktop\/sdk-zpdk\/iosv3\/Tracker\/Events\/EventType.swift",
+      "kind": "IntegerLiteral",
+      "offset": 1076,
+      "length": 1,
+      "value": "1"
+    },
+    {
+      "filePath": "\/Users\/lap14554\/Desktop\/sdk-zpdk\/iosv3\/Tracker\/Events\/EventType.swift",
+      "kind": "IntegerLiteral",
+      "offset": 1076,
+      "length": 1,
+      "value": "1"
+    },
+    {
+      "filePath": "\/Users\/lap14554\/Desktop\/sdk-zpdk\/iosv3\/Tracker\/Events\/EventType.swift",
+      "kind": "IntegerLiteral",
+      "offset": 1076,
+      "length": 1,
+      "value": "1"
+    },
+    {
+      "filePath": "\/Users\/lap14554\/Desktop\/sdk-zpdk\/iosv3\/Tracker\/Tracker.swift",
+      "kind": "StringLiteral",
+      "offset": 1756,
+      "length": 29,
+      "value": "\"\""
+    },
+    {
+      "filePath": "\/Users\/lap14554\/Desktop\/sdk-zpdk\/iosv3\/Tracker\/Tracker.swift",
+      "kind": "StringLiteral",
+      "offset": 1772,
+      "length": 1,
+      "value": "\".queue.mutex\""
+    },
+    {
+      "filePath": "\/Users\/lap14554\/Desktop\/sdk-zpdk\/iosv3\/Tracker\/Tracker.swift",
+      "kind": "StringLiteral",
+      "offset": 1837,
+      "length": 29,
+      "value": "\"\""
+    },
+    {
+      "filePath": "\/Users\/lap14554\/Desktop\/sdk-zpdk\/iosv3\/Tracker\/Tracker.swift",
+      "kind": "StringLiteral",
+      "offset": 1853,
+      "length": 1,
+      "value": "\".queue.flush\""
+    },
+    {
+      "filePath": "\/Users\/lap14554\/Desktop\/sdk-zpdk\/iosv3\/Tracker\/Tracker.swift",
+      "kind": "Array",
+      "offset": 1988,
+      "length": 2,
+      "value": "[]"
+    },
+    {
+      "filePath": "\/Users\/lap14554\/Desktop\/sdk-zpdk\/iosv3\/Tracker\/Tracker.swift",
+      "kind": "StringLiteral",
+      "offset": 2363,
+      "length": 2,
+      "value": "\"\""
+    },
+    {
+      "filePath": "\/Users\/lap14554\/Desktop\/sdk-zpdk\/iosv3\/Tracker\/Tracker.swift",
+      "kind": "StringLiteral",
+      "offset": 2407,
+      "length": 2,
+      "value": "\"\""
+    },
+    {
+      "filePath": "\/Users\/lap14554\/Desktop\/sdk-zpdk\/iosv3\/Tracker\/Tracker.swift",
+      "kind": "Dictionary",
+      "offset": 2602,
+      "length": 3,
+      "value": "[]"
+    }
+  ]
+}

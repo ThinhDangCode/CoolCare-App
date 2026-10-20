@@ -40,6 +40,16 @@ class BookingDetailRepository {
         .toList();
   }
 
+  Future<List<Map<String, dynamic>>> availableVouchers(String id) async {
+    final response = await _api.get('/customer/bookings/$id/available-vouchers', bearerToken: await _token());
+    if (response is! Map || response['data'] is! List) throw const FormatException('Invalid voucher list.');
+    return (response['data'] as List).map((v) => Map<String, dynamic>.from(v as Map)).toList();
+  }
+
+  Future<void> applyVoucher(String id, String code) async {
+    await _api.post('/customer/bookings/$id/voucher', bearerToken: await _token(), body: {'code': code});
+  }
+
   Future<void> cancel(String id, String reason) async {
     await _api.post(
       '/bookings/$id/cancel',
