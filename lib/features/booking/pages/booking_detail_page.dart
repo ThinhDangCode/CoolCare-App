@@ -533,8 +533,8 @@ class _BookingDetailPageState extends State<BookingDetailPage> {
                     );
                     if (mounted) _reload();
                   },
-                  icon: const Icon(Icons.payments_outlined),
-                  label: Text(bilingual('Thanh toán ngay', 'Pay Now')),
+                  icon: const Icon(Icons.receipt_long_outlined),
+                  label: Text(bilingual('Xem trạng thái thanh toán', 'View Payment Status')),
                 )
                     : OutlinedButton.icon(
                   onPressed: () async {

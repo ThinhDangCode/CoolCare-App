@@ -1,13 +1,10 @@
-
 import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 
 import '../repositories/payment_repository.dart';
-import '../services/zalopay_app_to_app.dart';
 import 'payment_history_page.dart';
 
 class PaymentPage extends StatefulWidget {
@@ -28,27 +25,27 @@ class _PaymentPageState extends State<PaymentPage>
     with WidgetsBindingObserver {
   final _repo = PaymentRepository();
 
-  StreamSubscription<ZaloPayResult>? _zaloSubscription;
-
   bool _busy = false;
   bool _loading = true;
-  bool _awaitingExternalPayment = false;
+  bool _refreshing = false;
+  bool _reconciling = false;
+  bool _hadPaymentSuccess = false;
 
   String _method = 'CASH';
+  bool _onlineChoice = false;
   String? _error;
   String? _notice;
+
+  // Thông tin checkout vừa tạo trong phiên (kỹ thuật viên).
   String? _checkoutUrl;
-  String? _activeVnpayPaymentId;
-  String? _activeZaloPaymentId;
-  String? _activeZaloToken;
-  bool _checkingReturn = false;
-  bool _reconcilingOnRefresh = false;
+  String? _techQrData;
+
+  Timer? _statusTimer;
 
   Map<String, dynamic>? _data;
   List<Map<String, dynamic>> _cash = [];
 
-  bool get _vi =>
-      Localizations.localeOf(context).languageCode == 'vi';
+  bool get _vi => Localizations.localeOf(context).languageCode == 'vi';
 
   String tr(String vi, String en) => _vi ? vi : en;
 
@@ -86,180 +83,25 @@ class _PaymentPageState extends State<PaymentPage>
 
     WidgetsBinding.instance.addObserver(this);
 
-    if (!widget.technician) {
-      _zaloSubscription =
-          ZaloPayAppToApp.paymentResults.listen(
-            _onZaloPayResult,
-            onError: (Object error) {
-              if (!mounted) return;
-
-              setState(() {
-                _error = error.toString();
-              });
-            },
-          );
-    }
-
     _refresh();
+    _statusTimer = Timer.periodic(const Duration(seconds: 5), (_) {
+      if (mounted && !_busy && !_refreshing) _refresh();
+    });
   }
 
   @override
   void dispose() {
-    _zaloSubscription?.cancel();
+    _statusTimer?.cancel();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
 
   @override
-  void didChangeAppLifecycleState(
-      AppLifecycleState state,
-      ) {
-    if (state == AppLifecycleState.resumed && !widget.technician) {
-      _checkReturningPayment();
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // Quay lại app (ví dụ sau khi thanh toán ở app ZaloPay): tải lại ngay.
+    if (state == AppLifecycleState.resumed && !_refreshing) {
+      _refresh();
     }
-  }
-
-  Future<void> _checkReturningPayment() async {
-    if (_checkingReturn) return;
-    _checkingReturn = true;
-    try {
-    final id = _activeZaloPaymentId;
-
-    if (id != null) {
-      try {
-        await _repo.reconcileZaloPay(id);
-      } catch (_) {
-        // Vẫn tải trạng thái hiện có từ backend.
-      }
-    }
-
-    await _refresh();
-    if (!mounted) return;
-    final settled = _payments().any((p) =>
-        p['id']?.toString() == id && p['payment_status'] == 'SUCCESS');
-    final closed = _payments().any((p) =>
-        p['id']?.toString() == id &&
-        ['FAILED', 'CANCELLED'].contains(p['payment_status']));
-    if (settled || closed) {
-      setState(() {
-        _awaitingExternalPayment = false;
-        _activeZaloPaymentId = null;
-        _activeZaloToken = null;
-        if (closed) {
-          _notice = tr(
-            'Giao dịch ZaloPay không thành công. Bạn có thể thanh toán lại.',
-            'ZaloPay failed. You can retry payment.',
-          );
-        }
-      });
-    }
-    final vnpayId = _activeVnpayPaymentId;
-    if (vnpayId != null) {
-      final transaction = _payments().where(
-        (p) => p['id']?.toString() == vnpayId,
-      );
-      if (transaction.isNotEmpty &&
-          transaction.first['payment_status'] == 'SUCCESS') {
-        setState(() {
-          _activeVnpayPaymentId = null;
-          _checkoutUrl = null;
-          _awaitingExternalPayment = false;
-          _notice = tr('VNPay đã được backend xác nhận thanh toán.',
-              'VNPay payment verified by the backend.');
-        });
-      } else if (transaction.isNotEmpty &&
-          ['FAILED', 'CANCELLED'].contains(transaction.first['payment_status'])) {
-        setState(() {
-          _activeVnpayPaymentId = null;
-          _checkoutUrl = null;
-          _awaitingExternalPayment = false;
-          _notice = tr('VNPay không thành công. Bạn có thể thanh toán lại.',
-              'VNPay failed. You can retry payment.');
-        });
-      } else {
-        setState(() {
-          _awaitingExternalPayment = false;
-          _notice = tr(
-            'Chưa nhận được xác nhận từ VNPay. Vui lòng kiểm tra lại; '
-            'không tạo giao dịch mới khi giao dịch cũ còn chờ.',
-            'VNPay has not been confirmed. Check again before retrying.',
-          );
-        });
-      }
-    }
-    } finally {
-      _checkingReturn = false;
-    }
-  }
-
-  Future<void> _onZaloPayResult(
-      ZaloPayResult result,
-      ) async {
-    final id = _activeZaloPaymentId;
-    if (id == null || !mounted) return;
-
-    setState(() {
-      _notice = result.isSuccess
-          ? tr(
-        'ZaloPay đã trả kết quả. Đang xác minh giao dịch.',
-        'ZaloPay returned a result. Verifying payment.',
-      )
-          : result.isCanceled
-          ? tr(
-        'Bạn đã hủy thanh toán ZaloPay.',
-        'You canceled the ZaloPay payment.',
-      )
-          : tr(
-        'ZaloPay gặp lỗi. Hãy kiểm tra trạng thái giao dịch.',
-        'ZaloPay encountered an error. Check payment status.',
-      );
-    });
-
-    try {
-      await _repo.reconcileZaloPay(id);
-    } catch (_) {
-      // Không coi callback SDK là bằng chứng thanh toán.
-    }
-
-    await _refresh();
-
-    if (!mounted) return;
-
-    final payments = _payments();
-    final isPaid = payments.any(
-          (p) =>
-      p['id']?.toString() == id &&
-          p['payment_status'] == 'SUCCESS',
-    );
-
-    setState(() {
-      if (isPaid) {
-        _notice = tr(
-          'Thanh toán ZaloPay thành công.',
-          'ZaloPay payment successful.',
-        );
-        _awaitingExternalPayment = false;
-        _activeZaloPaymentId = null;
-        _activeZaloToken = null;
-      } else if (payments.any((p) =>
-          p['id']?.toString() == id &&
-          ['FAILED', 'CANCELLED'].contains(p['payment_status']))) {
-        _notice = tr(
-          'Giao dịch đã thất bại hoặc bị hủy. Bạn có thể chọn phương thức và thanh toán lại.',
-          'Payment failed or was canceled. You can choose a method and retry.',
-        );
-        _awaitingExternalPayment = false;
-        _activeZaloPaymentId = null;
-        _activeZaloToken = null;
-      } else if (result.isSuccess) {
-        _notice = tr(
-          'Giao dịch đang chờ backend xác minh. '
-              'Bạn có thể bấm Kiểm tra thanh toán.',
-          'Payment is awaiting backend verification. '
-              'You can check the payment status.',
-        );
-      }
-    });
   }
 
   List<Map<String, dynamic>> _payments() {
@@ -271,44 +113,76 @@ class _PaymentPageState extends State<PaymentPage>
         .toList();
   }
 
-  Future<void> _refresh() async {
-    if (!mounted) return;
+  /// Hỏi ZaloPay về các đơn ZaloPay đang PENDING.
+  /// Backend chỉ cho kỹ thuật viên được giao đơn gọi reconcile.
+  Future<bool> _reconcilePendingZalo(List<Map<String, dynamic>> rows) async {
+    final pending = rows
+        .where((p) =>
+    p['method_code'] == 'ZALOPAY' &&
+        p['payment_status'] == 'PENDING' &&
+        p['id'] != null)
+        .toList();
 
-    setState(() => _loading = true);
+    if (pending.isEmpty || _reconciling) return false;
+
+    _reconciling = true;
+    try {
+      for (final p in pending) {
+        try {
+          await _repo.reconcileZaloPay('${p['id']}');
+        } catch (_) {
+          // Cổng không phản hồi / chưa rõ: giữ nguyên PENDING.
+        }
+      }
+    } finally {
+      _reconciling = false;
+    }
+    return true;
+  }
+
+  Future<void> _refresh() async {
+    if (!mounted || _refreshing) return;
+    _refreshing = true;
+    if (_data == null) setState(() => _loading = true);
 
     try {
       if (widget.technician) {
-        final rows = await _repo.cashForTechnician(
-          widget.bookingId,
-        );
+        var result = await _repo.technicianSummary(widget.bookingId);
+        var rows = (result['payments'] as List? ?? [])
+            .whereType<Map>()
+            .map((p) => Map<String, dynamic>.from(p))
+            .toList();
+
+        // Chủ động đối chiếu với ZaloPay, không chỉ chờ callback ngrok.
+        if (await _reconcilePendingZalo(rows)) {
+          result = await _repo.technicianSummary(widget.bookingId);
+          rows = (result['payments'] as List? ?? [])
+              .whereType<Map>()
+              .map((p) => Map<String, dynamic>.from(p))
+              .toList();
+        }
 
         if (!mounted) return;
 
+        final success = rows.any((p) => p['payment_status'] == 'SUCCESS');
+
         setState(() {
+          _data = result;
           _cash = rows;
+          if (success && !_hadPaymentSuccess) {
+            _notice = tr(
+              'Giao dịch thanh toán thành công!',
+              'Payment successful!',
+            );
+            _checkoutUrl = null;
+            _techQrData = null;
+          }
+          _hadPaymentSuccess = success;
           _error = null;
         });
       } else {
-        var result = await _repo.summary(widget.bookingId);
-        final rows = result['payments'] as List? ?? const [];
-        final pendingZalo = rows.whereType<Map>().where((p) =>
-          p['method_code'] == 'ZALOPAY' &&
-          p['payment_status'] == 'PENDING' && p['id'] != null).toList();
-        if (pendingZalo.isNotEmpty && !_reconcilingOnRefresh) {
-          _reconcilingOnRefresh = true;
-          try {
-            for (final p in pendingZalo) {
-              try {
-                await _repo.reconcileZaloPay('${p['id']}');
-              } catch (_) {
-                // Gateway unreachable/unknown: preserve PENDING.
-              }
-            }
-            result = await _repo.summary(widget.bookingId);
-          } finally {
-            _reconcilingOnRefresh = false;
-          }
-        }
+        // Khách chỉ xem trạng thái; reconcile do kỹ thuật viên thực hiện.
+        final result = await _repo.summary(widget.bookingId);
 
         if (!mounted) return;
 
@@ -324,15 +198,14 @@ class _PaymentPageState extends State<PaymentPage>
         _error = e.toString();
       });
     } finally {
+      _refreshing = false;
       if (mounted) {
         setState(() => _loading = false);
       }
     }
   }
 
-  Future<void> _run(
-      Future<void> Function() task,
-      ) async {
+  Future<void> _run(Future<void> Function() task) async {
     if (_busy) return;
 
     setState(() {
@@ -357,221 +230,49 @@ class _PaymentPageState extends State<PaymentPage>
     }
   }
 
-  Future<void> _pay(num total) async {
+  Future<void> _techCreate(num total) async {
     final method = total == 0 ? 'FREE' : _method;
-
     final key =
-        'coolcare_${DateTime.now().microsecondsSinceEpoch}_'
-        '${Random.secure().nextInt(1 << 32)}';
+        'coolcare_${DateTime.now().microsecondsSinceEpoch}_${Random.secure().nextInt(1 << 32)}';
 
-    final created = await _repo.create(
-      widget.bookingId,
-      method,
-      key,
-    );
+    final created = await _repo.create(widget.bookingId, method, key);
 
-    if (method == 'CASH' || method == 'FREE') {
-      return;
-    }
+    if (method == 'FREE' || method == 'CASH') return;
 
-    final paymentId = created['id']?.toString();
+    final id = created['id']?.toString();
+    if (id == null || id.isEmpty) throw StateError('PAYMENT_ID_MISSING');
 
-    if (paymentId == null || paymentId.isEmpty) {
-      throw StateError('PAYMENT_ID_MISSING');
-    }
+    final checkout = await _repo.checkout(id);
 
-    final checkout = await _repo.checkout(paymentId);
+    if (!mounted) return;
 
-    if (method == 'ZALOPAY') {
-      final token = checkout['zpTransToken']?.toString();
-
-      if (token == null || token.isEmpty) {
-        throw StateError('ZALOPAY_TOKEN_MISSING');
-      }
-
-      if (mounted) {
-        setState(() {
-          _activeZaloPaymentId = paymentId;
-          _activeZaloToken = token;
-          _awaitingExternalPayment = true;
-          _checkoutUrl = null;
-          _notice = tr(
-            'Đang chuyển sang ZaloPay...',
-            'Opening ZaloPay...',
-          );
-        });
-      }
-
-      await ZaloPayAppToApp.payOrder(token);
-      return;
-    }
-
-    _activeVnpayPaymentId = paymentId;
-    await _openCheckoutUrl(checkout);
-  }
-
-  Future<void> _openCheckoutUrl(
-      Map<String, dynamic> checkout,
-      ) async {
     final url = checkout['url']?.toString();
-
-    if (url == null || url.isEmpty) {
-      throw StateError('CHECKOUT_URL_MISSING');
-    }
-
-    final uri = Uri.tryParse(url);
-
-    if (uri == null || uri.scheme != 'https') {
-      throw StateError('INVALID_CHECKOUT_URL');
-    }
-
-    if (mounted) {
-      setState(() {
-        _checkoutUrl = url;
-        _awaitingExternalPayment = true;
-        _activeZaloPaymentId = null;
-        _activeZaloToken = null;
-      });
-    }
-
-    final launched = await launchUrl(
-      uri,
-      mode: LaunchMode.externalApplication,
-    );
-
-    if (!launched) {
-      throw StateError('CHECKOUT_OPEN_FAILED');
-    }
-  }
-
-  Future<void> _resumeOnlinePayment(
-      String paymentId,
-      String methodCode,
-      ) async {
-    if (methodCode == 'ZALOPAY') {
-      final result = await _repo.reconcileZaloPay(paymentId);
-      if (!mounted) return;
-      if (result['status'] == 'SUCCESS') {
-        setState(() {
-          _notice = tr('Thanh toán đã được xác nhận.', 'Payment confirmed.');
-          _activeZaloPaymentId = null;
-          _activeZaloToken = null;
-          _awaitingExternalPayment = false;
-        });
-      } else {
-        final token = _activeZaloPaymentId == paymentId
-            ? _activeZaloToken : null;
-        if (token != null && token.isNotEmpty) {
-          setState(() {
-            _notice = tr('Đang mở lại ZaloPay bằng token trong phiên.',
-                'Reopening ZaloPay using the current session token.');
-          });
-          await ZaloPayAppToApp.payOrder(token);
-        } else {
-          setState(() {
-            _notice = tr(
-              'Giao dịch chưa được xác nhận. Vui lòng liên hệ hỗ trợ '
-              'nếu vẫn đang chờ sau khi kiểm tra lại.',
-              'Payment not confirmed. Contact support if it remains pending.',
-            );
-          });
-        }
-      }
-      return;
-    }
-
-    // Refresh first: the old VNPay callback might have arrived.
-    await _refresh();
-    if (!mounted) return;
-    final matching = _payments().where(
-      (p) => p['id']?.toString() == paymentId,
-    );
-    if (matching.isEmpty) {
-      throw StateError('PAYMENT_NOT_FOUND');
-    }
-    final status = matching.first['payment_status']?.toString();
-    if (status == 'SUCCESS') {
-      setState(() => _notice = tr(
-        'VNPay đã thanh toán thành công.',
-        'VNPay payment confirmed.',
-      ));
-      return;
-    }
-    if (status != 'PENDING') {
-      setState(() => _notice = tr(
-        'Giao dịch không còn ở trạng thái chờ. Vui lòng tải lại.',
-        'Payment is no longer pending. Please refresh.',
-      ));
-      return;
-    }
-
-    // Reopen the same checkout URL when available; no new payment attempt.
-    if (_activeVnpayPaymentId == paymentId && _checkoutUrl != null) {
-      final uri = Uri.tryParse(_checkoutUrl!);
-      if (uri != null && uri.scheme == 'https') {
-        final launched = await launchUrl(
-          uri, mode: LaunchMode.externalApplication,
-        );
-        if (!launched) throw StateError('CHECKOUT_OPEN_FAILED');
-        return;
-      }
-    }
-
-    // Reuse the same payment ID, never create a second payment record.
-    // The gateway may still have completed an earlier checkout; obtain
-    // explicit confirmation before opening another checkout session.
-    final proceed = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text(tr('Thanh toán lại VNPay', 'Retry VNPay payment')),
-        content: Text(tr(
-          'Giao dịch cũ vẫn đang PENDING. Nếu đã bị trừ tiền, KHÔNG '
-          'thanh toán lại vì có nguy cơ bị trừ tiền hai lần. Chỉ tiếp tục '
-          'khi bạn đã kiểm tra và chắc chắn chưa bị trừ tiền. '
-          'Ứng dụng sẽ dùng lại mã giao dịch cũ.',
-          'The previous payment is still pending. If you were charged, '
-          'DO NOT retry. Only continue after verifying no charge occurred. '
-          'The existing payment ID will be reused.',
-        )),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext, false),
-            child: Text(tr('Quay lại', 'Go back')),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(dialogContext, true),
-            child: Text(tr('Tôi chưa bị trừ tiền', 'I was not charged')),
-          ),
-        ],
-      ),
-    );
-    if (proceed != true || !mounted) return;
-    // Backend checkout accepts PENDING VNPay payments and returns a new
-    // short-lived URL for the *same* payment ID (not a new attempt).
-    final checkout = await _repo.checkout(paymentId);
-    if (!mounted) return;
-    _activeVnpayPaymentId = paymentId;
-    await _openCheckoutUrl(checkout);
-  }
-
-  Future<void> _checkZaloPayment(
-      String paymentId,
-      ) async {
-    final result =
-    await _repo.reconcileZaloPay(paymentId);
-
-    if (!mounted) return;
+    final qrData = method == 'ZALOPAY' ? checkout['qrData']?.toString() : url;
+    final hasUrl = url != null && url.isNotEmpty;
+    final hasQr = qrData != null && qrData.isNotEmpty;
 
     setState(() {
-      _notice = result['status'] == 'SUCCESS'
-          ? tr(
-        'Thanh toán thành công.',
-        'Payment successful.',
-      )
-          : tr(
-        'Giao dịch chưa được xác nhận thành công.',
-        'Payment has not been confirmed.',
-      );
+      _checkoutUrl = hasUrl ? url : null;
+      _techQrData = hasQr ? qrData : null;
+
+      if (method == 'ZALOPAY') {
+        _notice = (hasUrl || hasQr)
+            ? tr(
+          'Đã tạo mã thanh toán. Hãy để khách quét QR bằng ZaloPaySB.',
+          'Payment QR is ready. Ask the customer to scan with ZaloPaySB.',
+        )
+            : tr(
+          'ZaloPay đã tạo đơn nhưng không trả QR hay liên kết. '
+              'Bấm làm mới để kiểm tra trạng thái; không tạo thêm giao dịch.',
+          'ZaloPay created the order but returned no QR or link. '
+              'Refresh to check status; do not create another payment.',
+        );
+      } else {
+        _notice = tr(
+          'Đã tạo mã QR VNPay. Khách quét bằng camera để mở trang thanh toán.',
+          'VNPay QR is ready. Scan with a phone camera to open checkout.',
+        );
+      }
     });
   }
 
@@ -585,9 +286,7 @@ class _PaymentPageState extends State<PaymentPage>
         child: Row(
           children: [
             Icon(
-              error
-                  ? Icons.error_outline
-                  : Icons.info_outline,
+              error ? Icons.error_outline : Icons.info_outline,
               color: error
                   ? Theme.of(context).colorScheme.error
                   : Theme.of(context).colorScheme.primary,
@@ -603,127 +302,323 @@ class _PaymentPageState extends State<PaymentPage>
   }
 
   Widget _technicianContent() {
+    final booking =
+        (_data?['booking'] as Map?)?.cast<String, dynamic>() ?? {};
+    final total = num.tryParse('${booking['total_amount']}') ?? 0;
+    final confirmed = booking['charges_confirmed_at'] != null;
+    final completed = booking['status'] == 'COMPLETED';
+    final paid = _cash.any((p) => p['payment_status'] == 'SUCCESS');
+    final pending = _cash.where((p) =>
+        ['PENDING', 'PROCESSING'].contains(p['payment_status'])).toList();
+    final current = pending.isNotEmpty ? pending.first : null;
+    final methodCode = current?['method_code']?.toString() ?? _method;
+    final stored = current?['checkout_url']?.toString();
+    final storedIsLink = stored != null && stored.startsWith('https://');
+    final isZalo = current != null && methodCode == 'ZALOPAY';
+    final isVnpay = current != null && methodCode == 'VNPAY';
+    final qrData = (isZalo || isVnpay)
+        ? (_techQrData ??
+            ((stored != null && stored.isNotEmpty && !storedIsLink)
+                ? stored
+                : null) ??
+            _checkoutUrl ??
+            (storedIsLink ? stored : null))
+        : null;
+    final hasQr = qrData != null && qrData.isNotEmpty;
+    final isCash = current?['payment_kind'] == 'CASH';
+    final isWaiting = current != null;
+    final statusColor = paid
+        ? const Color(0xFF087C65)
+        : isWaiting
+            ? const Color(0xFF946500)
+            : Theme.of(context).colorScheme.onSurfaceVariant;
+    final statusBg = paid
+        ? const Color(0xFFE9F7F2)
+        : isWaiting
+            ? const Color(0xFFFFF6E3)
+            : Theme.of(context).colorScheme.surfaceContainerHighest;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        if (_cash.isEmpty)
-          _messageCard(
-            tr(
-              'Chưa có yêu cầu thanh toán tiền mặt.',
-              'No cash payment requests yet.',
+        Card(
+          child: Padding(
+            padding: const EdgeInsets.all(18),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(tr('Tổng thanh toán', 'Total payment'),
+                    style: Theme.of(context).textTheme.titleMedium),
+                const SizedBox(height: 8),
+                Text(money(total),
+                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                          fontWeight: FontWeight.w800,
+                        )),
+                if (paid) ...[
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      const Icon(Icons.check_circle_rounded,
+                          color: Color(0xFF087C65), size: 20),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(tr('Thanh toán thành công',
+                            'Payment successful')),
+                      ),
+                    ],
+                  ),
+                ],
+              ],
             ),
           ),
-        for (final p in _cash)
+        ),
+        if (!paid && (!confirmed || !completed)) ...[
+          const SizedBox(height: 12),
+          _messageCard(tr(
+            'Chờ khách xác nhận hoàn thành và tổng tiền.',
+            'Await customer completion and final price approval.',
+          )),
+        ],
+        if (!paid && !isWaiting && completed && confirmed) ...[
+          const SizedBox(height: 12),
           Card(
             child: Padding(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(14),
               child: Column(
-                crossAxisAlignment:
-                CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Text(
-                    money(p['amount']),
-                    style: Theme.of(context)
-                        .textTheme
-                        .titleMedium,
+                  Text(tr('Phương thức thanh toán', 'Payment method'),
+                      style: Theme.of(context).textTheme.titleMedium),
+                  const SizedBox(height: 8),
+                  if (total > 0) ...[
+                    Row(
+                      children: [
+                        Expanded(child: _paymentChoice(
+                          online: false,
+                          title: tr('Tiền mặt', 'Cash'),
+                          subtitle: tr('Nhận tiền trực tiếp', 'Receive cash'),
+                          icon: Icons.payments_rounded,
+                        )),
+                        const SizedBox(width: 12),
+                        Expanded(child: _paymentChoice(
+                          online: true,
+                          title: tr('Tạo mã QR', 'Generate QR'),
+                          subtitle: tr('Thanh toán trực tuyến', 'Pay online'),
+                          icon: Icons.qr_code_2_rounded,
+                        )),
+                      ],
+                    ),
+                    if (_onlineChoice) ...[
+                      const SizedBox(height: 14),
+                      Text(tr('Chọn cổng thanh toán', 'Choose payment provider'),
+                        style: const TextStyle(fontWeight: FontWeight.w600)),
+                      const SizedBox(height: 8),
+                      Row(children: [
+                        Expanded(child: _gatewayChoice('ZALOPAY', 'ZaloPay', Icons.account_balance_wallet_rounded)),
+                        const SizedBox(width: 10),
+                        Expanded(child: _gatewayChoice('VNPAY', 'VNPay', Icons.account_balance_rounded)),
+                      ]),
+                    ],
+                  ],
+                  const SizedBox(height: 10),
+                  FilledButton.icon(
+                    onPressed: _busy ? null : () => _run(() => _techCreate(total)),
+                    icon: const Icon(Icons.add_circle_outline),
+                    label: Text(_onlineChoice ? tr('Tạo mã QR', 'Generate QR') : tr('Tạo thanh toán tiền mặt', 'Create cash payment')),
                   ),
-                  const SizedBox(height: 6),
-                  Text(
-                    '${tr('Trạng thái', 'Status')}: '
-                        '${statusText(p['payment_status']?.toString())}',
+                ],
+              ),
+            ),
+          ),
+        ],
+        if (!paid && isWaiting) ...[
+          const SizedBox(height: 12),
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(18),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Row(
+                    children: [
+                      Icon(isCash ? Icons.payments_outlined : Icons.qr_code_2,
+                          color: Theme.of(context).colorScheme.primary),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          methodCode == 'ZALOPAY'
+                              ? 'ZaloPay'
+                              : methodCode == 'VNPAY'
+                                  ? 'VNPay'
+                                  : tr('Tiền mặt', 'Cash'),
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                      ),
+                    ],
                   ),
-                  if (p['payment_status'] == 'PENDING') ...[
-                    const SizedBox(height: 12),
+                  if (hasQr) ...[
+                    const SizedBox(height: 18),
+                    Center(
+                      child: Container(
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: const Color(0xFFE6E9ED)),
+                        ),
+                        child: QrImageView(
+                          data: qrData,
+                          version: QrVersions.auto,
+                          size: 228,
+                          backgroundColor: Colors.white,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      isVnpay
+                        ? tr('Khách quét QR bằng camera điện thoại để mở trang VNPay và thanh toán.', 'Scan with a phone camera to open VNPay checkout.')
+                        : tr('Khách quét mã QR bằng ứng dụng ZaloPay để thanh toán.', 'Ask the customer to scan the QR code with ZaloPay.'),
+                      textAlign: TextAlign.center,
+                    ),
+                  ] else if (isZalo) ...[
+                    const SizedBox(height: 14),
+                    _messageCard(tr(
+                      'Chưa có mã QR. Vui lòng làm mới để kiểm tra giao dịch.',
+                      'QR is not available. Refresh to check the payment.',
+                    )),
+                  ] else if (methodCode == 'VNPAY') ...[
+                    const SizedBox(height: 14),
+                    Text(tr('Giao dịch VNPay đang chờ khách thanh toán.',
+                        'VNPay payment is awaiting customer completion.')),
+                  ],
+                  if (isCash) ...[
+                    const SizedBox(height: 14),
                     FilledButton.icon(
                       onPressed: _busy
                           ? null
-                          : () => _run(
-                            () => _repo.confirmCash(
-                          '${p['id']}',
+                          : () => _run(() =>
+                              _repo.confirmCash('${current['id']}')),
+                      icon: const Icon(Icons.check_circle_outline),
+                      label: Text(tr('Xác nhận đã nhận tiền',
+                          'Confirm cash received')),
+                    ),
+                  ] else ...[
+                    const SizedBox(height: 16),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.sync_rounded, size: 17),
+                        const SizedBox(width: 7),
+                        Flexible(
+                          child: Text(
+                            tr('Tự động kiểm tra trạng thái thanh toán',
+                                'Payment status updates automatically'),
+                            style: Theme.of(context).textTheme.bodySmall,
+                            textAlign: TextAlign.center,
+                          ),
                         ),
-                      ),
-                      icon: const Icon(Icons.check),
-                      label: Text(
-                        tr(
-                          'Xác nhận đã nhận tiền',
-                          'Confirm Cash Received',
-                        ),
-                      ),
+                      ],
                     ),
                   ],
                 ],
               ),
             ),
           ),
+        ],
       ],
     );
   }
 
-  Widget _paymentMethod(
-      String code,
-      String label,
-      IconData icon,
-      ) {
-    return RadioListTile<String>(
-      title: Text(label),
-      secondary: Icon(icon),
-      value: code,
-      groupValue: _method,
-      onChanged: _busy
-          ? null
-          : (value) {
-        if (value != null) {
-          setState(() => _method = value);
-        }
-      },
+  Widget _paymentChoice({required bool online, required String title,
+      required String subtitle, required IconData icon}) {
+    final selected = _onlineChoice == online;
+    final primary = Theme.of(context).colorScheme.primary;
+    return InkWell(
+      borderRadius: BorderRadius.circular(16),
+      onTap: _busy ? null : () => setState(() {
+        _onlineChoice = online;
+        _method = online ? 'ZALOPAY' : 'CASH';
+      }),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 17),
+        decoration: BoxDecoration(
+          color: selected ? primary.withOpacity(.07) : Colors.white,
+          border: Border.all(color: selected ? primary : const Color(0xFFE0E6EA), width: selected ? 2 : 1),
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Column(children: [
+          Icon(icon, color: primary, size: 32),
+          const SizedBox(height: 10),
+          Text(title, style: const TextStyle(fontWeight: FontWeight.w700), textAlign: TextAlign.center),
+          const SizedBox(height: 4),
+          Text(subtitle, style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant), textAlign: TextAlign.center),
+          const SizedBox(height: 8),
+          Icon(selected ? Icons.check_circle_rounded : Icons.circle_outlined,
+              color: selected ? primary : Colors.grey, size: 19),
+        ]),
+      ),
+    );
+  }
+
+  Widget _gatewayChoice(String code, String title, IconData icon) {
+    final selected = _method == code;
+    final primary = Theme.of(context).colorScheme.primary;
+    return InkWell(
+      onTap: _busy ? null : () => setState(() => _method = code),
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 13, horizontal: 10),
+        decoration: BoxDecoration(
+          border: Border.all(color: selected ? primary : const Color(0xFFE0E6EA), width: selected ? 2 : 1),
+          borderRadius: BorderRadius.circular(12),
+          color: selected ? primary.withOpacity(.06) : Colors.white,
+        ),
+        child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+          Icon(icon, color: primary, size: 20),
+          const SizedBox(width: 7),
+          Flexible(child: Text(title, style: const TextStyle(fontWeight: FontWeight.w600))),
+          if (selected) ...[const SizedBox(width: 4), Icon(Icons.check_circle, size: 16, color: primary)],
+        ]),
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     final booking =
-        (_data?['booking'] as Map?)
-            ?.cast<String, dynamic>() ??
+        (_data?['booking'] as Map?)?.cast<String, dynamic>() ??
             <String, dynamic>{};
 
     final payments = _payments();
 
-    final total =
-        num.tryParse('${booking['total_amount']}') ?? 0;
+    final total = num.tryParse('${booking['total_amount']}') ?? 0;
 
     final ready = booking['status'] == 'COMPLETED';
 
-    final confirmed =
-        booking['charges_confirmed_at'] != null;
+    final confirmed = booking['charges_confirmed_at'] != null;
 
     final paid = payments.any(
-          (p) => p['payment_status'] == 'SUCCESS' &&
-              (num.tryParse('${p['amount']}') ?? -1) == total,
+          (p) =>
+      p['payment_status'] == 'SUCCESS' &&
+          (num.tryParse('${p['amount']}') ?? -1) == total,
     );
 
     final processing = payments.any(
-          (p) => ['PENDING', 'PROCESSING']
-          .contains(p['payment_status']),
+          (p) => ['PENDING', 'PROCESSING'].contains(p['payment_status']),
     );
     final cashPending = payments.any((p) =>
-        p['method_code'] == 'CASH' &&
+    p['method_code'] == 'CASH' &&
         ['PENDING', 'PROCESSING'].contains(p['payment_status']));
 
-    final canPay =
-        ready && confirmed && !paid && !processing;
+    final canPay = ready && confirmed && !paid && !processing;
 
     return Scaffold(
       appBar: AppBar(
         title: Text(
           widget.technician
-              ? tr(
-            'Xác nhận tiền mặt',
-            'Cash Confirmation',
-          )
-              : tr(
-            'Thanh toán CoolCare',
-            'CoolCare Payment',
-          ),
+              ? tr('Thanh toán kỹ thuật viên', 'Technician Payment')
+              : tr('Thanh toán CoolCare', 'CoolCare Payment'),
         ),
         actions: [
           IconButton(
@@ -733,9 +628,7 @@ class _PaymentPageState extends State<PaymentPage>
           ),
         ],
       ),
-      body: _loading &&
-          _data == null &&
-          _cash.isEmpty
+      body: _loading && _data == null && _cash.isEmpty
           ? const Center(
         child: CircularProgressIndicator(),
       )
@@ -744,48 +637,74 @@ class _PaymentPageState extends State<PaymentPage>
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            if (_loading)
-              const LinearProgressIndicator(),
-
+            if (_loading) const LinearProgressIndicator(),
             if (_error != null)
               _messageCard(
                 _error == 'Bad state: AUTH_REQUIRED'
-                    ? tr(
-                  'Vui lòng đăng nhập.',
-                  'Please sign in.',
-                )
+                    ? tr('Vui lòng đăng nhập.', 'Please sign in.')
                     : '${tr('Có lỗi xảy ra', 'An error occurred')}: $_error',
                 error: true,
               ),
-
-            if (_notice != null)
-              _messageCard(_notice!),
-
+            if (!widget.technician && _notice != null) _messageCard(_notice!),
             if (widget.technician)
               _technicianContent()
             else ...[
               Container(
                 padding: const EdgeInsets.all(15),
                 decoration: BoxDecoration(
-                  color: paid ? const Color(0xFFE9F7F2) : const Color(0xFFFFF6E3),
+                  color: paid
+                      ? const Color(0xFFE9F7F2)
+                      : const Color(0xFFFFF6E3),
                   borderRadius: BorderRadius.circular(14),
                 ),
                 child: Row(children: [
-                  Icon(paid ? Icons.verified_rounded : Icons.pending_actions_rounded,
-                      color: paid ? const Color(0xFF087C65) : const Color(0xFF946500)),
+                  Icon(
+                    paid
+                        ? Icons.verified_rounded
+                        : Icons.pending_actions_rounded,
+                    color: paid
+                        ? const Color(0xFF087C65)
+                        : const Color(0xFF946500),
+                  ),
                   const SizedBox(width: 12),
-                  Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Text(paid ? tr('Đã thanh toán', 'Paid')
-                        : processing ? (cashPending ? tr('Chờ kỹ thuật viên xác nhận tiền mặt', 'Awaiting technician cash confirmation') : tr('Chờ xác minh thanh toán', 'Payment verification pending'))
-                        : ready ? tr('Chưa thanh toán', 'Unpaid')
-                        : tr('Chưa đến bước thanh toán', 'Payment not yet due'),
-                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
-                    const SizedBox(height: 3),
-                    Text(paid ? tr('Thanh toán đã được xác nhận.', 'Payment confirmed.')
-                        : ready ? tr('Công việc đã hoàn thành. Hãy kiểm tra và thanh toán hóa đơn.', 'Service completed. Review and pay the bill.')
-                        : tr('Thanh toán sau khi hoàn thành dịch vụ.', 'Pay after service completion.'),
-                      style: const TextStyle(fontSize: 12)),
-                  ])),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          paid
+                              ? tr('Đã thanh toán', 'Paid')
+                              : processing
+                              ? (cashPending
+                              ? tr(
+                              'Chờ kỹ thuật viên xác nhận tiền mặt',
+                              'Awaiting technician cash confirmation')
+                              : tr('Chờ xác minh thanh toán',
+                              'Payment verification pending'))
+                              : ready
+                              ? tr('Chưa thanh toán', 'Unpaid')
+                              : tr('Chưa đến bước thanh toán',
+                              'Payment not yet due'),
+                          style: const TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.w800),
+                        ),
+                        const SizedBox(height: 3),
+                        Text(
+                          paid
+                              ? tr('Thanh toán đã được xác nhận.',
+                              'Payment confirmed.')
+                              : ready
+                              ? tr(
+                              'Công việc đã hoàn thành. Hãy kiểm tra hóa đơn và chờ kỹ thuật viên tạo thanh toán.',
+                              'Service completed. Review the bill and wait for the technician to create payment.')
+                              : tr(
+                              'Thanh toán sau khi hoàn thành dịch vụ.',
+                              'Pay after service completion.'),
+                          style: const TextStyle(fontSize: 12),
+                        ),
+                      ],
+                    ),
+                  ),
                 ]),
               ),
               const SizedBox(height: 12),
@@ -793,24 +712,16 @@ class _PaymentPageState extends State<PaymentPage>
                 child: Padding(
                   padding: const EdgeInsets.all(16),
                   child: Column(
-                    crossAxisAlignment:
-                    CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        tr(
-                          'Tổng thanh toán',
-                          'Total Payment',
-                        ),
-                        style: Theme.of(context)
-                            .textTheme
-                            .titleMedium,
+                        tr('Tổng thanh toán', 'Total Payment'),
+                        style: Theme.of(context).textTheme.titleMedium,
                       ),
                       const SizedBox(height: 8),
                       Text(
                         money(total),
-                        style: Theme.of(context)
-                            .textTheme
-                            .headlineMedium,
+                        style: Theme.of(context).textTheme.headlineMedium,
                       ),
                       const SizedBox(height: 8),
                       Text(
@@ -825,9 +736,7 @@ class _PaymentPageState extends State<PaymentPage>
                   ),
                 ),
               ),
-
               const SizedBox(height: 12),
-
               if (paid)
                 Card(
                   child: ListTile(
@@ -836,16 +745,11 @@ class _PaymentPageState extends State<PaymentPage>
                       color: Colors.green,
                     ),
                     title: Text(
-                      tr(
-                        'Thanh toán thành công',
-                        'Payment Successful',
-                      ),
+                      tr('Thanh toán thành công', 'Payment Successful'),
                     ),
                     subtitle: Text(
-                      tr(
-                        'Đơn hàng đã được thanh toán.',
-                        'The booking has been paid.',
-                      ),
+                      tr('Đơn hàng đã được thanh toán.',
+                          'The booking has been paid.'),
                     ),
                   ),
                 )
@@ -861,17 +765,12 @@ class _PaymentPageState extends State<PaymentPage>
                     child: Padding(
                       padding: const EdgeInsets.all(16),
                       child: Column(
-                        crossAxisAlignment:
-                        CrossAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            tr(
-                              'Xác nhận chi phí cuối cùng',
-                              'Confirm Final Charges',
-                            ),
-                            style: Theme.of(context)
-                                .textTheme
-                                .titleMedium,
+                            tr('Xác nhận chi phí cuối cùng',
+                                'Confirm Final Charges'),
+                            style: Theme.of(context).textTheme.titleMedium,
                           ),
                           const SizedBox(height: 8),
                           Text(
@@ -884,19 +783,12 @@ class _PaymentPageState extends State<PaymentPage>
                           FilledButton(
                             onPressed: _busy
                                 ? null
-                                : () => _run(
-                                  () async {
-                                await _repo
-                                    .confirmCharges(
-                                  widget.bookingId,
-                                );
-                              },
-                            ),
+                                : () => _run(() async {
+                              await _repo
+                                  .confirmCharges(widget.bookingId);
+                            }),
                             child: Text(
-                              tr(
-                                'Xác nhận chi phí',
-                                'Confirm Charges',
-                              ),
+                              tr('Xác nhận chi phí', 'Confirm Charges'),
                             ),
                           ),
                         ],
@@ -906,174 +798,25 @@ class _PaymentPageState extends State<PaymentPage>
                 else if (processing)
                     _messageCard(
                       tr(
-                        'Giao dịch cũ chưa được cổng thanh toán xác nhận kết thúc. '
-                            'Hãy kiểm tra lại bên dưới. Khi gateway xác nhận thất bại hoặc hủy, '
-                            'bạn có thể chọn bất kỳ phương thức thanh toán nào.',
-                        'A payment is pending. '
-                            'Check its status below.',
+                        'Giao dịch đang chờ xác minh. Vui lòng không tạo thêm giao dịch; kỹ thuật viên sẽ hỗ trợ nếu thanh toán thất bại.',
+                        'A payment is pending. Check its status below.',
                       ),
                     ),
-
-              if (canPay) ...[
-                const SizedBox(height: 16),
-                Text(
-                  tr(
-                    'Chọn phương thức thanh toán',
-                    'Choose Payment Method',
-                  ),
-                  style: Theme.of(context)
-                      .textTheme
-                      .titleMedium,
-                ),
-                if (total > 0) ...[
-                  _paymentMethod(
-                    'CASH',
-                    tr('Tiền mặt', 'Cash'),
-                    Icons.payments_outlined,
-                  ),
-                  _paymentMethod(
-                    'VNPAY',
-                    'VNPay Sandbox',
-                    Icons.account_balance_outlined,
-                  ),
-                  _paymentMethod(
-                    'ZALOPAY',
-                    'ZaloPay Sandbox',
-                    Icons.account_balance_wallet_outlined,
-                  ),
-                ],
-                const SizedBox(height: 12),
-                SizedBox(
-                  width: double.infinity,
-                  child: FilledButton.icon(
-                    onPressed: _busy
-                        ? null
-                        : () => _run(
-                          () => _pay(total),
-                    ),
-                    icon: const Icon(
-                      Icons.payment,
-                    ),
-                    label: Text(
-                      total == 0
-                          ? tr(
-                        'Xác nhận miễn phí',
-                        'Confirm Free Booking',
-                      )
-                          : tr(
-                        'Thanh toán ngay',
-                        'Pay Now',
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-
-              if (!paid && ready && confirmed)
-                for (final p in payments)
-                  if (['PENDING', 'PROCESSING']
-                      .contains(p['payment_status']) &&
-                      ['ZALOPAY', 'VNPAY']
-                          .contains(p['method_code']) &&
-                      p['id'] != null)
-                    Padding(
-                      padding: const EdgeInsets.only(
-                        top: 12,
-                      ),
-                      child: OutlinedButton.icon(
-                        onPressed: _busy
-                            ? null
-                            : () => _run(
-                              () => _resumeOnlinePayment(
-                            '${p['id']}',
-                            '${p['method_code']}',
-                          ),
-                        ),
-                        icon: Icon(
-                          p['method_code'] == 'ZALOPAY'
-                              ? Icons.refresh
-                              : Icons.open_in_new,
-                        ),
-                        label: Text(
-                          p['method_code'] == 'ZALOPAY'
-                              ? tr(
-                            'Kiểm tra thanh toán ZaloPay',
-                            'Check ZaloPay Payment',
-                          )
-                              : tr(
-                            'Kiểm tra / thanh toán lại VNPay',
-                            'Check / retry VNPay',
-                          ),
-                        ),
-                      ),
-                    ),
-
-              if (_activeZaloPaymentId != null &&
-                  !paid)
-                Padding(
-                  padding: const EdgeInsets.only(
-                    top: 12,
-                  ),
-                  child: OutlinedButton.icon(
-                    onPressed: _busy
-                        ? null
-                        : () => _run(
-                          () => _checkZaloPayment(
-                        _activeZaloPaymentId!,
-                      ),
-                    ),
-                    icon: const Icon(Icons.verified_outlined),
-                    label: Text(
-                      tr(
-                        'Kiểm tra trạng thái ZaloPay',
-                        'Verify ZaloPay Status',
-                      ),
-                    ),
-                  ),
-                ),
-
-              if (_checkoutUrl != null) ...[
-                const SizedBox(height: 16),
-                Text(
-                  tr(
-                    'Liên kết thanh toán VNPay',
-                    'VNPay Checkout Link',
-                  ),
-                ),
-                const SizedBox(height: 8),
-                SelectableText(_checkoutUrl!),
-                OutlinedButton.icon(
-                  onPressed: () async {
-                    await Clipboard.setData(
-                      ClipboardData(
-                        text: _checkoutUrl!,
-                      ),
-                    );
-
-                    if (!context.mounted) return;
-
-                    ScaffoldMessenger.of(context)
-                        .showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          tr(
-                            'Đã sao chép liên kết',
-                            'Link copied',
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                  icon: const Icon(Icons.copy),
-                  label: Text(
-                    tr(
-                      'Sao chép liên kết',
-                      'Copy Link',
-                    ),
-                  ),
-                ),
-              ],
-
+              if (canPay)
+                _messageCard(tr(
+                  'Đã xác nhận tổng tiền. Kỹ thuật viên sẽ tạo mã thanh toán để bạn quét.',
+                  'Technician will generate payment QR after your approval.',
+                )),
+              if (!paid && ready && confirmed && processing)
+                _messageCard(tr(
+                  'Vui lòng thanh toán bằng ứng dụng hoặc trang thanh toán bên ngoài theo hướng dẫn của kỹ thuật viên. CoolCare sẽ tự cập nhật khi cổng thanh toán xác nhận.',
+                  'Complete payment using the external app or checkout page shown by the technician. CoolCare updates automatically after gateway confirmation.',
+                )),
+              if (!paid && ready && confirmed && !processing)
+                _messageCard(tr(
+                  'Vui lòng yêu cầu kỹ thuật viên tạo mã thanh toán trên thiết bị của họ. Bạn không cần tạo giao dịch trong CoolCare.',
+                  'Ask the technician to generate the payment code on their device. You do not need to create a payment in CoolCare.',
+                )),
               const SizedBox(height: 20),
               OutlinedButton.icon(
                 onPressed: () async {
@@ -1087,7 +830,9 @@ class _PaymentPageState extends State<PaymentPage>
                   if (mounted) await _refresh();
                 },
                 icon: const Icon(Icons.history),
-                label: Text(tr('Xem lịch sử thanh toán', 'View Payment History')),
+                label: Text(
+                  tr('Xem lịch sử thanh toán', 'View Payment History'),
+                ),
               ),
             ],
           ],

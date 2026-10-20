@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../payments/repositories/payment_repository.dart';
 
 import '../../../app/theme/coolcare_theme.dart';
 import '../../../core/network/api_exception.dart';
@@ -243,16 +244,31 @@ class _ViewJobRequestsTabs extends StatelessWidget {
   }
 }
 
-class _ViewJobRequestCard extends StatelessWidget {
+class _ViewJobRequestCard extends StatefulWidget {
   const _ViewJobRequestCard({required this.request, required this.onView});
 
   final ViewJobRequest request;
   final VoidCallback onView;
 
   @override
+  State<_ViewJobRequestCard> createState() => _ViewJobRequestCardState();
+}
+
+class _ViewJobRequestCardState extends State<_ViewJobRequestCard> {
+  late final Future<String> _paymentStatus = _fetchPaymentStatus();
+
+  Future<String> _fetchPaymentStatus() async {
+    final result = await PaymentRepository().technicianSummary(widget.request.booking.id);
+    final rows = (result['payments'] as List? ?? []).whereType<Map>();
+    if (rows.any((p) => p['payment_status'] == 'SUCCESS')) return 'Paid';
+    if (rows.any((p) => p['payment_status'] == 'PENDING' || p['payment_status'] == 'PROCESSING')) return 'Pending payment';
+    return 'Unpaid';
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final booking = request.booking;
-    final isNew = request.status == 'SELECTED';
+    final booking = widget.request.booking;
+    final isNew = widget.request.status == 'SELECTED';
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
@@ -294,9 +310,27 @@ class _ViewJobRequestCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 8),
-              _ViewJobRequestStatus(status: request.status, isNew: isNew),
+              _ViewJobRequestStatus(status: widget.request.status, isNew: isNew),
             ],
           ),
+          if (widget.request.status == 'COMPLETED') ...[
+            const SizedBox(height: 8),
+            FutureBuilder<String>(
+              future: _paymentStatus,
+              builder: (context, snapshot) {
+                final label = snapshot.hasError ? 'Payment unavailable'
+                    : snapshot.hasData ? snapshot.data! : 'Checking payment...';
+                final paid = label == 'Paid';
+                return Row(children: [
+                  Icon(paid ? Icons.verified_rounded : Icons.payments_outlined,
+                      size: 16, color: paid ? const Color(0xFF15803D) : const Color(0xFFB45309)),
+                  const SizedBox(width: 6),
+                  Text(label, style: TextStyle(fontWeight: FontWeight.w600,
+                      color: paid ? const Color(0xFF15803D) : const Color(0xFFB45309))),
+                ]);
+              },
+            ),
+          ],
           const SizedBox(height: 12),
           _line(Icons.calendar_today_outlined, _date(booking.scheduledAt)),
           const SizedBox(height: 6),
@@ -329,7 +363,7 @@ class _ViewJobRequestCard extends StatelessWidget {
               SizedBox(
                 height: 34,
                 child: FilledButton(
-                  onPressed: onView,
+                  onPressed: widget.onView,
                   style: FilledButton.styleFrom(
                     backgroundColor: CoolCareColors.primary,
                     padding: const EdgeInsets.symmetric(horizontal: 24),

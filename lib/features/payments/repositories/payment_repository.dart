@@ -87,6 +87,11 @@ class PaymentRepository {
     return Map<String, dynamic>.from(result['data'] as Map);
   }
 
+  Future<Map<String,dynamic>> technicianSummary(String bookingId) async {
+    final result=await _api.get('/payments/technician/bookings/$bookingId/summary',bearerToken:await _token());
+    return Map<String,dynamic>.from(result['data'] as Map);
+  }
+
   Future<List<Map<String, dynamic>>> cashForTechnician(
       String bookingId,
       ) async {
