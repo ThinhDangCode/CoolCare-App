@@ -12,6 +12,7 @@ import '../models/view_job_request.dart';
 import '../models/accept_decline_job_request_result.dart';
 import '../models/update_job_status_result.dart';
 import '../models/cancel_accepted_job_result.dart';
+import '../models/ac_service_history.dart';
 
 class TechnicianPortalRepository {
   TechnicianPortalRepository({
@@ -163,6 +164,34 @@ class TechnicianPortalRepository {
       throw const ApiException(
         code: 'INVALID_RESPONSE',
         message: 'Dữ liệu trạng thái công việc không hợp lệ.',
+      );
+    }
+  }
+
+  Future<AcServiceHistory> customerAcServiceHistory(
+    String requestId,
+    String unitId, {
+    int page = 1,
+    int limit = 20,
+  }) async {
+    final response = await _apiClient.get(
+      ApiEndpoints.customerAcServiceHistory(requestId, unitId),
+      queryParameters: {'page': '$page', 'limit': '$limit'},
+      bearerToken: await _token(),
+    );
+    final data = response is Map<String, dynamic> ? response['data'] : null;
+    if (data is! Map<String, dynamic>) {
+      throw const ApiException(
+        code: 'INVALID_RESPONSE',
+        message: 'Máy chủ không trả về lịch sử dịch vụ hợp lệ.',
+      );
+    }
+    try {
+      return AcServiceHistory.fromJson(data);
+    } on FormatException {
+      throw const ApiException(
+        code: 'INVALID_RESPONSE',
+        message: 'Dữ liệu lịch sử dịch vụ máy lạnh không hợp lệ.',
       );
     }
   }

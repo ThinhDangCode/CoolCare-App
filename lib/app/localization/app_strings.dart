@@ -2,14 +2,19 @@ import 'package:flutter/widgets.dart';
 
 const _messages = <String, Map<String, String>>{
   'vi': {
-    'voucherErrorRequiresQuotation': 'Bạn cần chấp nhận báo giá trước khi áp dụng voucher.',
+    'voucherErrorRequiresQuotation':
+        'Bạn cần chấp nhận báo giá trước khi áp dụng voucher.',
     'voucherErrorNotFound': 'Mã voucher không tồn tại.',
-    'voucherErrorNotEligible': 'Voucher đã hết hạn, hết lượt hoặc không đủ điều kiện áp dụng.',
+    'voucherErrorNotEligible':
+        'Voucher đã hết hạn, hết lượt hoặc không đủ điều kiện áp dụng.',
     'voucherErrorNotAssigned': 'Voucher này không thuộc tài khoản của bạn.',
-    'voucherErrorBookingStatus': 'Trạng thái đơn hiện tại không cho phép áp dụng voucher.',
+    'voucherErrorBookingStatus':
+        'Trạng thái đơn hiện tại không cho phép áp dụng voucher.',
     'voucherErrorBookingNotFound': 'Không tìm thấy đơn của bạn.',
-    'voucherErrorUnauthorized': 'Bạn không có quyền thực hiện thao tác này. Vui lòng đăng nhập lại.',
-    'bookingDetailTimelineLoadFailed': 'Không thể tải lịch sử trạng thái. Vui lòng thử lại.',
+    'voucherErrorUnauthorized':
+        'Bạn không có quyền thực hiện thao tác này. Vui lòng đăng nhập lại.',
+    'bookingDetailTimelineLoadFailed':
+        'Không thể tải lịch sử trạng thái. Vui lòng thử lại.',
     'bookingDetailRebook': 'Đặt lại dịch vụ',
     'voucherTitle': 'Voucher khả dụng',
     'voucherCode': 'Nhập mã voucher',
@@ -491,6 +496,7 @@ const _messages = <String, Map<String, String>>{
     'noOngoingJobs': 'Không có công việc đang thực hiện.',
     'noJobHistory': 'Chưa có lịch sử công việc.',
     'estimatedEarnings': 'Thu nhập dự kiến',
+    'bookingTotal': 'Tổng giá đơn hàng',
     'view': 'Xem',
     'newRequest': 'Yêu cầu mới',
     'statusOngoing': 'Đang thực hiện',
@@ -691,14 +697,18 @@ const _messages = <String, Map<String, String>>{
     'otpResent': 'Đã gửi lại mã OTP.',
   },
   'en': {
-    'voucherErrorRequiresQuotation': 'Accept a quotation before applying a voucher.',
+    'voucherErrorRequiresQuotation':
+        'Accept a quotation before applying a voucher.',
     'voucherErrorNotFound': 'Voucher code was not found.',
-    'voucherErrorNotEligible': 'Voucher is expired, fully used, or does not meet the requirements.',
+    'voucherErrorNotEligible':
+        'Voucher is expired, fully used, or does not meet the requirements.',
     'voucherErrorNotAssigned': 'This voucher is not assigned to your account.',
-    'voucherErrorBookingStatus': 'Vouchers cannot be applied at this booking stage.',
+    'voucherErrorBookingStatus':
+        'Vouchers cannot be applied at this booking stage.',
     'voucherErrorBookingNotFound': 'Your booking could not be found.',
     'voucherErrorUnauthorized': 'You are not authorized. Please sign in again.',
-    'bookingDetailTimelineLoadFailed': 'Could not load booking history. Please retry.',
+    'bookingDetailTimelineLoadFailed':
+        'Could not load booking history. Please retry.',
     'bookingDetailRebook': 'Book again',
     'voucherTitle': 'Available vouchers',
     'voucherCode': 'Voucher code',
@@ -1189,6 +1199,7 @@ const _messages = <String, Map<String, String>>{
     'noOngoingJobs': 'No ongoing jobs.',
     'noJobHistory': 'No job history yet.',
     'estimatedEarnings': 'Estimated Earnings',
+    'bookingTotal': 'Booking Total',
     'view': 'View',
     'newRequest': 'New request',
     'statusOngoing': 'Ongoing',
