@@ -6,6 +6,9 @@ class ReviewableBooking {
     required this.services,
     required this.technician,
     required this.reviewed,
+    this.reviewId,
+    this.reviewRating,
+    this.reviewComment,
     required this.scheduledAt,
   });
 
@@ -15,6 +18,9 @@ class ReviewableBooking {
   final String services;
   final String technician;
   final bool reviewed;
+  final String? reviewId;
+  final int? reviewRating;
+  final String? reviewComment;
   final DateTime? scheduledAt;
 
   bool get canReview =>
@@ -28,6 +34,9 @@ class ReviewableBooking {
       services: json['service_names']?.toString() ?? 'AC service',
       technician: json['technician_name']?.toString() ?? 'Unassigned',
       reviewed: json['reviewed'] == true,
+      reviewId: json['review_id']?.toString(),
+      reviewRating: (json['review_rating'] as num?)?.toInt(),
+      reviewComment: json['review_comment']?.toString(),
       scheduledAt: DateTime.tryParse(json['scheduled_at']?.toString() ?? ''),
     );
   }

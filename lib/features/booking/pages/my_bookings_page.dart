@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import '../../../app/localization/app_strings.dart';
 import '../../../app/theme/coolcare_theme.dart';
 import '../../reviews/pages/review_pages.dart';
+import '../../reviews/models/reviewable_booking.dart';
+import '../../reviews/repositories/review_repository.dart';
 import '../models/my_booking.dart';
 import '../../payments/repositories/payment_repository.dart';
 import '../repositories/my_bookings_repository.dart';
@@ -19,6 +21,7 @@ class MyBookingsPage extends StatefulWidget {
 
 class _MyBookingsPageState extends State<MyBookingsPage> {
   final _repository = MyBookingsRepository();
+  final _reviewRepository = ReviewRepository();
   late Future<List<MyBooking>> _bookings;
   bool _showReviews = false;
   final _paymentRepo = PaymentRepository();
@@ -83,6 +86,33 @@ class _MyBookingsPageState extends State<MyBookingsPage> {
     if (mounted) _reload();
   }
 
+  Future<void> _review(MyBooking booking) async {
+    final reviewable = ReviewableBooking(
+      id: booking.id,
+      code: booking.code,
+      status: booking.status,
+      services: booking.serviceNames ??
+          '${booking.unitCount} ${context.tr('bookingUiUnits')} · ${booking.serviceCount} ${context.tr('bookingUiServices')}',
+      technician: booking.technicianName ?? 'Unassigned',
+      reviewed: booking.reviewed,
+      scheduledAt: booking.scheduledAt,
+    );
+    final submitted = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+        builder: (_) => ReviewFormPage(
+          booking: reviewable,
+          repository: _reviewRepository,
+        ),
+      ),
+    );
+    if (submitted == true && mounted) {
+      _reload();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(context.tr('reviewThanks'))),
+      );
+    }
+  }
+
   Future<void> _rebook(MyBooking booking) async {
     if (_rebookingId != null) return;
     setState(() => _rebookingId = booking.id);
@@ -132,9 +162,11 @@ class _MyBookingsPageState extends State<MyBookingsPage> {
                 ),
               ),
               TextButton(
-                onPressed: () => setState(() {
-                  _showReviews = !_showReviews;
-                }),
+                onPressed: () {
+                  final returningToBookings = _showReviews;
+                  setState(() => _showReviews = !_showReviews);
+                  if (returningToBookings) _reload();
+                },
                 child: Text(
                   _showReviews
                       ? context.tr('bookingUi58')
@@ -210,6 +242,10 @@ class _MyBookingsPageState extends State<MyBookingsPage> {
                         itemCount: items.length,
                         itemBuilder: (_, index) => _BookingCard(
                           booking: items[index],
+                          onReview: items[index].status == 'COMPLETED' &&
+                                  !items[index].reviewed
+                              ? () => _review(items[index])
+                              : null,
                           paid: _paidByBooking[items[index].id],
                           onTap: () => _open(items[index]),
                           onRebook: items[index].status == 'CANCELLED'
@@ -256,12 +292,14 @@ class _MyBookingsPageState extends State<MyBookingsPage> {
 class _BookingCard extends StatelessWidget {
   const _BookingCard({
     required this.booking,
+    this.onReview,
     this.paid,
     required this.onTap,
     required this.rebooking,
     this.onRebook,
   });
   final MyBooking booking;
+  final VoidCallback? onReview;
   final bool? paid;
   final VoidCallback onTap;
   final VoidCallback? onRebook;
@@ -370,6 +408,41 @@ class _BookingCard extends StatelessWidget {
               if (booking.technicianName?.isNotEmpty == true) ...[
                 const SizedBox(height: 7),
                 _line(Icons.engineering_outlined, booking.technicianName!),
+              ],
+              if (booking.status == 'COMPLETED') ...[
+                const SizedBox(height: 12),
+                if (onReview != null)
+                  SizedBox(
+                    width: double.infinity,
+                    child: FilledButton.icon(
+                      onPressed: onReview,
+                      icon: const Icon(Icons.star_outline_rounded, size: 18),
+                      label: Text(context.tr('review')),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: teal,
+                        foregroundColor: Colors.white,
+                      ),
+                    ),
+                  )
+                else if (booking.reviewed)
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.check_circle_rounded,
+                        size: 17,
+                        color: Color(0xFF16835D),
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        context.tr('reviewed'),
+                        style: const TextStyle(
+                          color: Color(0xFF16835D),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                  ),
               ],
               const SizedBox(height: 12),
               const Divider(height: 1),

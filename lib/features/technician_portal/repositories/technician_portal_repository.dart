@@ -13,6 +13,7 @@ import '../models/accept_decline_job_request_result.dart';
 import '../models/update_job_status_result.dart';
 import '../models/cancel_accepted_job_result.dart';
 import '../models/ac_service_history.dart';
+import '../models/technician_rating_summary.dart';
 
 class TechnicianPortalRepository {
   TechnicianPortalRepository({
@@ -46,6 +47,32 @@ class TechnicianPortalRepository {
     );
     final data = response is Map<String, dynamic> ? response['data'] : null;
     return TechnicianDashboard.fromJson(data as Map<String, dynamic>);
+  }
+
+  Future<TechnicianRatingSummary> myRatings({int limit = 20}) async {
+    if (limit < 1 || limit > 50) {
+      throw ArgumentError.value(limit, 'limit', 'Must be between 1 and 50.');
+    }
+    final response = await _apiClient.get(
+      '/technician-portal/ratings',
+      queryParameters: {'limit': '$limit'},
+      bearerToken: await _token(),
+    );
+    final data = response is Map<String, dynamic> ? response['data'] : null;
+    if (data is! Map<String, dynamic>) {
+      throw const ApiException(
+        code: 'INVALID_RESPONSE',
+        message: 'Máy chủ không trả về tổng quan đánh giá hợp lệ.',
+      );
+    }
+    try {
+      return TechnicianRatingSummary.fromJson(data);
+    } on FormatException {
+      throw const ApiException(
+        code: 'INVALID_RESPONSE',
+        message: 'Dữ liệu đánh giá từ máy chủ không hợp lệ.',
+      );
+    }
   }
 
   Future<SetAvailabilityStatus> availabilityStatus() async {
