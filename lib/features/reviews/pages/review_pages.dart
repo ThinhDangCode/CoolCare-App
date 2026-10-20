@@ -25,11 +25,82 @@ class _CustomerActivityPageState extends State<CustomerActivityPage> {
     _bookings = _repository.getBookings();
   }
 
-  void _reload() => setState(() => _bookings = _repository.getBookings());
+  Future<void> _reload() async {
+    final request = _repository.getBookings();
+    if (mounted) setState(() => _bookings = request);
+    try {
+      await request;
+    } catch (_) {
+      // FutureBuilder displays the error and its retry action.
+    }
+  }
+
+  Future<void> _openReviewForm(
+    ReviewableBooking booking, {
+    required bool editing,
+  }) async {
+    final changed = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+        builder: (_) => ReviewFormPage(
+          booking: booking,
+          repository: _repository,
+          existingReviewId: editing ? booking.reviewId : null,
+          initialRating: editing ? booking.reviewRating : null,
+          initialComment: editing ? booking.reviewComment : null,
+        ),
+      ),
+    );
+    if (changed == true && mounted) {
+      await _reload();
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            context.tr(editing ? 'reviewUpdated' : 'reviewThanks'),
+          ),
+        ),
+      );
+    }
+  }
+
+  Future<void> _deleteReview(ReviewableBooking booking) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(context.tr('deleteReviewTitle')),
+        content: Text(context.tr('deleteReviewConfirm')),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: Text(context.tr('cancel')),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: Text(context.tr('delete')),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || booking.reviewId == null) return;
+    try {
+      await _repository.deleteReview(booking.reviewId!);
+      if (!mounted) return;
+      await _reload();
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(context.tr('reviewDeleted'))),
+      );
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(_error(error))),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) => RefreshIndicator(
-    onRefresh: () async => _reload(),
+    onRefresh: _reload,
     child: ListView(
       key: const PageStorageKey('customer-bookings'),
       padding: const EdgeInsets.fromLTRB(20, 18, 20, 26),
@@ -71,26 +142,15 @@ class _CustomerActivityPageState extends State<CustomerActivityPage> {
                   .map(
                     (booking) => _BookingCard(
                       booking: booking,
-                      onReview: () async {
-                        final changed = await Navigator.of(context).push<bool>(
-                          MaterialPageRoute(
-                            builder: (_) => ReviewFormPage(
-                              booking: booking,
-                              repository: _repository,
-                            ),
-                          ),
-                        );
-                        if (changed == true) {
-                          _reload();
-                          if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(context.tr('reviewThanks')),
-                              ),
-                            );
-                          }
-                        }
-                      },
+                      onReview: booking.canReview
+                          ? () => _openReviewForm(booking, editing: false)
+                          : null,
+                      onEdit: booking.reviewed && booking.reviewId != null
+                          ? () => _openReviewForm(booking, editing: true)
+                          : null,
+                      onDelete: booking.reviewed && booking.reviewId != null
+                          ? () => _deleteReview(booking)
+                          : null,
                     ),
                   )
                   .toList(),
@@ -103,9 +163,16 @@ class _CustomerActivityPageState extends State<CustomerActivityPage> {
 }
 
 class _BookingCard extends StatelessWidget {
-  const _BookingCard({required this.booking, required this.onReview});
+  const _BookingCard({
+    required this.booking,
+    this.onReview,
+    this.onEdit,
+    this.onDelete,
+  });
   final ReviewableBooking booking;
-  final VoidCallback onReview;
+  final VoidCallback? onReview;
+  final VoidCallback? onEdit;
+  final VoidCallback? onDelete;
 
   @override
   Widget build(BuildContext context) => Container(
@@ -138,20 +205,86 @@ class _BookingCard extends StatelessWidget {
           booking.services,
           style: TextStyle(color: context.appText, fontWeight: FontWeight.w700),
         ),
+        if (booking.scheduledAt != null) ...[
+          const SizedBox(height: 7),
+          Text(
+            _formatBookingDate(booking.scheduledAt!),
+            style: TextStyle(fontSize: 12, color: context.appMuted),
+          ),
+        ],
         const SizedBox(height: 6),
         Text(
           '${context.tr('technician')}: ${booking.technician == 'Unassigned' ? context.tr('unassigned') : booking.technician}',
           style: const TextStyle(fontSize: 12),
         ),
-        const SizedBox(height: 14),
-        SizedBox(
-          width: double.infinity,
-          child: FilledButton.icon(
-            onPressed: booking.canReview ? onReview : null,
-            icon: const Icon(Icons.star_outline_rounded, size: 17),
-            label: Text(context.tr(booking.reviewed ? 'reviewed' : 'review')),
+        if (booking.reviewed) ...[
+          const SizedBox(height: 12),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: CoolCareColors.surfaceTint.withValues(alpha: .55),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.star_rounded,
+                      size: 18,
+                      color: Color(0xFFEAA400),
+                    ),
+                    const SizedBox(width: 5),
+                    Text(
+                      '${booking.reviewRating ?? 0}/5',
+                      style: const TextStyle(fontWeight: FontWeight.w700),
+                    ),
+                  ],
+                ),
+                if (booking.reviewComment?.trim().isNotEmpty == true) ...[
+                  const SizedBox(height: 5),
+                  Text(
+                    booking.reviewComment!,
+                    style: TextStyle(color: context.appText, height: 1.35),
+                  ),
+                ],
+              ],
+            ),
           ),
-        ),
+        ],
+        if (booking.canReview || booking.reviewed) ...[
+          const SizedBox(height: 14),
+          if (booking.canReview)
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton.icon(
+                onPressed: onReview,
+                icon: const Icon(Icons.star_outline_rounded, size: 17),
+                label: Text(context.tr('review')),
+              ),
+            )
+          else
+            Wrap(
+              crossAxisAlignment: WrapCrossAlignment.center,
+              spacing: 4,
+              children: [
+                _ReviewedBadge(),
+                TextButton.icon(
+                  onPressed: onEdit,
+                  icon: const Icon(Icons.edit, size: 16),
+                  label: Text(context.tr('editReview')),
+                ),
+                IconButton(
+                  tooltip: context.tr('deleteReviewTitle'),
+                  onPressed: onDelete,
+                  icon: const Icon(Icons.delete),
+                  color: CoolCareColors.error,
+                ),
+              ],
+            ),
+        ],
       ],
     ),
   );
@@ -161,10 +294,16 @@ class ReviewFormPage extends StatefulWidget {
   const ReviewFormPage({
     required this.booking,
     required this.repository,
+    this.existingReviewId,
+    this.initialRating,
+    this.initialComment,
     super.key,
   });
   final ReviewableBooking booking;
   final ReviewRepository repository;
+  final String? existingReviewId;
+  final int? initialRating;
+  final String? initialComment;
   @override
   State<ReviewFormPage> createState() => _ReviewFormPageState();
 }
@@ -176,6 +315,13 @@ class _ReviewFormPageState extends State<ReviewFormPage> {
   String? _errorMessage;
 
   @override
+  void initState() {
+    super.initState();
+    _rating = widget.initialRating ?? 0;
+    _comment.text = widget.initialComment ?? '';
+  }
+
+  @override
   void dispose() {
     _comment.dispose();
     super.dispose();
@@ -183,16 +329,12 @@ class _ReviewFormPageState extends State<ReviewFormPage> {
 
   Future<void> _submit() async {
     if (_rating < 1 || _rating > 5) {
-      setState(
-        () => _errorMessage = 'Please select a rating from 1 to 5 stars.',
-      );
+      setState(() => _errorMessage = context.tr('ratingRequired'));
       return;
     }
     final comment = _comment.text.trim();
     if (comment.length > 1000) {
-      setState(
-        () => _errorMessage = 'Your review cannot exceed 1,000 characters.',
-      );
+      setState(() => _errorMessage = context.tr('reviewTooLong'));
       return;
     }
     setState(() {
@@ -200,11 +342,19 @@ class _ReviewFormPageState extends State<ReviewFormPage> {
       _errorMessage = null;
     });
     try {
-      await widget.repository.submitReview(
-        bookingId: widget.booking.id,
-        rating: _rating,
-        comment: comment.isEmpty ? null : comment,
-      );
+      if (widget.existingReviewId == null) {
+        await widget.repository.submitReview(
+          bookingId: widget.booking.id,
+          rating: _rating,
+          comment: comment.isEmpty ? null : comment,
+        );
+      } else {
+        await widget.repository.updateReview(
+          reviewId: widget.existingReviewId!,
+          rating: _rating,
+          comment: comment.isEmpty ? null : comment,
+        );
+      }
       if (!mounted) return;
       Navigator.pop(context, true);
     } catch (error) {
@@ -218,96 +368,172 @@ class _ReviewFormPageState extends State<ReviewFormPage> {
   }
 
   @override
-  Widget build(BuildContext context) => _FormScaffold(
-    title: context.tr('rateService'),
-    subtitle: '${widget.booking.services}\n${widget.booking.technician}',
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          context.tr('experienceQuestion'),
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+  Widget build(BuildContext context) => Scaffold(
+    appBar: AppBar(
+      title: Text(
+        context.tr(
+          widget.existingReviewId == null ? 'rateService' : 'editReview',
         ),
-        const SizedBox(height: 15),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: List.generate(
-            5,
-            (index) => IconButton(
-              onPressed: () => setState(() => _rating = index + 1),
-              icon: Icon(
-                index < _rating
-                    ? Icons.star_rounded
-                    : Icons.star_border_rounded,
-                color: const Color(0xFFFFA000),
-                size: 38,
+      ),
+    ),
+    body: SafeArea(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _ReviewBookingSummary(booking: widget.booking),
+            const SizedBox(height: 26),
+            Text(
+              context.tr('experienceQuestion'),
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+            ),
+            const SizedBox(height: 15),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(
+                5,
+                (index) => IconButton(
+                  onPressed: () => setState(() => _rating = index + 1),
+                  icon: Icon(
+                    index < _rating
+                        ? Icons.star_rounded
+                        : Icons.star_border_rounded,
+                    color: const Color(0xFFFFA000),
+                    size: 38,
+                  ),
+                ),
               ),
             ),
-          ),
+            if (_rating > 0) ...[
+              const SizedBox(height: 4),
+              Center(
+                child: Text(
+                  context.tr('ratingValue').replaceFirst('{rating}', '$_rating'),
+                  style: TextStyle(
+                    color: context.appMuted,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+            const SizedBox(height: 20),
+            TextField(
+              controller: _comment,
+              maxLines: 5,
+              maxLength: 1000,
+              decoration: InputDecoration(
+                labelText: context.tr('commentOptional'),
+                hintText: context.tr('commentHint'),
+              ),
+            ),
+            if (_errorMessage != null) _FormError(_errorMessage!),
+            const SizedBox(height: 18),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton(
+                onPressed: _saving ? null : _submit,
+                child: _saving
+                    ? Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const SizedBox.square(
+                            dimension: 17,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Text(context.tr('submitting')),
+                        ],
+                      )
+                    : Text(
+                        context.tr(
+                          widget.existingReviewId == null
+                              ? 'submitReview'
+                              : 'saveReviewChanges',
+                        ),
+                      ),
+              ),
+            ),
+          ],
         ),
-        const SizedBox(height: 20),
-        TextField(
-          controller: _comment,
-          maxLines: 5,
-          maxLength: 1000,
-          decoration: InputDecoration(
-            labelText: context.tr('commentOptional'),
-            hintText: context.tr('commentHint'),
-          ),
-        ),
-        if (_errorMessage != null) _FormError(_errorMessage!),
-        const SizedBox(height: 18),
-        SizedBox(
-          width: double.infinity,
-          child: FilledButton(
-            onPressed: _saving ? null : _submit,
-            child: Text(context.tr(_saving ? 'submitting' : 'submitReview')),
-          ),
-        ),
-      ],
+      ),
     ),
   );
 }
 
-class _FormScaffold extends StatelessWidget {
-  const _FormScaffold({
-    required this.title,
-    required this.subtitle,
-    required this.child,
-  });
-  final String title;
-  final String subtitle;
-  final Widget child;
+class _ReviewBookingSummary extends StatelessWidget {
+  const _ReviewBookingSummary({required this.booking});
+  final ReviewableBooking booking;
+
   @override
-  Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: Text(title), backgroundColor: context.appSurface),
-    body: SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 30),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: CoolCareColors.surfaceTint,
-              borderRadius: BorderRadius.circular(10),
+  Widget build(BuildContext context) => Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: context.appSurface,
+          border: Border.all(color: context.appBorder),
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    booking.code,
+                    style: TextStyle(
+                      color: context.appMuted,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+                _StatusChip(status: booking.status),
+              ],
             ),
-            child: Text(
-              subtitle,
-              style: const TextStyle(
-                color: CoolCareColors.text,
-                height: 1.45,
+            const SizedBox(height: 12),
+            Text(
+              booking.services,
+              style: TextStyle(
+                color: context.appText,
+                fontSize: 16,
                 fontWeight: FontWeight.w700,
               ),
             ),
+            const SizedBox(height: 8),
+            _summaryLine(
+              context,
+              Icons.engineering_outlined,
+              '${context.tr('technician')}: ${booking.technician}',
+            ),
+            if (booking.scheduledAt != null) ...[
+              const SizedBox(height: 7),
+              _summaryLine(
+                context,
+                Icons.calendar_today_outlined,
+                _formatBookingDate(booking.scheduledAt!),
+              ),
+            ],
+          ],
+        ),
+      );
+
+  Widget _summaryLine(BuildContext context, IconData icon, String text) => Row(
+        children: [
+          Icon(icon, size: 16, color: context.appMuted),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              text,
+              style: TextStyle(fontSize: 13, color: context.appMuted),
+            ),
           ),
-          const SizedBox(height: 24),
-          child,
         ],
-      ),
-    ),
-  );
+      );
 }
 
 class _StatusChip extends StatelessWidget {
@@ -329,6 +555,32 @@ class _StatusChip extends StatelessWidget {
       ),
     ),
   );
+}
+
+class _ReviewedBadge extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) => Container(
+        padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 7),
+        decoration: BoxDecoration(
+          color: const Color(0xFFEAF6F2),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.check_circle, size: 15, color: Color(0xFF16835D)),
+            const SizedBox(width: 6),
+            Text(
+              context.tr('reviewed'),
+              style: const TextStyle(
+                color: Color(0xFF16835D),
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
+        ),
+      );
 }
 
 class _FormError extends StatelessWidget {
@@ -383,3 +635,9 @@ String _error(Object? error) => error is ApiException
     : error is StateError
     ? error.toString().replaceFirst('Bad state: ', '')
     : 'Something went wrong. Please try again.';
+
+String _formatBookingDate(DateTime value) {
+  final local = value.toLocal();
+  String two(int number) => number.toString().padLeft(2, '0');
+  return '${two(local.day)}/${two(local.month)}/${local.year} · ${two(local.hour)}:${two(local.minute)}';
+}

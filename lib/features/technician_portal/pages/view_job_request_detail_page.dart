@@ -8,6 +8,7 @@ import '../../../app/theme/coolcare_theme.dart';
 import '../../../core/network/api_exception.dart';
 import '../models/view_job_request.dart';
 import '../repositories/technician_portal_repository.dart';
+import 'customer_ac_service_history_page.dart';
 
 class ViewJobRequestDetailPage extends StatefulWidget {
   const ViewJobRequestDetailPage({
@@ -30,6 +31,77 @@ class _ViewJobRequestDetailPageState extends State<ViewJobRequestDetailPage> {
   bool? _isPaid;
   bool _paymentPending = false;
 
+  bool get _canViewAcHistory =>
+      widget.repository != null &&
+      widget.request.booking.units.any((unit) => unit.id.isNotEmpty);
+
+  Widget _buildAcHistoryButton() => SizedBox(
+    width: double.infinity,
+    child: OutlinedButton.icon(
+      onPressed: _submitting ? null : _showAcHistoryPicker,
+      icon: const Icon(Icons.history_rounded, size: 19),
+      label: const Text('View Customer AC Service History'),
+      style: OutlinedButton.styleFrom(
+        foregroundColor: const Color(0xFF087F91),
+        backgroundColor: const Color(0xFFEAF7F8),
+        side: const BorderSide(color: Color(0xFFB7E3E7)),
+        minimumSize: const Size.fromHeight(46),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+      ),
+    ),
+  );
+
+  Future<void> _showAcHistoryPicker() async {
+    final units = widget.request.booking.units
+        .where((unit) => unit.id.isNotEmpty)
+        .toList();
+    if (units.isEmpty || widget.repository == null) return;
+
+    final unit = units.length == 1 ? units.first : await showModalBottomSheet<ViewJobRequestUnit>(
+      context: context,
+      showDragHandle: true,
+      builder: (context) => SafeArea(
+        child: ListView(
+          shrinkWrap: true,
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+          children: [
+            const Padding(
+              padding: EdgeInsets.only(bottom: 12),
+              child: Text('Select an AC unit', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800)),
+            ),
+            for (final unit in units)
+              ListTile(
+                leading: const CircleAvatar(
+                  backgroundColor: Color(0xFFEAF7F8),
+                  foregroundColor: Color(0xFF087F91),
+                  child: Icon(Icons.ac_unit_rounded),
+                ),
+                title: Text('Unit ${unit.unitNumber > 0 ? unit.unitNumber : ''}'.trim()),
+                subtitle: Text([
+                  unit.brandName,
+                  unit.modelName,
+                ].where((value) => value?.trim().isNotEmpty == true).join(' ')),
+                onTap: () => Navigator.of(context).pop(unit),
+              ),
+          ],
+        ),
+      ),
+    );
+    if (unit == null || !mounted) return;
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => CustomerAcServiceHistoryPage(
+          requestId: widget.request.id,
+          unitId: unit.id,
+          customerName: widget.request.customer.name,
+          address: widget.request.booking.address,
+          repository: widget.repository!,
+        ),
+      ),
+    );
+  }
+
   @override
   void initState() {
     super.initState();
@@ -38,13 +110,18 @@ class _ViewJobRequestDetailPageState extends State<ViewJobRequestDetailPage> {
 
   Future<void> _loadPaymentStatus() async {
     try {
-      final summary = await _paymentRepository.technicianSummary(widget.request.booking.id);
+      final summary = await _paymentRepository.technicianSummary(
+        widget.request.booking.id,
+      );
       final rows = (summary['payments'] as List? ?? []).whereType<Map>();
       if (!mounted) return;
       setState(() {
         _isPaid = rows.any((p) => p['payment_status'] == 'SUCCESS');
-        _paymentPending = rows.any((p) =>
-            p['payment_status'] == 'PENDING' || p['payment_status'] == 'PROCESSING');
+        _paymentPending = rows.any(
+          (p) =>
+              p['payment_status'] == 'PENDING' ||
+              p['payment_status'] == 'PROCESSING',
+        );
       });
     } catch (_) {
       if (mounted) setState(() => _isPaid = null);
@@ -52,11 +129,14 @@ class _ViewJobRequestDetailPageState extends State<ViewJobRequestDetailPage> {
   }
 
   Future<void> _openPayment() async {
-    await Navigator.of(context).push(MaterialPageRoute(builder: (_) =>
-        PaymentPage(bookingId: widget.request.booking.id, technician: true)));
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) =>
+            PaymentPage(bookingId: widget.request.booking.id, technician: true),
+      ),
+    );
     if (mounted) await _loadPaymentStatus();
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -171,32 +251,75 @@ class _ViewJobRequestDetailPageState extends State<ViewJobRequestDetailPage> {
               if (request.status == 'ACCEPTED') ...[
                 const SizedBox(height: 12),
                 OutlinedButton.icon(
-                  onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) =>
-                    QuotationPage(bookingId: request.booking.id, technician: true))),
+                  onPressed: () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => QuotationPage(
+                        bookingId: request.booking.id,
+                        technician: true,
+                        createType: 'ADDITIONAL',
+                        currentAmount: request.booking.totalAmount,
+                      ),
+                    ),
+                  ),
                   icon: const Icon(Icons.receipt_long_outlined),
-                  label: const Text('Create / View Quotation'),
+                  label: const Text('Create Additional Quotation'),
                 ),
               ],
               const SizedBox(height: 12),
-              _Section(label: 'PAYMENT STATUS', children: [
-                Row(children: [
-                  Icon(_isPaid == true ? Icons.verified_rounded :
-                       _paymentPending ? Icons.schedule_rounded : Icons.receipt_long_outlined,
-                       color: _isPaid == true ? const Color(0xFF15803D) : const Color(0xFFB45309)),
-                  const SizedBox(width: 10),
-                  Expanded(child: Text(_isPaid == true ? 'Paid' :
-                      _isPaid == null ? 'Payment status unavailable' :
-                      _paymentPending ? 'Pending payment' : 'Unpaid',
-                      style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16))),
-                ]),
-                const SizedBox(height: 12),
-                SizedBox(width: double.infinity, child: OutlinedButton.icon(
-                  onPressed: _openPayment,
-                  icon: Icon(_isPaid == true ? Icons.receipt_long_outlined : Icons.qr_code_2),
-                  label: Text(_isPaid == true ? 'View payment details' :
-                      _paymentPending ? 'Check payment / Show QR' : 'Cash / Generate QR'),
-                )),
-              ]),
+              _Section(
+                label: 'PAYMENT STATUS',
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        _isPaid == true
+                            ? Icons.verified_rounded
+                            : _paymentPending
+                            ? Icons.schedule_rounded
+                            : Icons.receipt_long_outlined,
+                        color: _isPaid == true
+                            ? const Color(0xFF15803D)
+                            : const Color(0xFFB45309),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          _isPaid == true
+                              ? 'Paid'
+                              : _isPaid == null
+                              ? 'Payment status unavailable'
+                              : _paymentPending
+                              ? 'Pending payment'
+                              : 'Unpaid',
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w700,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: _openPayment,
+                      icon: Icon(
+                        _isPaid == true
+                            ? Icons.receipt_long_outlined
+                            : Icons.qr_code_2,
+                      ),
+                      label: Text(
+                        _isPaid == true
+                            ? 'View payment details'
+                            : _paymentPending
+                            ? 'Check payment / Show QR'
+                            : 'Cash / Generate QR',
+                      ),
+                    ),
+                  ),
+                ],
+              ),
               const SizedBox(height: 14),
               _Section(
                 label: context.tr('jobBookingInformation'),
@@ -239,8 +362,15 @@ class _ViewJobRequestDetailPageState extends State<ViewJobRequestDetailPage> {
                     ),
                   ),
                 ),
-                child: Row(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
+                    if (_canViewAcHistory) ...[
+                      _buildAcHistoryButton(),
+                      const SizedBox(height: 12),
+                    ],
+                    Row(
+                      children: [
                     Expanded(
                       child: OutlinedButton(
                         onPressed: _submitting ? null : _confirmDecline,
@@ -285,6 +415,8 @@ class _ViewJobRequestDetailPageState extends State<ViewJobRequestDetailPage> {
                             : Text(context.tr('jobAccept')),
                       ),
                     ),
+                      ],
+                    ),
                   ],
                 ),
               ),
@@ -302,8 +434,15 @@ class _ViewJobRequestDetailPageState extends State<ViewJobRequestDetailPage> {
                     ),
                   ),
                 ),
-                child: Row(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
+                    if (_canViewAcHistory) ...[
+                      _buildAcHistoryButton(),
+                      const SizedBox(height: 12),
+                    ],
+                    Row(
+                      children: [
                     if (request.canCancelAcceptedJob)
                       Expanded(
                         child: OutlinedButton.icon(
@@ -351,6 +490,8 @@ class _ViewJobRequestDetailPageState extends State<ViewJobRequestDetailPage> {
                           label: Text(context.tr('jobComplete')),
                         ),
                       ),
+                      ],
+                    ),
                   ],
                 ),
               ),
@@ -656,7 +797,10 @@ class _Section extends StatelessWidget {
 }
 
 class _UnitSpecification extends StatelessWidget {
-  const _UnitSpecification({required this.unit, required this.showDivider});
+  const _UnitSpecification({
+    required this.unit,
+    required this.showDivider,
+  });
 
   final ViewJobRequestUnit unit;
   final bool showDivider;
