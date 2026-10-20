@@ -1,8 +1,13 @@
+import '../../payments/pages/payment_page.dart';
+import '../../payments/pages/payment_history_page.dart';
+import '../../payments/repositories/payment_repository.dart';
+import '../../quotations/pages/quotation_page.dart';
 import 'package:flutter/material.dart';
 
 import '../../../app/localization/app_strings.dart';
 import '../repositories/booking_detail_repository.dart';
 import 'create_booking_page.dart';
+import 'booking_vouchers_sheet.dart';
 
 class BookingDetailPage extends StatefulWidget {
   const BookingDetailPage({
@@ -20,9 +25,11 @@ class BookingDetailPage extends StatefulWidget {
 class _BookingDetailPageState extends State<BookingDetailPage> {
   static const teal = Color(0xFF078B96);
   late final BookingDetailRepository repo;
+  final PaymentRepository _paymentRepo = PaymentRepository();
   late Future<Map<String, dynamic>> detail;
   bool cancelling = false;
   bool confirmingCompletion = false;
+  bool _timelineFailed = false;
 
   @override
   void initState() {
@@ -33,12 +40,19 @@ class _BookingDetailPageState extends State<BookingDetailPage> {
 
   Future<Map<String, dynamic>> _load() async {
     final result = await repo.getDetail(widget.bookingId);
-    // Timeline is a separate endpoint; do not depend on it to display details.
+    // Keep booking details visible even if the timeline endpoint fails.
+    _timelineFailed = false;
     try {
       final timeline = await repo.getTimeline(widget.bookingId);
       result['timeline'] = timeline;
     } catch (_) {
+      _timelineFailed = true;
       result['timeline'] ??= <dynamic>[];
+    }
+    try {
+      result['_paymentSummary'] = await _paymentRepo.summary(widget.bookingId);
+    } catch (_) {
+      result['_paymentSummary'] = null;
     }
     return result;
   }
@@ -76,7 +90,7 @@ class _BookingDetailPageState extends State<BookingDetailPage> {
     if (amount == null) return '—';
     final formatted = amount.round().toString().replaceAllMapped(
       RegExp(r'\B(?=(\d{3})+(?!\d))'),
-      (_) => '.',
+          (_) => '.',
     );
     return '$formatted đ';
   }
@@ -122,6 +136,18 @@ class _BookingDetailPageState extends State<BookingDetailPage> {
     ),
   );
 
+  Future<void> _openVouchers() async {
+    final applied = await showModalBottomSheet<bool>(
+      context: context, isScrollControlled: true, showDragHandle: true,
+      builder: (_) => FractionallySizedBox(heightFactor: 0.72,
+          child: BookingVouchersSheet(bookingId: widget.bookingId, repository: repo)),
+    );
+    if (applied == true && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(context.tr('voucherApplied'))));
+      _reload();
+    }
+  }
+
   Future<void> _cancel() async {
     final reason = await showDialog<String>(
       context: context,
@@ -137,7 +163,7 @@ class _BookingDetailPageState extends State<BookingDetailPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(context.tr('bookingDetailCancelled'))),
       );
-      Navigator.of(context).pop(true);
+      _reload();
     } catch (error) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -188,7 +214,13 @@ class _BookingDetailPageState extends State<BookingDetailPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(context.tr('bookingDetailCompletionConfirmed'))),
       );
-      Navigator.of(context).pop(true);
+      _reload();
+      await Navigator.of(context).push(
+        MaterialPageRoute<void>(
+          builder: (_) => PaymentPage(bookingId: widget.bookingId),
+        ),
+      );
+      if (mounted) _reload();
     } catch (error) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -228,6 +260,21 @@ class _BookingDetailPageState extends State<BookingDetailPage> {
         }
         final data = snapshot.data!;
         final status = data['status']?.toString() ?? '';
+        final paymentSummary = data['_paymentSummary'];
+        final paymentRows = paymentSummary is Map && paymentSummary['payments'] is List
+            ? paymentSummary['payments'] as List
+            : <dynamic>[];
+        final paymentPaid = paymentRows.any((p) => p is Map && p['payment_status'] == 'SUCCESS' && (num.tryParse('${p['amount']}') ?? -1) == (num.tryParse('${(paymentSummary is Map ? paymentSummary['booking'] : null) is Map ? (paymentSummary['booking'] as Map)['total_amount'] : null}') ?? -2));
+        final awaitingPayment =
+            status == 'COMPLETED' &&
+                paymentSummary is Map &&
+                !paymentPaid;
+
+        final paymentUnknown =
+            status == 'COMPLETED' &&
+                paymentSummary == null;
+        final isVietnamese = Localizations.localeOf(context).languageCode == 'vi';
+        String bilingual(String vi, String en) => isVietnamese ? vi : en;
         final address = data['address'] is Map
             ? data['address'] as Map
             : <String, dynamic>{};
@@ -246,7 +293,7 @@ class _BookingDetailPageState extends State<BookingDetailPage> {
         final timeline = data['timeline'] is List
             ? data['timeline'] as List
             : <dynamic>[];
-        final isWaiting =
+        final isWaiting = awaitingPayment || paymentUnknown ||
             status == 'PENDING' || status == 'TECHNICIAN_SELECTED';
         final isCancelled = status == 'CANCELLED';
         final statusColor = isCancelled
@@ -300,7 +347,13 @@ class _BookingDetailPageState extends State<BookingDetailPage> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      context.tr('bookingStatus_$status'),
+                      awaitingPayment
+                          ? bilingual('Chưa thanh toán', 'Unpaid')
+                          : paymentUnknown
+                              ? bilingual('Đang kiểm tra thanh toán', 'Checking payment')
+                              : paymentPaid && status == 'COMPLETED'
+                                  ? bilingual('Đã thanh toán', 'Paid')
+                                  : context.tr('bookingStatus_$status'),
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         color: statusColor,
@@ -322,18 +375,23 @@ class _BookingDetailPageState extends State<BookingDetailPage> {
               const SizedBox(height: 20),
               _section(
                 context.tr('bookingDetailTimeline'),
-                timeline.isEmpty
+                _timelineFailed
+                    ? Column(children: [
+                  Text(context.tr('bookingDetailTimelineLoadFailed')),
+                  TextButton(onPressed: _reload, child: Text(context.tr('bookingUi60'))),
+                ])
+                    : timeline.isEmpty
                     ? Text(context.tr('bookingDetailNoTimeline'))
                     : Column(
-                        children: [
-                          for (var i = 0; i < timeline.length; i++)
-                            if (timeline[i] is Map)
-                              _timelineRow(
-                                timeline[i] as Map,
-                                i == timeline.length - 1,
-                              ),
-                        ],
-                      ),
+                  children: [
+                    for (var i = 0; i < timeline.length; i++)
+                      if (timeline[i] is Map)
+                        _timelineRow(
+                          timeline[i] as Map,
+                          i == timeline.length - 1,
+                        ),
+                  ],
+                ),
               ),
               if (technician != null)
                 _section(
@@ -411,7 +469,7 @@ class _BookingDetailPageState extends State<BookingDetailPage> {
                       [address['addressLine'], address['ward'], address['city']]
                           .where(
                             (part) => part != null && '$part'.trim().isNotEmpty,
-                          )
+                      )
                           .join(', '),
                     ),
                     _info(
@@ -427,20 +485,75 @@ class _BookingDetailPageState extends State<BookingDetailPage> {
               ),
               _section(
                 context.tr('bookingUi45'),
-                Row(
-                  children: [
-                    Expanded(child: Text(context.tr('bookingUiTotal'))),
-                    Text(
-                      _money(pricing['totalAmount']),
-                      style: const TextStyle(
-                        color: teal,
-                        fontWeight: FontWeight.w800,
-                        fontSize: 17,
-                      ),
-                    ),
+                Column(children: [
+                  if ((num.tryParse('${pricing['discountAmount']}') ?? 0) > 0) ...[
+                    Row(children: [Expanded(child: Text(context.tr('voucherDiscount'))), Text('-${_money(pricing['discountAmount'])}')]),
+                    const SizedBox(height: 8),
                   ],
+                  Row(
+                    children: [
+                      Expanded(child: Text(context.tr('bookingUiTotal'))),
+                      Text(
+                        _money(pricing['totalAmount']),
+                        style: const TextStyle(
+                          color: teal,
+                          fontWeight: FontWeight.w800,
+                          fontSize: 17,
+                        ),
+                      ),
+                    ],
+                  ),
+                ]),
+              ),
+              Padding(padding: const EdgeInsets.only(bottom: 12), child: OutlinedButton.icon(
+                onPressed: () async {
+                  await Navigator.of(context).push(MaterialPageRoute(builder: (_) =>
+                      QuotationPage(bookingId: widget.bookingId, technician: false)));
+                  if (mounted) _reload();
+                },
+                icon: const Icon(Icons.receipt_long_outlined),
+                label: Text(Localizations.localeOf(context).languageCode == 'vi'
+                    ? 'Xem / phản hồi báo giá' : 'View / Respond to Quotation'),
+              )),
+              if (status == 'COMPLETED') Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: paymentUnknown
+                    ? OutlinedButton.icon(
+                        onPressed: _reload,
+                        icon: const Icon(Icons.refresh_rounded),
+                        label: Text(bilingual('Kiểm tra lại thanh toán', 'Retry payment check')),
+                      )
+                    : awaitingPayment
+                    ? FilledButton.icon(
+                  onPressed: () async {
+                    await Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) => PaymentPage(bookingId: widget.bookingId),
+                      ),
+                    );
+                    if (mounted) _reload();
+                  },
+                  icon: const Icon(Icons.receipt_long_outlined),
+                  label: Text(bilingual('Xem trạng thái thanh toán', 'View Payment Status')),
+                )
+                    : OutlinedButton.icon(
+                  onPressed: () async {
+                    await Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) => PaymentHistoryPage(bookingId: widget.bookingId),
+                      ),
+                    );
+                    if (mounted) _reload();
+                  },
+                  icon: const Icon(Icons.history),
+                  label: Text(bilingual('Lịch sử thanh toán', 'Payment History')),
                 ),
               ),
+              if (status == 'QUOTATION_ACCEPTED' || status == 'WAITING_CONFIRMATION')
+                Padding(padding: const EdgeInsets.only(bottom: 12), child: OutlinedButton.icon(
+                  onPressed: _openVouchers, icon: const Icon(Icons.local_offer_outlined),
+                  label: Text(context.tr('voucherTitle')),
+                )),
               if ((data['cancellationReason']?.toString() ?? '').isNotEmpty)
                 _section(
                   context.tr('bookingDetailReason'),
@@ -452,17 +565,17 @@ class _BookingDetailPageState extends State<BookingDetailPage> {
                   icon: const Icon(Icons.cancel_outlined),
                   label: Text(context.tr('bookingDetailCancel')),
                 ),
-              if (data['canConfirmCompletion'] == true)
+              if (data['canConfirmCompletion'] == true || status == 'WAITING_CONFIRMATION')
                 FilledButton.icon(
                   onPressed: confirmingCompletion ? null : _confirmCompletion,
                   icon: confirmingCompletion
                       ? const SizedBox.square(
-                          dimension: 17,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.white,
-                          ),
-                        )
+                    dimension: 17,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.white,
+                    ),
+                  )
                       : const Icon(Icons.task_alt_rounded),
                   label: Text(context.tr('bookingDetailConfirmCompletion')),
                 ),
@@ -470,7 +583,7 @@ class _BookingDetailPageState extends State<BookingDetailPage> {
                 FilledButton.icon(
                   onPressed: () => _rebook(data),
                   icon: const Icon(Icons.refresh_rounded),
-                  label: Text(context.tr('bookingRebook')),
+                  label: Text(context.tr('bookingDetailRebook')),
                 ),
             ],
           ),

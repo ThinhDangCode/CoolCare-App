@@ -8,11 +8,8 @@
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
 	<string>CoolCare</string>
-
-	<!-- Location Permission -->
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>CoolCare needs your location to help you select your service address.</string>
-
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -70,6 +67,23 @@
 		<string>UIInterfaceOrientationPortraitUpsideDown</string>
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
+	</array>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>zalo</string>
+		<string>Zalopay</string>
+		<string>Zalopay.api.v2</string>
+	</array>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>CoolCare ZaloPay</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>coolcare-zalopay</string>
+			</array>
+		</dict>
 	</array>
 </dict>
 </plist>
