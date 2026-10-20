@@ -9,6 +9,8 @@ class MyBooking {
     required this.technicianName,
     required this.unitCount,
     required this.serviceCount,
+    required this.reviewed,
+    required this.serviceNames,
   });
 
   final String id;
@@ -20,6 +22,8 @@ class MyBooking {
   final String? technicianName;
   final int unitCount;
   final int serviceCount;
+  final bool reviewed;
+  final String? serviceNames;
 
   factory MyBooking.fromJson(Map<String, dynamic> json) {
     final address = json['address'];
@@ -45,6 +49,8 @@ class MyBooking {
       technicianName: technicianData['name']?.toString(),
       unitCount: (json['unitCount'] as num?)?.toInt() ?? 0,
       serviceCount: (json['serviceCount'] as num?)?.toInt() ?? 0,
+      reviewed: json['reviewed'] == true,
+      serviceNames: json['serviceNames']?.toString(),
     );
   }
 }

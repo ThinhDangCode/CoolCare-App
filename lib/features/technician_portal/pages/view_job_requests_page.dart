@@ -23,13 +23,6 @@ class ViewJobRequestsPage extends StatefulWidget {
 }
 
 class _ViewJobRequestsPageState extends State<ViewJobRequestsPage> {
-  static const _historyStatuses = {
-    'DECLINED',
-    'EXPIRED',
-    'COMPLETED',
-    'CANCELLED',
-  };
-
   int _tab = 0;
   late Future<List<ViewJobRequest>> _requests;
 
@@ -43,12 +36,9 @@ class _ViewJobRequestsPageState extends State<ViewJobRequestsPage> {
     final status = switch (_tab) {
       0 => 'SELECTED',
       1 => 'ACCEPTED',
-      _ => 'ALL',
+      _ => 'HISTORY',
     };
-    final items = await widget.repository.viewJobRequests(status: status);
-    return _tab == 2
-        ? items.where((item) => _historyStatuses.contains(item.status)).toList()
-        : items;
+    return widget.repository.viewJobRequests(status: status);
   }
 
   void _selectTab(int value) {
@@ -261,10 +251,18 @@ class _ViewJobRequestCardState extends State<_ViewJobRequestCard> {
   late final Future<String> _paymentStatus = _fetchPaymentStatus();
 
   Future<String> _fetchPaymentStatus() async {
-    final result = await PaymentRepository().technicianSummary(widget.request.booking.id);
+    final result = await PaymentRepository().technicianSummary(
+      widget.request.booking.id,
+    );
     final rows = (result['payments'] as List? ?? []).whereType<Map>();
     if (rows.any((p) => p['payment_status'] == 'SUCCESS')) return 'Paid';
-    if (rows.any((p) => p['payment_status'] == 'PENDING' || p['payment_status'] == 'PROCESSING')) return 'Pending payment';
+    if (rows.any(
+      (p) =>
+          p['payment_status'] == 'PENDING' ||
+          p['payment_status'] == 'PROCESSING',
+    )) {
+      return 'Pending payment';
+    }
     return 'Unpaid';
   }
 
@@ -272,6 +270,12 @@ class _ViewJobRequestCardState extends State<_ViewJobRequestCard> {
   Widget build(BuildContext context) {
     final booking = widget.request.booking;
     final isNew = widget.request.status == 'SELECTED';
+    final isHistory = const {
+      'DECLINED',
+      'EXPIRED',
+      'COMPLETED',
+      'CANCELLED',
+    }.contains(widget.request.status);
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
@@ -313,7 +317,10 @@ class _ViewJobRequestCardState extends State<_ViewJobRequestCard> {
                 ),
               ),
               const SizedBox(width: 8),
-              _ViewJobRequestStatus(status: widget.request.status, isNew: isNew),
+              _ViewJobRequestStatus(
+                status: widget.request.status,
+                isNew: isNew,
+              ),
             ],
           ),
           if (widget.request.status == 'COMPLETED') ...[
@@ -321,24 +328,44 @@ class _ViewJobRequestCardState extends State<_ViewJobRequestCard> {
             FutureBuilder<String>(
               future: _paymentStatus,
               builder: (context, snapshot) {
-                final label = snapshot.hasError ? 'Payment unavailable'
-                    : snapshot.hasData ? snapshot.data! : 'Checking payment...';
+                final label = snapshot.hasError
+                    ? 'Payment unavailable'
+                    : snapshot.hasData
+                    ? snapshot.data!
+                    : 'Checking payment...';
                 final paid = label == 'Paid';
-                return Row(children: [
-                  Icon(paid ? Icons.verified_rounded : Icons.payments_outlined,
-                      size: 16, color: paid ? const Color(0xFF15803D) : const Color(0xFFB45309)),
-                  const SizedBox(width: 6),
-                  Text(label, style: TextStyle(fontWeight: FontWeight.w600,
-                      color: paid ? const Color(0xFF15803D) : const Color(0xFFB45309))),
-                ]);
+                return Row(
+                  children: [
+                    Icon(
+                      paid ? Icons.verified_rounded : Icons.payments_outlined,
+                      size: 16,
+                      color: paid
+                          ? const Color(0xFF15803D)
+                          : const Color(0xFFB45309),
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      label,
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        color: paid
+                            ? const Color(0xFF15803D)
+                            : const Color(0xFFB45309),
+                      ),
+                    ),
+                  ],
+                );
               },
             ),
           ],
           const SizedBox(height: 12),
           _line(
             context,
-            Icons.calendar_today_outlined,
-            _date(context, booking.scheduledAt),
+            isHistory ? Icons.history_rounded : Icons.calendar_today_outlined,
+            _date(
+              context,
+              isHistory ? widget.request.historyAt : booking.scheduledAt,
+            ),
           ),
           const SizedBox(height: 6),
           _line(context, Icons.location_on_outlined, booking.address),
@@ -355,6 +382,23 @@ class _ViewJobRequestCardState extends State<_ViewJobRequestCard> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
+                      context.tr('bookingTotal'),
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        fontSize: 11,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      _money(booking.totalAmount),
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurface,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    const SizedBox(height: 5),
+                    Text(
                       context.tr('estimatedEarnings'),
                       style: TextStyle(
                         color: Theme.of(context).colorScheme.onSurfaceVariant,
@@ -366,7 +410,7 @@ class _ViewJobRequestCardState extends State<_ViewJobRequestCard> {
                       _money(booking.totalAmount * .8),
                       style: const TextStyle(
                         color: CoolCareColors.primary,
-                        fontSize: 16,
+                        fontSize: 13,
                         fontWeight: FontWeight.w800,
                       ),
                     ),

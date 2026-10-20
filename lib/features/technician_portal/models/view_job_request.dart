@@ -9,6 +9,7 @@ class ViewJobRequest {
     required this.booking,
     required this.customer,
     this.expiresAt,
+    this.historyAt,
     this.matchScore,
     this.matchReason,
   });
@@ -27,6 +28,7 @@ class ViewJobRequest {
       canCancelAcceptedJob: json['canCancelAcceptedJob'] == true,
       requestedAt: DateTime.tryParse(json['requestedAt']?.toString() ?? ''),
       expiresAt: DateTime.tryParse(json['expiresAt']?.toString() ?? ''),
+      historyAt: DateTime.tryParse(json['historyAt']?.toString() ?? ''),
       matchScore: _number(json['matchScore']),
       matchReason: json['matchReason']?.toString(),
       booking: ViewJobRequestBooking.fromJson(booking),
@@ -41,6 +43,7 @@ class ViewJobRequest {
   final bool canCancelAcceptedJob;
   final DateTime? requestedAt;
   final DateTime? expiresAt;
+  final DateTime? historyAt;
   final double? matchScore;
   final String? matchReason;
   final ViewJobRequestBooking booking;
@@ -119,6 +122,7 @@ class ViewJobRequestBooking {
 
 class ViewJobRequestUnit {
   const ViewJobRequestUnit({
+    required this.id,
     required this.unitNumber,
     required this.services,
     this.description,
@@ -129,6 +133,7 @@ class ViewJobRequestUnit {
   factory ViewJobRequestUnit.fromJson(Map<String, dynamic> json) {
     final rawServices = json['services'];
     return ViewJobRequestUnit(
+      id: json['id']?.toString() ?? '',
       unitNumber: (json['unitNumber'] as num?)?.toInt() ?? 0,
       description: json['description']?.toString(),
       brandName: json['brandName']?.toString(),
@@ -142,6 +147,7 @@ class ViewJobRequestUnit {
     );
   }
 
+  final String id;
   final int unitNumber;
   final String? description;
   final String? brandName;

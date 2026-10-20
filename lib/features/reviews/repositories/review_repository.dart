@@ -56,4 +56,23 @@ class ReviewRepository {
       body: {'booking_id': bookingId, 'rating': rating, 'comment': comment},
     );
   }
+
+  Future<void> updateReview({
+    required String reviewId,
+    required int rating,
+    String? comment,
+  }) async {
+    await _apiClient.patch(
+      '/customer/reviews/$reviewId',
+      bearerToken: await _accessToken(),
+      body: {'rating': rating, 'comment': comment},
+    );
+  }
+
+  Future<void> deleteReview(String reviewId) async {
+    await _apiClient.delete(
+      '/customer/reviews/$reviewId',
+      bearerToken: await _accessToken(),
+    );
+  }
 }

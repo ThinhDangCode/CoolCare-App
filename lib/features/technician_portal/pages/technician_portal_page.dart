@@ -14,6 +14,7 @@ import 'manage_skills_page.dart';
 import 'manage_service_areas_page.dart';
 import 'view_job_requests_page.dart';
 import 'view_job_request_detail_page.dart';
+import 'my_ratings_page.dart';
 
 class TechnicianPortalPage extends StatefulWidget {
   const TechnicianPortalPage({required this.user, super.key});
@@ -150,8 +151,10 @@ class _TechnicianPortalPageState extends State<TechnicianPortalPage> {
                     _TechnicianProfile(
                       user: widget.user,
                       dashboard: _dashboard!,
+                      repository: _repository,
                       changingAvailability: _changingAvailability,
                       onAvailabilityChanged: _toggleAvailability,
+                      onRatingsViewed: _load,
                       onSwitchCustomer: () => Navigator.of(context).pop(),
                     ),
                   ],
@@ -559,15 +562,26 @@ class _TechnicianProfile extends StatelessWidget {
   const _TechnicianProfile({
     required this.user,
     required this.dashboard,
+    required this.repository,
     required this.changingAvailability,
     required this.onAvailabilityChanged,
+    required this.onRatingsViewed,
     required this.onSwitchCustomer,
   });
   final AuthUser user;
   final TechnicianDashboard dashboard;
+  final TechnicianPortalRepository repository;
   final bool changingAvailability;
   final ValueChanged<bool> onAvailabilityChanged;
+  final Future<void> Function() onRatingsViewed;
   final VoidCallback onSwitchCustomer;
+
+  Future<void> _openRatings(BuildContext context) async {
+    await Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => MyRatingsPage(repository: repository)),
+    );
+    await onRatingsViewed();
+  }
   @override
   Widget build(BuildContext context) => ListView(
     padding: const EdgeInsets.all(20),
@@ -627,14 +641,25 @@ class _TechnicianProfile extends StatelessWidget {
                         style: TextStyle(color: context.appMuted, fontSize: 12),
                       ),
                       const SizedBox(height: 3),
-                      Text(
-                        dashboard.rating == 0
-                            ? context.tr('noRatingsYet')
-                            : '${dashboard.rating.toStringAsFixed(1)} ★',
-                        style: const TextStyle(
-                          color: Color(0xFFD97706),
-                          fontWeight: FontWeight.w700,
-                          fontSize: 12,
+                      Semantics(
+                        button: true,
+                        label: context.tr('myRatings'),
+                        child: InkWell(
+                          onTap: () => _openRatings(context),
+                          borderRadius: BorderRadius.circular(4),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 3),
+                            child: Text(
+                              dashboard.rating == 0
+                                  ? context.tr('noRatingsYet')
+                                  : '${dashboard.rating.toStringAsFixed(1)} ★',
+                              style: const TextStyle(
+                                color: Color(0xFFD97706),
+                                fontWeight: FontWeight.w700,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ),
                         ),
                       ),
                     ],
@@ -697,6 +722,12 @@ class _TechnicianProfile extends StatelessWidget {
       _ProfileSection(
         title: context.tr('verificationSkills').toUpperCase(),
         children: [
+          _ProfileLink(
+            icon: Icons.star_outline_rounded,
+            label: context.tr('myRatings'),
+            onTap: () => _openRatings(context),
+          ),
+          const Divider(height: 1),
           _ProfileLink(
             icon: Icons.workspace_premium_outlined,
             label: context.tr('certificationStatus'),

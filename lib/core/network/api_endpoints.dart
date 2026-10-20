@@ -63,6 +63,9 @@ class ApiEndpoints {
   static String cancelAcceptedJob(String requestId) =>
       '/technician-portal/job-requests/$requestId/cancel';
 
+  static String customerAcServiceHistory(String requestId, String unitId) =>
+      '/technician-portal/job-requests/$requestId/units/$unitId/service-history';
+
   static String technicianSkill(String assignmentId) =>
       '/technician-portal/skills/$assignmentId';
 
