@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
 
 import '../../../../app/theme/coolcare_theme.dart';
 import '../../../../app/localization/app_strings.dart';
@@ -10,6 +11,8 @@ import '../../../auth/controllers/auth_controller.dart';
 import '../../../auth/pages/login_page.dart';
 import '../../../blogs/pages/blog_pages.dart';
 import '../../../booking/pages/my_bookings_page.dart';
+import '../../../notifications/pages/customer_notifications_page.dart';
+import '../../../notifications/repositories/customer_notifications_repository.dart';
 import '../../../services/controllers/service_controller.dart';
 import '../../../services/models/service_model.dart';
 import '../../../services/pages/service_detail_page.dart';
@@ -26,6 +29,78 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
+  int _unreadNotificationCount = 0;
+  late final CustomerNotificationsRepository _notificationsRepository;
+  Timer? _notificationRefreshTimer;
+  bool _wasAuthenticated = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _notificationsRepository = CustomerNotificationsRepository();
+    _wasAuthenticated = widget.controller.status == AuthStatus.authenticated;
+    widget.controller.addListener(_handleAuthenticationChange);
+    if (_wasAuthenticated) _refreshUnreadNotificationCount();
+    _notificationRefreshTimer = Timer.periodic(
+      const Duration(seconds: 45),
+      (_) => _refreshUnreadNotificationCount(),
+    );
+  }
+
+  @override
+  void didUpdateWidget(covariant HomePage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.controller != widget.controller) {
+      oldWidget.controller.removeListener(_handleAuthenticationChange);
+      widget.controller.addListener(_handleAuthenticationChange);
+      _wasAuthenticated = widget.controller.status == AuthStatus.authenticated;
+      if (_wasAuthenticated) {
+        _refreshUnreadNotificationCount();
+      } else {
+        setState(() => _unreadNotificationCount = 0);
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    widget.controller.removeListener(_handleAuthenticationChange);
+    _notificationRefreshTimer?.cancel();
+    super.dispose();
+  }
+
+  void _handleAuthenticationChange() {
+    final authenticated = widget.controller.status == AuthStatus.authenticated;
+    if (authenticated == _wasAuthenticated) return;
+    _wasAuthenticated = authenticated;
+    if (authenticated) {
+      _refreshUnreadNotificationCount();
+    } else if (mounted) {
+      setState(() => _unreadNotificationCount = 0);
+    }
+  }
+
+  Future<void> _refreshUnreadNotificationCount() async {
+    if (widget.controller.status != AuthStatus.authenticated) return;
+    final userId = widget.controller.user?.id;
+    if (userId == null || userId.isEmpty) return;
+    try {
+      final result = await _notificationsRepository.list(
+        page: 1,
+        unreadOnly: true,
+      );
+      if (!mounted ||
+          widget.controller.status != AuthStatus.authenticated ||
+          widget.controller.user?.id != userId) {
+        return;
+      }
+      if (_unreadNotificationCount != result.unreadCount) {
+        setState(() => _unreadNotificationCount = result.unreadCount);
+      }
+    } catch (_) {
+      // Keep the last known count when a brief network failure occurs.
+    }
+  }
 
   Future<void> _openLogin(BuildContext context) async {
     final destination = await Navigator.of(context).push<String>(
@@ -58,6 +133,15 @@ class _HomePageState extends State<HomePage> {
     Navigator.of(
       context,
     ).push(MaterialPageRoute(builder: (_) => const AddressesPage()));
+  }
+
+  Future<void> _openNotifications() async {
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => const CustomerNotificationsPage(),
+      ),
+    );
+    await _refreshUnreadNotificationCount();
   }
 
   void _selectTab(int index) {
@@ -128,6 +212,8 @@ class _HomePageState extends State<HomePage> {
                 _HomeHeader(
                   controller: widget.controller,
                   onLogin: () => _openLogin(context),
+                  onNotifications: _openNotifications,
+                  unreadNotificationCount: _unreadNotificationCount,
                 ),
                 Expanded(child: _selectedPage()),
                 _HomeNavigation(
@@ -147,10 +233,17 @@ class _HomePageState extends State<HomePage> {
 // ============================================================
 
 class _HomeHeader extends StatelessWidget {
-  const _HomeHeader({required this.controller, required this.onLogin});
+  const _HomeHeader({
+    required this.controller,
+    required this.onLogin,
+    required this.onNotifications,
+    required this.unreadNotificationCount,
+  });
 
   final AuthController controller;
   final VoidCallback onLogin;
+  final VoidCallback onNotifications;
+  final int unreadNotificationCount;
 
   @override
   Widget build(BuildContext context) {
@@ -190,16 +283,63 @@ class _HomeHeader extends StatelessWidget {
             listenable: controller,
             builder: (context, _) {
               if (controller.status == AuthStatus.authenticated) {
-                return const Row(
+                return Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(
-                      Icons.notifications_none_rounded,
-                      color: CoolCareColors.primaryDark,
-                      size: 20,
+                    IconButton(
+                      onPressed: onNotifications,
+                      tooltip: unreadNotificationCount > 0
+                          ? 'Notifications, $unreadNotificationCount unread'
+                          : 'Notifications',
+                      visualDensity: VisualDensity.compact,
+                      icon: Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          const Icon(
+                            Icons.notifications_none_rounded,
+                            color: CoolCareColors.primaryDark,
+                            size: 20,
+                          ),
+                          if (unreadNotificationCount > 0)
+                            Positioned(
+                              top: -7,
+                              right: -9,
+                              child: Container(
+                                constraints: const BoxConstraints(
+                                  minWidth: 17,
+                                  minHeight: 17,
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 4,
+                                  vertical: 1,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFDC2626),
+                                  borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.surface,
+                                    width: 1.5,
+                                  ),
+                                ),
+                                alignment: Alignment.center,
+                                child: Text(
+                                  '$unreadNotificationCount',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 9,
+                                    height: 1,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
                     ),
-                    SizedBox(width: 14),
-                    Icon(
+                    const SizedBox(width: 4),
+                    const Icon(
                       Icons.chat_bubble_outline_rounded,
                       color: CoolCareColors.primaryDark,
                       size: 18,

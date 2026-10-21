@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../../../app/localization/app_strings.dart';
@@ -9,6 +11,8 @@ import '../models/technician_dashboard.dart';
 import '../models/view_job_request.dart';
 import '../models/set_availability_status.dart';
 import '../repositories/technician_portal_repository.dart';
+import '../repositories/technician_notifications_repository.dart';
+import 'technician_notifications_page.dart';
 import 'certification_status_page.dart';
 import 'manage_skills_page.dart';
 import 'manage_service_areas_page.dart';
@@ -27,11 +31,14 @@ class TechnicianPortalPage extends StatefulWidget {
 
 class _TechnicianPortalPageState extends State<TechnicianPortalPage> {
   late final TechnicianPortalRepository _repository;
+  late final TechnicianNotificationsRepository _notificationsRepository;
+  Timer? _notificationRefreshTimer;
   TechnicianDashboard? _dashboard;
   List<ViewJobRequest> _jobRequests = const [];
   String? _error;
   int _tab = 0;
   bool _changingAvailability = false;
+  int _unreadNotificationCount = 0;
 
   @override
   void initState() {
@@ -39,7 +46,39 @@ class _TechnicianPortalPageState extends State<TechnicianPortalPage> {
     _repository = TechnicianPortalRepository(
       apiClient: ApiClient.fromEnvironment(),
     );
+    _notificationsRepository = TechnicianNotificationsRepository();
     _load();
+    _refreshUnreadNotifications();
+    _notificationRefreshTimer = Timer.periodic(
+      const Duration(seconds: 45),
+      (_) => _refreshUnreadNotifications(),
+    );
+  }
+
+  @override
+  void dispose() {
+    _notificationRefreshTimer?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _refreshUnreadNotifications() async {
+    try {
+      final result = await _notificationsRepository.list();
+      if (mounted) setState(() => _unreadNotificationCount = result.unreadCount);
+    } catch (_) {
+      // Keep the last known badge count if this background refresh fails.
+    }
+  }
+
+  Future<void> _openNotifications() async {
+    await Navigator.of(context).push<void>(
+      MaterialPageRoute<void>(
+        builder: (_) => TechnicianNotificationsPage(
+          repository: _notificationsRepository,
+        ),
+      ),
+    );
+    await _refreshUnreadNotifications();
   }
 
   Future<void> _load() async {
@@ -114,8 +153,39 @@ class _TechnicianPortalPageState extends State<TechnicianPortalPage> {
         ),
         actions: [
           IconButton(
-            onPressed: () {},
-            icon: const Icon(Icons.notifications_none_rounded),
+            tooltip: _unreadNotificationCount > 0
+                ? '$_unreadNotificationCount unread notifications'
+                : 'Notifications',
+            onPressed: _openNotifications,
+            icon: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                const Icon(Icons.notifications_none_rounded),
+                if (_unreadNotificationCount > 0)
+                  Positioned(
+                    top: -7,
+                    right: -9,
+                    child: Container(
+                      constraints: const BoxConstraints(minWidth: 18, minHeight: 18),
+                      padding: const EdgeInsets.symmetric(horizontal: 5),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFD94B4B),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: context.appSurface, width: 1.5),
+                      ),
+                      alignment: Alignment.center,
+                      child: Text(
+                        '$_unreadNotificationCount',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
           ),
           const SizedBox(width: 8),
         ],

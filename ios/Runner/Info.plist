@@ -10,6 +10,11 @@
 	<string>CoolCare</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>CoolCare needs your location to help you select your service address.</string>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsLocalNetworking</key>
+		<true/>
+	</dict>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
