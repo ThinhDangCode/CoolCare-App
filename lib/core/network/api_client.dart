@@ -1,4 +1,3 @@
-
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
@@ -7,14 +6,19 @@ import 'api_exception.dart';
 
 class ApiClient {
   factory ApiClient.fromEnvironment({HttpClient? httpClient}) {
-    const baseUrl = String.fromEnvironment(
-      'API_BASE_URL',
-      defaultValue: 'http://10.0.2.2:3000/api',
-    );
+    const configuredBaseUrl = String.fromEnvironment('API_BASE_URL');
+    final platformDefault = Platform.isIOS || Platform.isMacOS
+        ? 'http://127.0.0.1:3000/api'
+        : 'http://10.0.2.2:3000/api';
+    final baseUrl = configuredBaseUrl.trim().isEmpty
+        ? platformDefault
+        : configuredBaseUrl;
 
     return ApiClient(
       baseUrl: baseUrl,
       fallbackBaseUrls: const [
+        'http://127.0.0.1:3000/api',
+        'http://localhost:3000/api',
         'http://10.0.2.2:3000/api',
         'http://10.0.3.2:3000/api',
       ],
@@ -26,15 +30,11 @@ class ApiClient {
     required String baseUrl,
     List<String> fallbackBaseUrls = const [],
     HttpClient? httpClient,
-  })  : _baseUris = <String>{baseUrl, ...fallbackBaseUrls}
-      .where((url) => url.trim().isNotEmpty)
-      .map(
-        (url) => Uri.parse(
-      url.trim().replaceFirst(RegExp(r'/$'), ''),
-    ),
-  )
-      .toList(growable: false),
-        _httpClient = httpClient ?? HttpClient();
+  }) : _baseUris = <String>{baseUrl, ...fallbackBaseUrls}
+           .where((url) => url.trim().isNotEmpty)
+           .map((url) => Uri.parse(url.trim().replaceFirst(RegExp(r'/$'), '')))
+           .toList(growable: false),
+       _httpClient = httpClient ?? HttpClient();
 
   final List<Uri> _baseUris;
   final HttpClient _httpClient;
@@ -43,10 +43,10 @@ class ApiClient {
   Future<Uri>? _resolvingBaseUri;
 
   Future<dynamic> get(
-      String path, {
-        Map<String, String>? queryParameters,
-        String? bearerToken,
-      }) {
+    String path, {
+    Map<String, String>? queryParameters,
+    String? bearerToken,
+  }) {
     return _request(
       'GET',
       path,
@@ -56,10 +56,10 @@ class ApiClient {
   }
 
   Future<Map<String, dynamic>> post(
-      String path, {
-        Map<String, dynamic>? body,
-        String? bearerToken,
-      }) async {
+    String path, {
+    Map<String, dynamic>? body,
+    String? bearerToken,
+  }) async {
     final response = await _request(
       'POST',
       path,
@@ -67,16 +67,14 @@ class ApiClient {
       bearerToken: bearerToken,
     );
 
-    return response is Map<String, dynamic>
-        ? response
-        : <String, dynamic>{};
+    return response is Map<String, dynamic> ? response : <String, dynamic>{};
   }
 
   Future<Map<String, dynamic>> put(
-      String path, {
-        Map<String, dynamic>? body,
-        String? bearerToken,
-      }) async {
+    String path, {
+    Map<String, dynamic>? body,
+    String? bearerToken,
+  }) async {
     final response = await _request(
       'PUT',
       path,
@@ -84,16 +82,14 @@ class ApiClient {
       bearerToken: bearerToken,
     );
 
-    return response is Map<String, dynamic>
-        ? response
-        : <String, dynamic>{};
+    return response is Map<String, dynamic> ? response : <String, dynamic>{};
   }
 
   Future<Map<String, dynamic>> patch(
-      String path, {
-        Map<String, dynamic>? body,
-        String? bearerToken,
-      }) async {
+    String path, {
+    Map<String, dynamic>? body,
+    String? bearerToken,
+  }) async {
     final response = await _request(
       'PATCH',
       path,
@@ -101,45 +97,29 @@ class ApiClient {
       bearerToken: bearerToken,
     );
 
-    return response is Map<String, dynamic>
-        ? response
-        : <String, dynamic>{};
+    return response is Map<String, dynamic> ? response : <String, dynamic>{};
   }
 
-  Future<void> delete(
-      String path, {
-        String? bearerToken,
-      }) async {
-    await _request(
-      'DELETE',
-      path,
-      bearerToken: bearerToken,
-    );
+  Future<void> delete(String path, {String? bearerToken}) async {
+    await _request('DELETE', path, bearerToken: bearerToken);
   }
 
   Future<dynamic> _request(
-      String method,
-      String path, {
-        Map<String, dynamic>? body,
-        Map<String, String>? queryParameters,
-        String? bearerToken,
-      }) async {
+    String method,
+    String path, {
+    Map<String, dynamic>? body,
+    Map<String, String>? queryParameters,
+    String? bearerToken,
+  }) async {
     final baseUri = await _resolveBaseUri();
 
-    final normalizedPath = path.startsWith('/')
-        ? path.substring(1)
-        : path;
+    final normalizedPath = path.startsWith('/') ? path.substring(1) : path;
 
-    var uri = Uri.parse(
-      '${baseUri.toString()}/$normalizedPath',
-    );
+    var uri = Uri.parse('${baseUri.toString()}/$normalizedPath');
 
     if (queryParameters != null && queryParameters.isNotEmpty) {
       uri = uri.replace(
-        queryParameters: {
-          ...uri.queryParameters,
-          ...queryParameters,
-        },
+        queryParameters: {...uri.queryParameters, ...queryParameters},
       );
     }
 
@@ -150,10 +130,7 @@ class ApiClient {
 
       request.headers.contentType = ContentType.json;
 
-      request.headers.set(
-        HttpHeaders.acceptHeader,
-        ContentType.json.mimeType,
-      );
+      request.headers.set(HttpHeaders.acceptHeader, ContentType.json.mimeType);
 
       if (bearerToken != null && bearerToken.isNotEmpty) {
         request.headers.set(
@@ -170,24 +147,18 @@ class ApiClient {
         const Duration(seconds: 15),
       );
 
-      final responseText = await utf8.decoder
-          .bind(response)
-          .join();
+      final responseText = await utf8.decoder.bind(response).join();
 
       final dynamic decoded = responseText.isEmpty
           ? <String, dynamic>{}
           : jsonDecode(responseText);
 
-      if (response.statusCode < 200 ||
-          response.statusCode >= 300) {
+      if (response.statusCode < 200 || response.statusCode >= 300) {
         final payload = decoded is Map<String, dynamic>
             ? decoded
             : <String, dynamic>{};
 
-        throw _toApiException(
-          response.statusCode,
-          payload,
-        );
+        throw _toApiException(response.statusCode, payload);
       }
 
       return decoded;
@@ -205,8 +176,7 @@ class ApiClient {
 
       throw const ApiException(
         code: 'NETWORK_ERROR',
-        message:
-        'Không thể kết nối máy chủ. Vui lòng kiểm tra mạng.',
+        message: 'Không thể kết nối máy chủ. Vui lòng kiểm tra mạng.',
       );
     } on FormatException {
       throw const ApiException(
@@ -249,9 +219,7 @@ class ApiClient {
 
   Future<Uri> _findAvailableBaseUri() async {
     for (final baseUri in _baseUris) {
-      final healthUri = Uri.parse(
-        '${baseUri.toString()}/health',
-      );
+      final healthUri = Uri.parse('${baseUri.toString()}/health');
 
       try {
         final request = await _httpClient
@@ -267,12 +235,13 @@ class ApiClient {
           const Duration(seconds: 3),
         );
 
-        await response.drain<void>().timeout(
-          const Duration(seconds: 3),
-        );
+        await response.drain<void>().timeout(const Duration(seconds: 3));
 
-        if (response.statusCode >= 200 &&
-            response.statusCode < 300) {
+        // Any HTTP response proves that this host is reachable. The health
+        // endpoint can legitimately return 5xx when the database is starting;
+        // keep the host so the real API error is shown instead of a misleading
+        // "cannot connect" message.
+        if (response.statusCode >= 100 && response.statusCode < 600) {
           _activeBaseUri = baseUri;
           return baseUri;
         }
@@ -288,14 +257,11 @@ class ApiClient {
     throw const ApiException(
       code: 'NETWORK_ERROR',
       message:
-      'Không thể kết nối đến backend. Vui lòng kiểm tra máy chủ và kết nối mạng.',
+          'Không thể kết nối đến backend. Vui lòng kiểm tra máy chủ và kết nối mạng.',
     );
   }
 
-  ApiException _toApiException(
-      int statusCode,
-      Map<String, dynamic> payload,
-      ) {
+  ApiException _toApiException(int statusCode, Map<String, dynamic> payload) {
     final error = payload['error'];
 
     final errorMap = error is Map<String, dynamic>
@@ -309,18 +275,15 @@ class ApiClient {
     if (details is Map) {
       for (final entry in details.entries) {
         if (entry.value is String) {
-          fieldErrors[entry.key.toString()] =
-          entry.value as String;
+          fieldErrors[entry.key.toString()] = entry.value as String;
         }
       }
     }
 
     return ApiException(
       statusCode: statusCode,
-      code: errorMap['code']?.toString() ??
-          'HTTP_$statusCode',
-      message: errorMap['message']?.toString() ??
-          'Yêu cầu không thành công.',
+      code: errorMap['code']?.toString() ?? 'HTTP_$statusCode',
+      message: errorMap['message']?.toString() ?? 'Yêu cầu không thành công.',
       fieldErrors: fieldErrors,
     );
   }

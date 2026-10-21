@@ -17,10 +17,10 @@ Android support starts at API 23 because secure storage uses Android Keystore AE
 
 ## API configuration
 
-Android emulator defaults to `http://10.0.2.2:3000/api`. Override it for another environment:
+The app uses `http://10.0.2.2:3000/api` on Android emulators and `http://127.0.0.1:3000/api` on the iOS Simulator. A physical phone cannot use loopback to reach a development computer. Set `API_BASE_URL` to the computer's LAN address (for example, `http://192.168.1.25:3000/api`) and keep the phone and computer on the same network:
 
 ```sh
-flutter run --dart-define=API_BASE_URL=http://10.0.2.2:3000/api
+flutter run --dart-define=API_BASE_URL=http://192.168.1.25:3000/api
 ```
 
 Expected endpoints:
