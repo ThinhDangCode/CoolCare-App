@@ -19,7 +19,7 @@ class BookingAcUnit {
 
   Map<String, dynamic> toJson() => {
     'acBrandId': acBrandId,
-    'acModelId': acModelId,
+    'acModelId': null, // Only assigned technicians may set the model.
     'description': description.trim(),
     'serviceIds': serviceIds,
   };
@@ -41,6 +41,44 @@ class BookingController extends ChangeNotifier {
   List<Map<String, dynamic>> addresses = [];
 
   final Map<String, List<Map<String, dynamic>>> modelsByBrand = {};
+  List<Map<String, dynamic>> previousAcUnits = [];
+  int _addressVersion = 0;
+
+  Future<void> loadPreviousAcUnits() async {
+    final addressId = customerAddressId;
+    final version = ++_addressVersion;
+    previousAcUnits = [];
+    for (final unit in units) {
+      unit.acBrandId = null;
+      unit.acModelId = null;
+    }
+    _notify();
+    if (addressId == null) return;
+    try {
+      final token = await _getToken();
+      final response = await _apiClient.get(
+        '/bookings/previous-ac-units',
+        bearerToken: token,
+        queryParameters: {'addressId': addressId},
+      );
+      if (_disposed || version != _addressVersion || customerAddressId != addressId) return;
+      previousAcUnits = _extractItems(response);
+      _notify();
+    } catch (_) {
+      // History is optional: first-time customers can book without a model.
+      if (!_disposed && version == _addressVersion) {
+        previousAcUnits = [];
+        _notify();
+      }
+    }
+  }
+
+  void selectPreviousAcUnit(int index, Map<String, dynamic>? previous) {
+    if (index < 0 || index >= units.length) return;
+    units[index].acBrandId = previous?['brandId']?.toString();
+    units[index].acModelId = null;
+    _notify();
+  }
 
   // BOOKING FORM
   String? customerAddressId;
@@ -109,6 +147,7 @@ class BookingController extends ChangeNotifier {
         );
 
         selectAddress(defaultAddress);
+        await loadPreviousAcUnits();
       }
     } catch (error) {
       errorMessage = _errorMessage(error);
@@ -231,17 +270,11 @@ class BookingController extends ChangeNotifier {
     units[index].acModelId = null;
     _notify();
 
-    if (brandId != null) {
-      await loadModels(brandId);
-    }
   }
 
   // SELECT AC MODEL
   void selectModel(int index, String? modelId) {
-    if (index < 0 || index >= units.length) return;
-
-    units[index].acModelId = modelId;
-    _notify();
+    // Customer is not allowed to select a model.
   }
 
   // DESCRIBE EACH AC UNIT
@@ -299,7 +332,7 @@ class BookingController extends ChangeNotifier {
             final rawServices = raw['services'];
             return BookingAcUnit(
               acBrandId: raw['ac_brand_id']?.toString(),
-              acModelId: raw['ac_model_id']?.toString(),
+              acModelId: null,
               description: raw['description']?.toString() ?? '',
               serviceIds: rawServices is List
                   ? rawServices
