@@ -359,10 +359,6 @@ class _CreateBookingPageState extends State<CreateBookingPage> {
   Widget _buildAcUnit(int index) {
     final unit = controller.units[index];
 
-    final availableModels = unit.acBrandId == null
-        ? <Map<String, dynamic>>[]
-        : controller.modelsByBrand[unit.acBrandId!] ?? <Map<String, dynamic>>[];
-
     return _card(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -390,45 +386,34 @@ class _CreateBookingPageState extends State<CreateBookingPage> {
 
           const SizedBox(height: 14),
           _fieldLabel(context.tr('bookingUi8'), optional: true),
-
           DropdownButtonFormField<String>(
-            key: ValueKey('brand-$index-${unit.acBrandId}'),
-            initialValue: unit.acBrandId,
+            key: ValueKey('brand-$index-${controller.customerAddressId}'),
+            isExpanded: true,
+            initialValue: controller.brands.any(
+              (brand) => brand['id']?.toString() == unit.acBrandId,
+            ) ? unit.acBrandId : null,
             decoration: _inputDecoration(context.tr('bookingUi9')),
-            items: controller.brands.map((brand) {
-              return DropdownMenuItem<String>(
-                value: brand['id'].toString(),
-                child: Text(brand['name']?.toString() ?? ''),
-              );
-            }).toList(),
-            onChanged: (value) {
-              controller.selectBrand(index, value);
-            },
-          ),
-
-          const SizedBox(height: 14),
-          _fieldLabel(context.tr('bookingUi10'), optional: true),
-
-          DropdownButtonFormField<String>(
-            key: ValueKey('model-$index-${unit.acBrandId}'),
-            initialValue: unit.acModelId,
-            decoration: _inputDecoration(context.tr('bookingUi11')),
-            items: availableModels.map((model) {
-              return DropdownMenuItem<String>(
-                value: model['id'].toString(),
-                child: Text(model['model_name']?.toString() ?? ''),
-              );
-            }).toList(),
-            onChanged: unit.acBrandId == null
-                ? null
-                : (value) => controller.selectModel(index, value),
-          ),
-
-          if (controller.isLoadingModels)
-            const Padding(
-              padding: EdgeInsets.only(top: 8),
-              child: LinearProgressIndicator(),
+            items: [
+              DropdownMenuItem<String>(
+                value: '',
+                child: Text(context.tr('bookingUi9'), overflow: TextOverflow.ellipsis),
+              ),
+              ...controller.brands.map(
+                (brand) => DropdownMenuItem<String>(
+                  value: brand['id']?.toString(),
+                  child: Text(
+                    brand['name']?.toString() ?? '',
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ),
+            ],
+            onChanged: (value) => controller.selectBrand(
+              index,
+              value == null || value.isEmpty ? null : value,
             ),
+          ),
+          const SizedBox(height: 14),
 
           const Divider(height: 30),
 
@@ -812,6 +797,7 @@ class _CreateBookingPageState extends State<CreateBookingPage> {
 
     if (selected != null) {
       controller.selectAddress(selected);
+      await controller.loadPreviousAcUnits();
     }
   }
 

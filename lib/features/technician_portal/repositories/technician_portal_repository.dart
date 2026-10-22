@@ -195,6 +195,41 @@ class TechnicianPortalRepository {
     }
   }
 
+  Future<List<Map<String, dynamic>>> _catalogItems(String resource, {
+    String? brandId,
+  }) async {
+    final items = <Map<String, dynamic>>[];
+    for (var page = 1; page <= 100; page++) {
+      final response = await _apiClient.get('/catalog/$resource',
+        queryParameters: {
+          'page': '$page', 'limit': '100',
+          if (brandId != null) 'brand_id': brandId,
+        },
+      );
+      final data = response is Map<String, dynamic> ? response['data'] : null;
+      final rows = data is Map<String, dynamic> ? data['items'] : null;
+      if (rows is! List) throw const FormatException('Invalid catalog response');
+      items.addAll(rows.whereType<Map<String, dynamic>>());
+      if (rows.length < 100) break;
+    }
+    return items;
+  }
+
+  Future<List<Map<String, dynamic>>> acBrands() => _catalogItems('brands');
+  Future<List<Map<String, dynamic>>> acModels(String brandId) =>
+      _catalogItems('models', brandId: brandId);
+
+  Future<void> updateJobAcInformation(String requestId, String unitId, {
+    required String brandId,
+    required String modelId,
+  }) async {
+    await _apiClient.patch(
+      ApiEndpoints.updateJobAcInformation(requestId, unitId),
+      bearerToken: await _token(),
+      body: {'brandId': brandId, 'modelId': modelId},
+    );
+  }
+
   Future<AcServiceHistory> customerAcServiceHistory(
     String requestId,
     String unitId, {

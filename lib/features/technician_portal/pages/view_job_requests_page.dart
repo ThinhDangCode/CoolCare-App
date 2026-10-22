@@ -36,7 +36,8 @@ class _ViewJobRequestsPageState extends State<ViewJobRequestsPage> {
     final status = switch (_tab) {
       0 => 'SELECTED',
       1 => 'ACCEPTED',
-      _ => 'HISTORY',
+      2 => 'COMPLETED',
+      _ => 'CLOSED',
     };
     return widget.repository.viewJobRequests(status: status);
   }
@@ -110,7 +111,8 @@ class _ViewJobRequestsPageState extends State<ViewJobRequestsPage> {
                   message: switch (_tab) {
                     0 => context.tr('noNewJobRequests'),
                     1 => context.tr('noOngoingJobs'),
-                    _ => context.tr('noJobHistory'),
+                    2 => Localizations.localeOf(context).languageCode == 'vi' ? 'Chưa có công việc hoàn thành' : 'No completed jobs yet',
+                    _ => Localizations.localeOf(context).languageCode == 'vi' ? 'Chưa có công việc đã đóng' : 'No closed jobs yet',
                   },
                 );
               }
@@ -173,7 +175,8 @@ class _ViewJobRequestsTabs extends StatelessWidget {
       children: [
         _tab(context, context.tr('newRequests'), 0, count: newCount),
         _tab(context, context.tr('ongoing'), 1),
-        _tab(context, context.tr('history'), 2),
+        _tab(context, context.tr('statusCompleted'), 2),
+        _tab(context, Localizations.localeOf(context).languageCode == 'vi' ? 'Đã đóng' : 'Closed', 3),
       ],
     ),
   );
@@ -197,7 +200,7 @@ class _ViewJobRequestsTabs extends StatelessWidget {
                       color: active
                           ? CoolCareColors.primary
                           : Theme.of(context).colorScheme.onSurfaceVariant,
-                      fontSize: 13,
+                      fontSize: 11,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
@@ -248,7 +251,26 @@ class _ViewJobRequestCard extends StatefulWidget {
 }
 
 class _ViewJobRequestCardState extends State<_ViewJobRequestCard> {
-  late final Future<String> _paymentStatus = _fetchPaymentStatus();
+  Future<String>? _paymentStatus;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.request.status == 'COMPLETED') {
+      _paymentStatus = _fetchPaymentStatus();
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant _ViewJobRequestCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.request.booking.id != oldWidget.request.booking.id ||
+        widget.request.status != oldWidget.request.status) {
+      _paymentStatus = widget.request.status == 'COMPLETED'
+          ? _fetchPaymentStatus()
+          : null;
+    }
+  }
 
   Future<String> _fetchPaymentStatus() async {
     final result = await PaymentRepository().technicianSummary(
@@ -329,11 +351,16 @@ class _ViewJobRequestCardState extends State<_ViewJobRequestCard> {
               future: _paymentStatus,
               builder: (context, snapshot) {
                 final label = snapshot.hasError
-                    ? 'Payment unavailable'
+                    ? (Localizations.localeOf(context).languageCode == 'vi'
+                        ? 'Không tải được thanh toán' : 'Payment unavailable')
                     : snapshot.hasData
-                    ? snapshot.data!
-                    : 'Checking payment...';
-                final paid = label == 'Paid';
+                    ? (Localizations.localeOf(context).languageCode == 'vi'
+                        ? (snapshot.data! == 'Paid' ? 'Đã thanh toán'
+                            : snapshot.data! == 'Pending' ? 'Đang xử lý'
+                            : 'Chưa thanh toán') : snapshot.data!)
+                    : (Localizations.localeOf(context).languageCode == 'vi'
+                        ? 'Đang kiểm tra thanh toán...' : 'Checking payment...');
+                final paid = label == 'Paid' || label == 'Đã thanh toán';
                 return Row(
                   children: [
                     Icon(

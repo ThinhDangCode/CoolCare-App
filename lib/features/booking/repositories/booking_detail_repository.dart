@@ -50,6 +50,15 @@ class BookingDetailRepository {
     await _api.post('/customer/bookings/$id/voucher', bearerToken: await _token(), body: {'code': code});
   }
 
+  Future<void> removeVoucher(String id) async {
+    await _api.post('/customer/bookings/$id/voucher/remove', bearerToken: await _token(), body: const {});
+  }
+
+  Future<void> reportNoShow(String id, String description) async {
+    await _api.post('/bookings/$id/report-no-show',
+      bearerToken: await _token(), body: {'description': description});
+  }
+
   Future<void> cancel(String id, String reason) async {
     await _api.post(
       '/bookings/$id/cancel',

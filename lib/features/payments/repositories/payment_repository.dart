@@ -21,6 +21,16 @@ class PaymentRepository {
     return session.token;
   }
 
+  Future<Map<String, dynamic>> history({int page = 1, int limit = 20}) async {
+    if (page < 1 || limit < 1 || limit > 100) {
+      throw ArgumentError('Invalid payment history pagination');
+    }
+    final result = await _api.get('/payments/history',
+      queryParameters: {'page': '$page', 'limit': '$limit'},
+      bearerToken: await _token());
+    return Map<String, dynamic>.from(result['data'] as Map);
+  }
+
   Future<Map<String, dynamic>> summary(
       String bookingId,
       ) async {

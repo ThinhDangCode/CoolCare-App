@@ -126,6 +126,8 @@ class ViewJobRequestUnit {
     required this.unitNumber,
     required this.services,
     this.description,
+    this.brandId,
+    this.modelId,
     this.brandName,
     this.modelName,
   });
@@ -136,6 +138,8 @@ class ViewJobRequestUnit {
       id: json['id']?.toString() ?? '',
       unitNumber: (json['unitNumber'] as num?)?.toInt() ?? 0,
       description: json['description']?.toString(),
+      brandId: json['brandId']?.toString(),
+      modelId: json['modelId']?.toString(),
       brandName: json['brandName']?.toString(),
       modelName: json['modelName']?.toString(),
       services: rawServices is List
@@ -150,6 +154,8 @@ class ViewJobRequestUnit {
   final String id;
   final int unitNumber;
   final String? description;
+  final String? brandId;
+  final String? modelId;
   final String? brandName;
   final String? modelName;
   final List<ViewJobRequestService> services;

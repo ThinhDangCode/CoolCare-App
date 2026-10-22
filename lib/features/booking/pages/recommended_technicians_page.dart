@@ -1,4 +1,5 @@
 import '../../../app/localization/app_strings.dart';
+import 'my_bookings_page.dart';
 import 'package:flutter/material.dart';
 
 /// A technician returned by the booking recommendation API.
@@ -497,10 +498,16 @@ class _RecommendedTechniciansPageState
             _statusView(
               icon: Icons.search_off,
               title: context.tr('bookingUi77'),
-              message: context.tr('bookingUi78'),
+              message: Localizations.localeOf(context).languageCode == 'vi'
+                  ? 'Chưa tìm thấy kỹ thuật viên phù hợp. Lịch đặt đã được lưu, bạn có thể chọn lại sau.'
+                  : 'No suitable technician found. Your booking is saved; you can choose later.',
               action: context.tr('bookingUi79'),
               onAction: _reload,
-              secondaryAction: widget.onBackToBooking,
+              secondaryAction: widget.onBackToBooking ?? () {
+                Navigator.of(context).pushReplacement(
+                  MaterialPageRoute<void>(builder: (_) => const MyBookingsPage()),
+                );
+              },
             )
           else
             RefreshIndicator(

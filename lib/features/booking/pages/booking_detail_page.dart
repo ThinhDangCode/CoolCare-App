@@ -7,6 +7,8 @@ import 'package:flutter/material.dart';
 import '../../../app/localization/app_strings.dart';
 import '../repositories/booking_detail_repository.dart';
 import 'create_booking_page.dart';
+import 'recommended_technicians_page.dart';
+import '../services/technician_matching_api_service.dart';
 import 'booking_vouchers_sheet.dart';
 
 class BookingDetailPage extends StatefulWidget {
@@ -31,6 +33,7 @@ class _BookingDetailPageState extends State<BookingDetailPage> {
   late Future<Map<String, dynamic>> detail;
   bool cancelling = false;
   bool confirmingCompletion = false;
+  bool reportingNoShow = false;
   bool _timelineFailed = false;
 
   @override
@@ -138,6 +141,68 @@ class _BookingDetailPageState extends State<BookingDetailPage> {
       ],
     ),
   );
+
+  Future<void> _reportNoShow() async {
+    final vi = Localizations.localeOf(context).languageCode == 'vi';
+    final reason = TextEditingController();
+    final content = await showDialog<String>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(vi ? 'Báo kỹ thuật viên không đến' : 'Report technician no-show'),
+        content: TextField(
+          controller: reason,
+          autofocus: true,
+          minLines: 3,
+          maxLines: 5,
+          maxLength: 2000,
+          decoration: InputDecoration(hintText: vi
+              ? 'Mô tả thời gian chờ và tình huống (ít nhất 10 ký tự)'
+              : 'Describe your wait and what happened (at least 10 characters)'),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(dialogContext),
+            child: Text(vi ? 'Đóng' : 'Cancel')),
+          FilledButton(onPressed: () => Navigator.pop(dialogContext, reason.text.trim()),
+            child: Text(vi ? 'Gửi báo cáo' : 'Submit report')),
+        ],
+      ),
+    );
+    reason.dispose();
+    if (content == null || !mounted) return;
+    if (content.length < 10) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(vi
+        ? 'Vui lòng nhập ít nhất 10 ký tự.' : 'Please enter at least 10 characters.')));
+      return;
+    }
+    setState(() => reportingNoShow = true);
+    try {
+      await repo.reportNoShow(widget.bookingId, content);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(vi
+        ? 'Đã gửi báo cáo để quản trị viên xác minh.'
+        : 'Report submitted for admin review.')));
+    } catch (_) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(vi
+        ? 'Không gửi được báo cáo hoặc bạn đã báo trước đó.'
+        : 'Unable to submit or already reported.')));
+    } finally {
+      if (mounted) setState(() => reportingNoShow = false);
+    }
+  }
+
+  Future<void> _removeVoucher() async {
+    try {
+      await repo.removeVoucher(widget.bookingId);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(
+        Localizations.localeOf(context).languageCode == 'vi' ? 'Đã gỡ voucher' : 'Voucher removed')));
+      _reload();
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(
+        Localizations.localeOf(context).languageCode == 'vi' ? 'Không thể gỡ voucher lúc này' : 'Unable to remove voucher')));
+    }
+  }
 
   Future<void> _openVouchers() async {
     final applied = await showModalBottomSheet<bool>(
@@ -490,7 +555,7 @@ class _BookingDetailPageState extends State<BookingDetailPage> {
                 context.tr('bookingUi45'),
                 Column(children: [
                   if ((num.tryParse('${pricing['discountAmount']}') ?? 0) > 0) ...[
-                    Row(children: [Expanded(child: Text(context.tr('voucherDiscount'))), Text('-${_money(pricing['discountAmount'])}')]),
+                    Row(children: [Expanded(child: Text(context.tr('voucherDiscount'))), Text('-${_money(pricing['discountAmount'])}'), if (status == 'QUOTATION_ACCEPTED' || status == 'WAITING_CONFIRMATION') IconButton(tooltip: bilingual('Gỡ voucher', 'Remove voucher'), onPressed: _removeVoucher, icon: const Icon(Icons.close_rounded))]),
                     const SizedBox(height: 8),
                   ],
                   Row(
@@ -518,6 +583,39 @@ class _BookingDetailPageState extends State<BookingDetailPage> {
                 label: Text(Localizations.localeOf(context).languageCode == 'vi'
                     ? 'Xem / phản hồi báo giá' : 'View / Respond to Quotation'),
               )),
+              if (status == 'ACCEPTED' &&
+                  (DateTime.tryParse('${data['scheduledAt'] ?? ''}')?.toLocal()
+                    .add(const Duration(minutes: 30))
+                    .isBefore(DateTime.now()) ?? false))
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: OutlinedButton.icon(
+                    onPressed: reportingNoShow ? null : _reportNoShow,
+                    icon: const Icon(Icons.report_problem_outlined),
+                    label: Text(bilingual('Báo KTV không đến', 'Report technician no-show')),
+                  ),
+                ),
+              if (status == 'PENDING' && technician == null)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: FilledButton.icon(
+                    onPressed: () async {
+                      final matching = TechnicianMatchingApiService();
+                      await Navigator.of(context).push(
+                        MaterialPageRoute<RecommendedTechnician>(
+                          builder: (_) => RecommendedTechniciansPage(
+                            bookingId: widget.bookingId,
+                            loadRecommendations: matching.getRecommendedTechnicians,
+                            sendRequest: matching.selectTechnician,
+                          ),
+                        ),
+                      );
+                      if (mounted) _reload();
+                    },
+                    icon: const Icon(Icons.engineering_outlined),
+                    label: Text(bilingual('Tiếp tục chọn kỹ thuật viên', 'Choose a technician')),
+                  ),
+                ),
               if (status == 'COMPLETED') Padding(
                 padding: const EdgeInsets.only(bottom: 12),
                 child: paymentUnknown

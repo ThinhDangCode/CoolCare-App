@@ -30,6 +30,7 @@ class _ViewJobRequestDetailPageState extends State<ViewJobRequestDetailPage> {
   final PaymentRepository _paymentRepository = PaymentRepository();
   bool? _isPaid;
   bool _paymentPending = false;
+  final Map<String, ({String brandName, String modelName})> _unitEdits = {};
 
   bool get _canViewAcHistory =>
       widget.repository != null &&
@@ -40,7 +41,8 @@ class _ViewJobRequestDetailPageState extends State<ViewJobRequestDetailPage> {
     child: OutlinedButton.icon(
       onPressed: _submitting ? null : _showAcHistoryPicker,
       icon: const Icon(Icons.history_rounded, size: 19),
-      label: const Text('View Customer AC Service History'),
+      label: Text(Localizations.localeOf(context).languageCode == 'vi'
+          ? 'Xem lịch sử dịch vụ máy lạnh' : 'View Customer AC Service History'),
       style: OutlinedButton.styleFrom(
         foregroundColor: const Color(0xFF087F91),
         backgroundColor: const Color(0xFFEAF7F8),
@@ -58,36 +60,49 @@ class _ViewJobRequestDetailPageState extends State<ViewJobRequestDetailPage> {
         .toList();
     if (units.isEmpty || widget.repository == null) return;
 
-    final unit = units.length == 1 ? units.first : await showModalBottomSheet<ViewJobRequestUnit>(
-      context: context,
-      showDragHandle: true,
-      builder: (context) => SafeArea(
-        child: ListView(
-          shrinkWrap: true,
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-          children: [
-            const Padding(
-              padding: EdgeInsets.only(bottom: 12),
-              child: Text('Select an AC unit', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800)),
-            ),
-            for (final unit in units)
-              ListTile(
-                leading: const CircleAvatar(
-                  backgroundColor: Color(0xFFEAF7F8),
-                  foregroundColor: Color(0xFF087F91),
-                  child: Icon(Icons.ac_unit_rounded),
-                ),
-                title: Text('Unit ${unit.unitNumber > 0 ? unit.unitNumber : ''}'.trim()),
-                subtitle: Text([
-                  unit.brandName,
-                  unit.modelName,
-                ].where((value) => value?.trim().isNotEmpty == true).join(' ')),
-                onTap: () => Navigator.of(context).pop(unit),
+    final unit = units.length == 1
+        ? units.first
+        : await showModalBottomSheet<ViewJobRequestUnit>(
+            context: context,
+            showDragHandle: true,
+            builder: (context) => SafeArea(
+              child: ListView(
+                shrinkWrap: true,
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: Text(
+                      Localizations.localeOf(context).languageCode == 'vi'
+                          ? 'Chọn máy lạnh' : 'Select an AC unit',
+                      style: TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ),
+                  for (final unit in units)
+                    ListTile(
+                      leading: const CircleAvatar(
+                        backgroundColor: Color(0xFFEAF7F8),
+                        foregroundColor: Color(0xFF087F91),
+                        child: Icon(Icons.ac_unit_rounded),
+                      ),
+                      title: Text(
+                        '${Localizations.localeOf(context).languageCode == 'vi' ? 'Máy lạnh' : 'Unit'} ${unit.unitNumber > 0 ? unit.unitNumber : ''}'
+                            .trim(),
+                      ),
+                      subtitle: Text(
+                        [unit.brandName, unit.modelName]
+                            .where((value) => value?.trim().isNotEmpty == true)
+                            .join(' '),
+                      ),
+                      onTap: () => Navigator.of(context).pop(unit),
+                    ),
+                ],
               ),
-          ],
-        ),
-      ),
-    );
+            ),
+          );
     if (unit == null || !mounted) return;
     await Navigator.of(context).push(
       MaterialPageRoute<void>(
@@ -102,10 +117,144 @@ class _ViewJobRequestDetailPageState extends State<ViewJobRequestDetailPage> {
     );
   }
 
+  Future<void> _editAcUnit(ViewJobRequestUnit unit) async {
+    final repository = widget.repository;
+    if (repository == null || widget.request.status != 'ACCEPTED') return;
+    final vi = Localizations.localeOf(context).languageCode == 'vi';
+    String tr(String v, String e) => vi ? v : e;
+    List<Map<String, dynamic>> brands;
+    try {
+      brands = await repository.acBrands();
+    } catch (_) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(tr('Không tải được danh sách hãng.', 'Unable to load AC brands.')),
+      ));
+      return;
+    }
+    if (!mounted) return;
+    String? selectedBrand = brands.any((b) => b['id']?.toString() == unit.brandId)
+        ? unit.brandId : null;
+    String? selectedModel = unit.modelId;
+    List<Map<String, dynamic>> models = [];
+    bool loadingModels = false;
+    String? loadError;
+    bool initialized = false;
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (sheetContext) => StatefulBuilder(
+        builder: (sheetContext, setSheetState) {
+          Future<void> loadModels(String brandId) async {
+            setSheetState(() { loadingModels = true; loadError = null; });
+            try {
+              final next = await repository.acModels(brandId);
+              if (!sheetContext.mounted) return;
+              if (selectedBrand != brandId) return;
+              setSheetState(() {
+                models = next;
+                loadingModels = false;
+                if (!models.any((m) => m['id']?.toString() == selectedModel)) {
+                  selectedModel = null;
+                }
+              });
+            } catch (_) {
+              if (sheetContext.mounted) setSheetState(() {
+                loadingModels = false;
+                loadError = tr('Không tải được danh sách model.', 'Unable to load models.');
+              });
+            }
+          }
+          if (!initialized) {
+            initialized = true;
+            if (selectedBrand != null) {
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (sheetContext.mounted) loadModels(selectedBrand!);
+              });
+            }
+          }
+          return Padding(
+            padding: EdgeInsets.fromLTRB(20, 4, 20,
+              MediaQuery.viewInsetsOf(sheetContext).bottom + 24),
+            child: SingleChildScrollView(child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(tr('Xác nhận thông tin máy lạnh', 'Confirm AC information'),
+                  style: Theme.of(sheetContext).textTheme.titleLarge),
+                const SizedBox(height: 16),
+                Text(tr('Hãng máy lạnh', 'AC Brand')),
+                DropdownButtonFormField<String>(
+                  isExpanded: true,
+                  value: selectedBrand,
+                  hint: Text(tr('Chọn hãng', 'Select brand')),
+                  items: brands.map((brand) => DropdownMenuItem<String>(
+                    value: brand['id']?.toString(),
+                    child: Text(brand['name']?.toString() ?? '', overflow: TextOverflow.ellipsis),
+                  )).toList(),
+                  onChanged: (value) {
+                    setSheetState(() { selectedBrand = value; selectedModel = null; models = []; });
+                    if (value != null) loadModels(value);
+                  },
+                ),
+                const SizedBox(height: 14),
+                Text(tr('Model máy lạnh', 'AC Model')),
+                DropdownButtonFormField<String>(
+                  isExpanded: true,
+                  value: models.any((m) => m['id']?.toString() == selectedModel)
+                      ? selectedModel : null,
+                  hint: Text(loadingModels
+                      ? tr('Đang tải...', 'Loading...') : tr('Chọn model', 'Select model')),
+                  items: models.map((model) => DropdownMenuItem<String>(
+                    value: model['id']?.toString(),
+                    child: Text(model['model_name']?.toString() ?? '', overflow: TextOverflow.ellipsis),
+                  )).toList(),
+                  onChanged: selectedBrand == null || loadingModels
+                      ? null : (value) => setSheetState(() => selectedModel = value),
+                ),
+                if (loadError != null) Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: Text(loadError!, style: const TextStyle(color: Colors.red)),
+                ),
+                const SizedBox(height: 20),
+                FilledButton(
+                  onPressed: selectedBrand == null || selectedModel == null || loadingModels
+                      ? null : () async {
+                          final brandId = selectedBrand!;
+                          final modelId = selectedModel!;
+                          setSheetState(() => loadingModels = true);
+                          try {
+                            await repository.updateJobAcInformation(
+                              widget.request.id, unit.id, brandId: brandId, modelId: modelId);
+                            if (!mounted || !sheetContext.mounted) return;
+                            final name = brands.firstWhere((b) => b['id']?.toString() == brandId)['name']?.toString() ?? '';
+                            final modelName = models.firstWhere((m) => m['id']?.toString() == modelId)['model_name']?.toString() ?? '';
+                            setState(() => _unitEdits[unit.id] = (brandName: name, modelName: modelName));
+                            Navigator.of(sheetContext).pop();
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                              content: Text(tr('Đã lưu thông tin máy lạnh.', 'AC information saved.'))));
+                          } catch (_) {
+                            if (!sheetContext.mounted) return;
+                            setSheetState(() { loadingModels = false;
+                              loadError = tr('Không lưu được. Vui lòng thử lại.', 'Unable to save. Please retry.'); });
+                          }
+                        },
+                  child: Text(tr('Lưu thông tin', 'Save information')),
+                ),
+              ],
+            )),
+          );
+        },
+      ),
+    );
+  }
+
   @override
   void initState() {
     super.initState();
-    _loadPaymentStatus();
+    if (widget.request.status == 'COMPLETED') {
+      _loadPaymentStatus();
+    }
   }
 
   Future<void> _loadPaymentStatus() async {
@@ -143,6 +292,8 @@ class _ViewJobRequestDetailPageState extends State<ViewJobRequestDetailPage> {
     final request = widget.request;
     final booking = request.booking;
     final notes = _notes(booking);
+    final vi = Localizations.localeOf(context).languageCode == 'vi';
+    String bilingual(String viText, String enText) => vi ? viText : enText;
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
@@ -225,9 +376,26 @@ class _ViewJobRequestDetailPageState extends State<ViewJobRequestDetailPage> {
                   label: context.tr('jobAcSpecification'),
                   children: [
                     for (var index = 0; index < booking.units.length; index++)
-                      _UnitSpecification(
-                        unit: booking.units[index],
-                        showDivider: index < booking.units.length - 1,
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          _UnitSpecification(
+                            unit: booking.units[index],
+                            showDivider: false,
+                            displayBrandModel: _unitEdits[booking.units[index].id],
+                          ),
+                          if (request.status == 'ACCEPTED' && widget.repository != null &&
+                              booking.units[index].id.isNotEmpty)
+                            Align(
+                              alignment: Alignment.centerRight,
+                              child: TextButton.icon(
+                                onPressed: () => _editAcUnit(booking.units[index]),
+                                icon: const Icon(Icons.edit_outlined, size: 18),
+                                label: Text(bilingual('Xác nhận hãng / model', 'Confirm brand / model')),
+                              ),
+                            ),
+                          if (index < booking.units.length - 1) const Divider(height: 24),
+                        ],
                       ),
                   ],
                 ),
@@ -262,64 +430,86 @@ class _ViewJobRequestDetailPageState extends State<ViewJobRequestDetailPage> {
                     ),
                   ),
                   icon: const Icon(Icons.receipt_long_outlined),
-                  label: const Text('Create Additional Quotation'),
-                ),
-              ],
-              const SizedBox(height: 12),
-              _Section(
-                label: 'PAYMENT STATUS',
-                children: [
-                  Row(
-                    children: [
-                      Icon(
-                        _isPaid == true
-                            ? Icons.verified_rounded
-                            : _paymentPending
-                            ? Icons.schedule_rounded
-                            : Icons.receipt_long_outlined,
-                        color: _isPaid == true
-                            ? const Color(0xFF15803D)
-                            : const Color(0xFFB45309),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Text(
-                          _isPaid == true
-                              ? 'Paid'
-                              : _isPaid == null
-                              ? 'Payment status unavailable'
-                              : _paymentPending
-                              ? 'Pending payment'
-                              : 'Unpaid',
-                          style: const TextStyle(
-                            fontWeight: FontWeight.w700,
-                            fontSize: 16,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton.icon(
-                      onPressed: _openPayment,
-                      icon: Icon(
-                        _isPaid == true
-                            ? Icons.receipt_long_outlined
-                            : Icons.qr_code_2,
-                      ),
-                      label: Text(
-                        _isPaid == true
-                            ? 'View payment details'
-                            : _paymentPending
-                            ? 'Check payment / Show QR'
-                            : 'Cash / Generate QR',
-                      ),
+                  label: Text(
+                    bilingual(
+                      'Tạo báo giá bổ sung',
+                      'Create Additional Quotation',
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
+              if (request.status == 'COMPLETED') ...[
+                const SizedBox(height: 12),
+                _Section(
+                  label: bilingual('TRẠNG THÁI THANH TOÁN', 'PAYMENT STATUS'),
+                  children: [
+                    Row(
+                      children: [
+                        Icon(
+                          _isPaid == true
+                              ? Icons.verified_rounded
+                              : _paymentPending
+                              ? Icons.schedule_rounded
+                              : Icons.receipt_long_outlined,
+                          color: _isPaid == true
+                              ? const Color(0xFF15803D)
+                              : const Color(0xFFB45309),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            _isPaid == true
+                                ? bilingual('Đã thanh toán', 'Paid')
+                                : _isPaid == null
+                                ? bilingual(
+                                    'Chưa xác định thanh toán',
+                                    'Payment status unavailable',
+                                  )
+                                : _paymentPending
+                                ? bilingual(
+                                    'Đang chờ thanh toán',
+                                    'Pending payment',
+                                  )
+                                : bilingual('Chưa thanh toán', 'Unpaid'),
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w700,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
+                        onPressed: _openPayment,
+                        icon: Icon(
+                          _isPaid == true
+                              ? Icons.receipt_long_outlined
+                              : Icons.qr_code_2,
+                        ),
+                        label: Text(
+                          _isPaid == true
+                              ? bilingual(
+                                  'Xem chi tiết thanh toán',
+                                  'View payment details',
+                                )
+                              : _paymentPending
+                              ? bilingual(
+                                  'Kiểm tra thanh toán / Hiện QR',
+                                  'Check payment / Show QR',
+                                )
+                              : bilingual(
+                                  'Tiền mặt / Tạo QR',
+                                  'Cash / Generate QR',
+                                ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
               const SizedBox(height: 14),
               _Section(
                 label: context.tr('jobBookingInformation'),
@@ -371,50 +561,50 @@ class _ViewJobRequestDetailPageState extends State<ViewJobRequestDetailPage> {
                     ],
                     Row(
                       children: [
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: _submitting ? null : _confirmDecline,
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: const Color(0xFFDC2626),
-                          side: const BorderSide(color: Color(0xFFDC2626)),
-                          minimumSize: const Size.fromHeight(41),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          textStyle: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                        child: Text(context.tr('jobDecline')),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: FilledButton(
-                        onPressed: _submitting ? null : _confirmAccept,
-                        style: FilledButton.styleFrom(
-                          backgroundColor: CoolCareColors.primary,
-                          minimumSize: const Size.fromHeight(41),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          textStyle: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w700,
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: _submitting ? null : _confirmDecline,
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: const Color(0xFFDC2626),
+                              side: const BorderSide(color: Color(0xFFDC2626)),
+                              minimumSize: const Size.fromHeight(41),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              textStyle: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            child: Text(context.tr('jobDecline')),
                           ),
                         ),
-                        child: _submitting
-                            ? const SizedBox.square(
-                                dimension: 18,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: Colors.white,
-                                ),
-                              )
-                            : Text(context.tr('jobAccept')),
-                      ),
-                    ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: FilledButton(
+                            onPressed: _submitting ? null : _confirmAccept,
+                            style: FilledButton.styleFrom(
+                              backgroundColor: CoolCareColors.primary,
+                              minimumSize: const Size.fromHeight(41),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              textStyle: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            child: _submitting
+                                ? const SizedBox.square(
+                                    dimension: 18,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: Colors.white,
+                                    ),
+                                  )
+                                : Text(context.tr('jobAccept')),
+                          ),
+                        ),
                       ],
                     ),
                   ],
@@ -443,53 +633,57 @@ class _ViewJobRequestDetailPageState extends State<ViewJobRequestDetailPage> {
                     ],
                     Row(
                       children: [
-                    if (request.canCancelAcceptedJob)
-                      Expanded(
-                        child: OutlinedButton.icon(
-                          onPressed: _submitting
-                              ? null
-                              : _confirmCancelAccepted,
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: const Color(0xFFDC2626),
-                            side: const BorderSide(color: Color(0xFFDC2626)),
-                            minimumSize: const Size.fromHeight(45),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
+                        if (request.canCancelAcceptedJob)
+                          Expanded(
+                            child: OutlinedButton.icon(
+                              onPressed: _submitting
+                                  ? null
+                                  : _confirmCancelAccepted,
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: const Color(0xFFDC2626),
+                                side: const BorderSide(
+                                  color: Color(0xFFDC2626),
+                                ),
+                                minimumSize: const Size.fromHeight(45),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              ),
+                              icon: const Icon(Icons.cancel_outlined, size: 18),
+                              label: Text(context.tr('cancel')),
                             ),
                           ),
-                          icon: const Icon(Icons.cancel_outlined, size: 18),
-                          label: Text(context.tr('cancel')),
-                        ),
-                      ),
-                    if (request.canCancelAcceptedJob && request.canComplete)
-                      const SizedBox(width: 12),
-                    if (request.canComplete)
-                      Expanded(
-                        child: FilledButton.icon(
-                          onPressed: _submitting ? null : _confirmComplete,
-                          style: FilledButton.styleFrom(
-                            backgroundColor: const Color(0xFF16A34A),
-                            minimumSize: const Size.fromHeight(45),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            textStyle: const TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w700,
+                        if (request.canCancelAcceptedJob && request.canComplete)
+                          const SizedBox(width: 12),
+                        if (request.canComplete)
+                          Expanded(
+                            child: FilledButton.icon(
+                              onPressed: _submitting ? null : _confirmComplete,
+                              style: FilledButton.styleFrom(
+                                backgroundColor: const Color(0xFF16A34A),
+                                minimumSize: const Size.fromHeight(45),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                textStyle: const TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                              icon: _submitting
+                                  ? const SizedBox.square(
+                                      dimension: 18,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        color: Colors.white,
+                                      ),
+                                    )
+                                  : const Icon(
+                                      Icons.check_circle_outline_rounded,
+                                    ),
+                              label: Text(context.tr('jobComplete')),
                             ),
                           ),
-                          icon: _submitting
-                              ? const SizedBox.square(
-                                  dimension: 18,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    color: Colors.white,
-                                  ),
-                                )
-                              : const Icon(Icons.check_circle_outline_rounded),
-                          label: Text(context.tr('jobComplete')),
-                        ),
-                      ),
                       ],
                     ),
                   ],
@@ -797,19 +991,17 @@ class _Section extends StatelessWidget {
 }
 
 class _UnitSpecification extends StatelessWidget {
-  const _UnitSpecification({
-    required this.unit,
-    required this.showDivider,
-  });
+  const _UnitSpecification({required this.unit, required this.showDivider, this.displayBrandModel});
 
   final ViewJobRequestUnit unit;
   final bool showDivider;
+  final ({String brandName, String modelName})? displayBrandModel;
 
   @override
   Widget build(BuildContext context) {
     final brandAndModel = [
-      unit.brandName,
-      unit.modelName,
+      displayBrandModel?.brandName ?? unit.brandName,
+      displayBrandModel?.modelName ?? unit.modelName,
     ].where((value) => value?.trim().isNotEmpty == true).join(' ');
     return Column(
       children: [
