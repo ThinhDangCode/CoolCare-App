@@ -19,6 +19,7 @@ import 'manage_service_areas_page.dart';
 import 'view_job_requests_page.dart';
 import 'view_job_request_detail_page.dart';
 import 'my_ratings_page.dart';
+import '../../technician_wallet/pages/technician_wallet_page.dart';
 
 class TechnicianPortalPage extends StatefulWidget {
   const TechnicianPortalPage({required this.user, super.key});
@@ -217,7 +218,7 @@ class _TechnicianPortalPageState extends State<TechnicianPortalPage> {
                       title: context.tr('messages'),
                       message: context.tr('technicianMessagesHint'),
                     ),
-                    _WalletTab(amount: _dashboard!.earningsToday),
+                    const TechnicianWalletPage(),
                     _TechnicianProfile(
                       user: widget.user,
                       dashboard: _dashboard!,
@@ -881,17 +882,6 @@ class _ProfileLink extends StatelessWidget {
     ),
     trailing: const Icon(Icons.chevron_right_rounded),
     onTap: onTap,
-  );
-}
-
-class _WalletTab extends StatelessWidget {
-  const _WalletTab({required this.amount});
-  final double amount;
-  @override
-  Widget build(BuildContext context) => _EmptyTab(
-    icon: Icons.account_balance_wallet_outlined,
-    title: context.tr('technicianWallet'),
-    message: context.trArgs('todayEarnings', {'amount': _money(amount)}),
   );
 }
 

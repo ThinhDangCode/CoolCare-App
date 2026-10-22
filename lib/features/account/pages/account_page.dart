@@ -10,6 +10,7 @@ import '../../auth/models/auth_user.dart';
 import '../../auth/validators/auth_validators.dart';
 import '../../blogs/pages/blog_pages.dart';
 import '../../complaints/pages/complaint_pages.dart';
+import '../../payments/pages/payment_history_page.dart';
 import '../../technician_application/pages/technician_application_page.dart';
 import '../../technician_portal/pages/technician_portal_page.dart';
 
@@ -150,6 +151,8 @@ class AccountPage extends StatelessWidget {
           _AccountRow(
             icon: Icons.receipt_long_outlined,
             label: context.tr('paymentHistory'),
+            onTap: () => Navigator.of(context).push(MaterialPageRoute(
+              builder: (_) => const PaymentHistoryPage())),
           ),
 
           _AccountRow(
