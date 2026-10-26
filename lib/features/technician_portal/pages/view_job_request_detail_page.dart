@@ -1,3 +1,4 @@
+import '../../chat/booking_chat_page.dart';
 import '../../payments/pages/payment_page.dart';
 import '../../payments/repositories/payment_repository.dart';
 import '../../quotations/pages/quotation_page.dart';
@@ -310,6 +311,16 @@ class _ViewJobRequestDetailPageState extends State<ViewJobRequestDetailPage> {
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 19),
         ),
         titleSpacing: 0,
+        actions: [
+          if (widget.request.status == 'ACCEPTED' || widget.request.status == 'COMPLETED')
+            IconButton(
+              tooltip: 'Chat',
+              icon: const Icon(Icons.chat_bubble_outline_rounded),
+              onPressed: () => Navigator.of(context).push(MaterialPageRoute(
+                builder: (_) => BookingChatPage(bookingId: widget.request.booking.id),
+              )),
+            ),
+        ],
         title: Text(
           context.tr('jobDetails'),
           style: TextStyle(

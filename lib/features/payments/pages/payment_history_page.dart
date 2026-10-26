@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import '../repositories/payment_repository.dart';
+import 'payment_invoice_page.dart';
 
-/// Customer payment history with payment detail / invoice preview.
+/// Customer payment history. Tapping a payment opens its invoice.
 class PaymentHistoryPage extends StatefulWidget {
   const PaymentHistoryPage({super.key, this.bookingId});
   final String? bookingId;
@@ -136,7 +137,7 @@ class _PaymentHistoryPageState extends State<PaymentHistoryPage> {
         side: BorderSide(color: scheme.outlineVariant.withValues(alpha: 0.7))),
       child: InkWell(
         onTap: () => Navigator.of(context).push(MaterialPageRoute(
-          builder: (_) => _PaymentInvoicePreviewPage(payment: payment),
+          builder: (_) => PaymentInvoicePage(payment: payment),
         )),
         child: Padding(padding: const EdgeInsets.all(16), child: Column(
         crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -170,6 +171,13 @@ class _PaymentHistoryPageState extends State<PaymentHistoryPage> {
                 Text(_statusText(code), style: TextStyle(color: statusColor,
                   fontSize: 12, fontWeight: FontWeight.w700)),
               ])),
+            if (success) ...[
+              const SizedBox(width: 8),
+              Icon(Icons.receipt_long_outlined, size: 15, color: scheme.primary),
+              const SizedBox(width: 4),
+              Text(_t('Xem hóa đơn', 'View invoice'), style: TextStyle(
+                color: scheme.primary, fontSize: 12, fontWeight: FontWeight.w700)),
+            ],
           ]),
           if ((paymentCode != null && paymentCode.isNotEmpty) ||
               (widget.bookingId == null && bookingId != null)) ...[
@@ -180,7 +188,6 @@ class _PaymentHistoryPageState extends State<PaymentHistoryPage> {
             if (widget.bookingId == null && bookingId != null)
               _meta(_t('Mã đơn', 'Booking ID'), bookingId),
           ],
-          // Tap the card to open payment details and invoice preview.
         ],
       ))),
     );
@@ -297,121 +304,6 @@ class _PaymentHistoryPageState extends State<PaymentHistoryPage> {
           ));
         },
       ),
-    );
-  }
-}
-
-/// Displays payment information as a preview, not an issued tax invoice.
-/// Download stays disabled until a verified invoice endpoint is available.
-class _PaymentInvoicePreviewPage extends StatelessWidget {
-  const _PaymentInvoicePreviewPage({required this.payment});
-  final Map<String, dynamic> payment;
-
-  String _t(BuildContext context, String vi, String en) =>
-      Localizations.localeOf(context).languageCode == 'vi' ? vi : en;
-
-  String _money(dynamic raw) {
-    final value = (num.tryParse('$raw') ?? 0).round();
-    return '${value.toString().replaceAllMapped(RegExp(r'\B(?=(\d{3})+(?!\d))'), (_) => '.')} ₫';
-  }
-
-  String _date(dynamic raw) {
-    final date = DateTime.tryParse('$raw')?.toLocal();
-    if (date == null) return '—';
-    String two(int n) => n.toString().padLeft(2, '0');
-    return '${two(date.day)}/${two(date.month)}/${date.year} ${two(date.hour)}:${two(date.minute)}';
-  }
-
-  String _status(BuildContext context, dynamic raw) {
-    switch ('$raw'.toUpperCase()) {
-      case '2': case 'SUCCESS': return _t(context, 'Đã thanh toán', 'Paid');
-      case '0': case 'PENDING': return _t(context, 'Chờ thanh toán', 'Pending');
-      case '1': case 'PROCESSING': return _t(context, 'Đang xử lý', 'Processing');
-      case '3': case 'FAILED': return _t(context, 'Thất bại', 'Failed');
-      case '4': case 'CANCELLED': case 'CANCELED': return _t(context, 'Đã hủy', 'Cancelled');
-      default: return _t(context, 'Không xác định', 'Unknown');
-    }
-  }
-
-  Widget _detail(BuildContext context, String title, dynamic value) {
-    final scheme = Theme.of(context).colorScheme;
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10),
-      child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        SizedBox(width: 116, child: Text(title,
-          style: TextStyle(color: scheme.onSurfaceVariant, fontSize: 13))),
-        Expanded(child: SelectableText(value == null || '$value'.isEmpty ? '—' : '$value',
-          textAlign: TextAlign.end, style: const TextStyle(fontWeight: FontWeight.w600))),
-      ]),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    final method = '${payment['method_code'] ?? payment['payment_method'] ?? '—'}';
-    final methodText = switch (method.toUpperCase()) {
-      'CASH' || '0' => _t(context, 'Tiền mặt', 'Cash'),
-      'VNPAY' => 'VNPay',
-      'ZALOPAY' => 'ZaloPay',
-      _ => method,
-    };
-    final paid = ['2', 'SUCCESS'].contains('${payment['payment_status']}'.toUpperCase());
-    return Scaffold(
-      appBar: AppBar(title: Text(_t(context, 'Chi tiết thanh toán', 'Payment details'))),
-      body: ListView(padding: const EdgeInsets.all(16), children: [
-        Container(
-          padding: const EdgeInsets.all(22),
-          decoration: BoxDecoration(color: scheme.primaryContainer,
-            borderRadius: BorderRadius.circular(22)),
-          child: Column(children: [
-            Icon(Icons.receipt_long_outlined, size: 42, color: scheme.onPrimaryContainer),
-            const SizedBox(height: 12),
-            Text(_money(payment['amount']), style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-              fontWeight: FontWeight.w800, color: scheme.onPrimaryContainer)),
-            const SizedBox(height: 8),
-            Text(_status(context, payment['payment_status']),
-              style: TextStyle(color: scheme.onPrimaryContainer, fontWeight: FontWeight.w600)),
-          ]),
-        ),
-        const SizedBox(height: 18),
-        Card(
-          elevation: 0,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18),
-            side: BorderSide(color: scheme.outlineVariant)),
-          child: Padding(padding: const EdgeInsets.all(18), child: Column(children: [
-            _detail(context, _t(context, 'Mã giao dịch', 'Payment code'), payment['payment_code']),
-            const Divider(),
-            _detail(context, _t(context, 'Mã booking', 'Booking ID'), payment['booking_id']),
-            const Divider(),
-            _detail(context, _t(context, 'Phương thức', 'Method'), methodText),
-            const Divider(),
-            _detail(context, _t(context, 'Thời gian', 'Date'),
-              _date(payment['paid_at'] ?? payment['created_at'])),
-            if (payment['transaction_reference'] != null) ...[
-              const Divider(),
-              _detail(context, _t(context, 'Mã đối soát', 'Reference'),
-                payment['transaction_reference']),
-            ],
-          ])),
-        ),
-        const SizedBox(height: 14),
-        Text(_t(context,
-          'Đây là thông tin giao dịch, chưa phải hóa đơn được phát hành.',
-          'This is a payment summary, not an issued invoice.'),
-          style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
-          textAlign: TextAlign.center),
-        const SizedBox(height: 20),
-        SizedBox(width: double.infinity, child: FilledButton.icon(
-          onPressed: null,
-          icon: const Icon(Icons.download_outlined),
-          label: Text(_t(context, 'Tải hóa đơn (sắp có)', 'Download invoice (coming soon)')),
-        )),
-        if (!paid) Padding(padding: const EdgeInsets.only(top: 8), child: Text(
-          _t(context, 'Giao dịch chưa hoàn tất thanh toán.', 'Payment is not completed.'),
-          textAlign: TextAlign.center,
-          style: TextStyle(color: scheme.onSurfaceVariant, fontSize: 12))),
-      ]),
     );
   }
 }

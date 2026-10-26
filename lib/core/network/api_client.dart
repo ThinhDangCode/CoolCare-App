@@ -1,8 +1,16 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data' show BytesBuilder;
 
 import 'api_exception.dart';
+
+class DownloadedFile {
+  const DownloadedFile({required this.bytes, this.fileName});
+
+  final List<int> bytes;
+  final String? fileName;
+}
 
 class ApiClient {
   factory ApiClient.fromEnvironment({HttpClient? httpClient}) {
@@ -184,6 +192,93 @@ class ApiClient {
         message: 'Máy chủ trả về dữ liệu không hợp lệ.',
       );
     }
+  }
+
+  /// Downloads a binary response (for example a PDF) with the same base-URL
+  /// discovery, authentication and error mapping as the JSON requests.
+  Future<DownloadedFile> download(
+    String path, {
+    String? bearerToken,
+    String accept = 'application/pdf',
+    Duration timeout = const Duration(seconds: 45),
+  }) async {
+    final baseUri = await _resolveBaseUri();
+    final normalizedPath = path.startsWith('/') ? path.substring(1) : path;
+    final uri = Uri.parse('${baseUri.toString()}/$normalizedPath');
+
+    try {
+      final request = await _httpClient.getUrl(uri).timeout(timeout);
+      request.headers.set(HttpHeaders.acceptHeader, '$accept, application/json');
+      if (bearerToken != null && bearerToken.isNotEmpty) {
+        request.headers.set(
+          HttpHeaders.authorizationHeader,
+          'Bearer $bearerToken',
+        );
+      }
+
+      final response = await request.close().timeout(timeout);
+      final builder = BytesBuilder(copy: false);
+      await for (final chunk in response.timeout(timeout)) {
+        builder.add(chunk);
+      }
+      final bytes = builder.takeBytes();
+
+      if (response.statusCode < 200 || response.statusCode >= 300) {
+        Map<String, dynamic> payload = <String, dynamic>{};
+        try {
+          final decoded = jsonDecode(utf8.decode(bytes));
+          if (decoded is Map<String, dynamic>) payload = decoded;
+        } catch (_) {
+          // Non-JSON error body: fall back to the generic message.
+        }
+        throw _toApiException(response.statusCode, payload);
+      }
+
+      final contentType = response.headers.contentType?.mimeType ?? '';
+      if (!contentType.toLowerCase().contains(accept.toLowerCase()) ||
+          bytes.isEmpty) {
+        throw const ApiException(
+          code: 'INVALID_RESPONSE',
+          message: 'Máy chủ trả về tệp không hợp lệ.',
+        );
+      }
+
+      return DownloadedFile(
+        bytes: bytes,
+        fileName: _fileNameFromDisposition(
+          response.headers.value('content-disposition'),
+        ),
+      );
+    } on ApiException {
+      rethrow;
+    } on TimeoutException {
+      _activeBaseUri = null;
+      throw const ApiException(
+        code: 'REQUEST_TIMEOUT',
+        message: 'Kết nối quá thời gian. Vui lòng thử lại.',
+      );
+    } on SocketException {
+      _activeBaseUri = null;
+      throw const ApiException(
+        code: 'NETWORK_ERROR',
+        message: 'Không thể kết nối máy chủ. Vui lòng kiểm tra mạng.',
+      );
+    }
+  }
+
+  String? _fileNameFromDisposition(String? header) {
+    if (header == null) return null;
+    final match = RegExp(r'filename="?([^";]+)"?').firstMatch(header);
+    final name = match?.group(1)?.trim();
+    if (name == null || name.isEmpty) return null;
+    // Never trust a path coming from a response header.
+    return name.split(RegExp(r'[\\/]')).last;
+  }
+
+  /// Server origin without the `/api` suffix, e.g. for Socket.IO connections.
+  Future<String> resolveOrigin() async {
+    final base = (await _resolveBaseUri()).toString();
+    return base.replaceFirst(RegExp(r'/api/?$'), '');
   }
 
   Future<Uri> _resolveBaseUri() async {

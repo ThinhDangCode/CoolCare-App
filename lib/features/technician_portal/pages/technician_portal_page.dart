@@ -7,6 +7,8 @@ import '../../../app/theme/coolcare_theme.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/network/api_exception.dart';
 import '../../auth/models/auth_user.dart';
+import '../../chat/chat_inbox_page.dart';
+import '../../chat/chat_unread.dart';
 import '../models/technician_dashboard.dart';
 import '../models/view_job_request.dart';
 import '../models/set_availability_status.dart';
@@ -48,6 +50,8 @@ class _TechnicianPortalPageState extends State<TechnicianPortalPage> {
       apiClient: ApiClient.fromEnvironment(),
     );
     _notificationsRepository = TechnicianNotificationsRepository();
+    ChatUnread.instance.addListener(_onChatChanged);
+    ChatUnread.instance.start();
     _load();
     _refreshUnreadNotifications();
     _notificationRefreshTimer = Timer.periodic(
@@ -58,8 +62,13 @@ class _TechnicianPortalPageState extends State<TechnicianPortalPage> {
 
   @override
   void dispose() {
+    ChatUnread.instance.removeListener(_onChatChanged);
     _notificationRefreshTimer?.cancel();
     super.dispose();
+  }
+
+  void _onChatChanged() {
+    if (mounted) setState(() {});
   }
 
   Future<void> _refreshUnreadNotifications() async {
@@ -213,11 +222,7 @@ class _TechnicianPortalPageState extends State<TechnicianPortalPage> {
                       repository: _repository,
                       onRequestChanged: _load,
                     ),
-                    _EmptyTab(
-                      icon: Icons.forum_outlined,
-                      title: context.tr('messages'),
-                      message: context.tr('technicianMessagesHint'),
-                    ),
+                    const ChatInboxPage(embedded: true),
                     const TechnicianWalletPage(),
                     _TechnicianProfile(
                       user: widget.user,
@@ -277,7 +282,11 @@ class _TechnicianPortalPageState extends State<TechnicianPortalPage> {
                       label: context.tr('jobs'),
                     ),
                     NavigationDestination(
-                      icon: const Icon(Icons.forum_outlined),
+                      icon: Badge(
+                        isLabelVisible: ChatUnread.instance.count > 0,
+                        label: Text('${ChatUnread.instance.count}'),
+                        child: const Icon(Icons.forum_outlined),
+                      ),
                       label: context.tr('messages'),
                     ),
                     NavigationDestination(
@@ -882,40 +891,6 @@ class _ProfileLink extends StatelessWidget {
     ),
     trailing: const Icon(Icons.chevron_right_rounded),
     onTap: onTap,
-  );
-}
-
-class _EmptyTab extends StatelessWidget {
-  const _EmptyTab({
-    required this.icon,
-    required this.title,
-    required this.message,
-  });
-  final IconData icon;
-  final String title;
-  final String message;
-  @override
-  Widget build(BuildContext context) => Center(
-    child: Padding(
-      padding: const EdgeInsets.all(28),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 52, color: CoolCareColors.primary),
-          const SizedBox(height: 12),
-          Text(
-            title,
-            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            message,
-            textAlign: TextAlign.center,
-            style: TextStyle(color: context.appMuted),
-          ),
-        ],
-      ),
-    ),
   );
 }
 
