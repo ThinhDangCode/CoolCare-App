@@ -10,6 +10,7 @@ import 'create_booking_page.dart';
 import 'recommended_technicians_page.dart';
 import '../services/technician_matching_api_service.dart';
 import 'booking_vouchers_sheet.dart';
+import '../../chat/booking_chat_page.dart';
 
 class BookingDetailPage extends StatefulWidget {
   const BookingDetailPage({
@@ -307,7 +308,19 @@ class _BookingDetailPageState extends State<BookingDetailPage> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: Text(context.tr('bookingDetailTitle'))),
+    appBar: AppBar(
+      title: Text(context.tr('bookingDetailTitle')),
+      actions: [
+        // Opens this order's conversation (the chat page explains if no technician has accepted yet).
+        IconButton(
+          tooltip: 'Chat',
+          icon: const Icon(Icons.chat_bubble_outline_rounded),
+          onPressed: () => Navigator.of(context).push(MaterialPageRoute(
+            builder: (_) => BookingChatPage(bookingId: widget.bookingId),
+          )),
+        ),
+      ],
+    ),
     body: FutureBuilder<Map<String, dynamic>>(
       future: detail,
       builder: (context, snapshot) {

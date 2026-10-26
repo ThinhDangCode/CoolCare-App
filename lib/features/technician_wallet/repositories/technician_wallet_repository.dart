@@ -9,6 +9,20 @@ class TechnicianWalletRepository {
   final ApiClient _client;
   final SecureSessionStore _session;
 
+  Future<String> signedInTechnicianName() async {
+    final session = await _session.read();
+    if (session == null || session.user.fullName.trim().isEmpty) {
+      throw const ApiException(code: 'PROFILE_MISSING', message: 'Technician name is unavailable.');
+    }
+    return session.user.fullName.trim();
+  }
+
+  Future<String> signedInTechnicianPhone() async {
+    final session = await _session.read();
+    return session?.user.phone?.trim() ?? '';
+  }
+
+
   Future<String> _token() async {
     final session = await _session.read();
     if (session == null) {
@@ -38,6 +52,24 @@ class TechnicianWalletRepository {
   Future<List<Map<String, dynamic>>> topups({int page = 1}) async {
     final data = await _data(_client.get('/technician-wallet/topups',
         bearerToken: await _token(),queryParameters:{'page':'$page','limit':'30'}));
+    return (data['items'] as List? ?? const []).whereType<Map<String, dynamic>>().toList();
+  }
+
+  Future<Map<String, dynamic>> createMockWithdrawal({
+    required int amount,
+    required String bankName,
+    required String accountNumber,
+    required String accountHolder,
+    required String idempotencyKey,
+  }) async => _data(_client.post('/technician-wallet/withdrawals',
+      bearerToken: await _token(), body: {
+        'amount': amount, 'bankName': bankName, 'accountNumber': accountNumber,
+        'accountHolder': accountHolder, 'idempotencyKey': idempotencyKey,
+      }));
+
+  Future<List<Map<String, dynamic>>> withdrawals({int page = 1}) async {
+    final data = await _data(_client.get('/technician-wallet/withdrawals',
+        bearerToken: await _token(), queryParameters: {'page':'$page','limit':'30'}));
     return (data['items'] as List? ?? const []).whereType<Map<String, dynamic>>().toList();
   }
 
