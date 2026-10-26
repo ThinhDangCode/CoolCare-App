@@ -5,6 +5,7 @@ import 'package:image_picker/image_picker.dart';
 
 import '../../../app/localization/app_strings.dart';
 import '../../../app/theme/coolcare_theme.dart';
+import '../../ac_history/pages/ac_units_page.dart';
 import '../../auth/controllers/auth_controller.dart';
 import '../../auth/models/auth_user.dart';
 import '../../auth/validators/auth_validators.dart';
@@ -153,6 +154,15 @@ class AccountPage extends StatelessWidget {
             label: context.tr('paymentHistory'),
             onTap: () => Navigator.of(context).push(MaterialPageRoute(
               builder: (_) => const PaymentHistoryPage())),
+          ),
+
+          _AccountRow(
+            icon: Icons.ac_unit,
+            label: Localizations.localeOf(context).languageCode == 'vi'
+                ? 'Lịch sử bảo dưỡng máy lạnh'
+                : 'AC Service History',
+            onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const AcUnitsPage())),
           ),
 
           _AccountRow(

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
 import '../../../app/localization/app_strings.dart';
@@ -386,6 +387,18 @@ class _TechnicianWalletPageState
     if (mounted) await _refresh();
   }
 
+  Future<void> _openWithdraw() async {
+    final balance = walletNumber(
+      (_overview?['balance'] as Map?)?['available_balance'],
+    );
+    await Navigator.of(context).push(MaterialPageRoute<void>(
+      builder: (_) => TechnicianWithdrawPage(
+        repository: _repository, availableBalance: balance,
+      ),
+    ));
+    if (mounted) await _refresh();
+  }
+
   Future<void> _openHistory() async {
     await Navigator.of(context).push(
       MaterialPageRoute<void>(
@@ -599,6 +612,16 @@ class _TechnicianWalletPageState
                   )
                       : context.tr('settlementTopup'),
                 ),
+              ),
+            ),
+
+            const SizedBox(height: 10),
+            SizedBox(
+              height: 48,
+              child: OutlinedButton.icon(
+                onPressed: _openWithdraw,
+                icon: const Icon(Icons.arrow_upward),
+                label: Text(walletText(context, 'Rút tiền', 'Withdraw')),
               ),
             ),
 
@@ -1997,4 +2020,183 @@ class _TechnicianTopupCheckoutPageState
       ),
     );
   }
+}
+
+
+class TechnicianWithdrawPage extends StatefulWidget {
+  const TechnicianWithdrawPage({super.key, required this.repository, required this.availableBalance});
+  final TechnicianWalletRepository repository;
+  final num availableBalance;
+  @override
+  State<TechnicianWithdrawPage> createState() => _TechnicianWithdrawPageState();
+}
+
+class _TechnicianWithdrawPageState extends State<TechnicianWithdrawPage> {
+  final _amount = TextEditingController();
+  final _account = TextEditingController();
+  final _holder = TextEditingController();
+  bool _busy = false;
+  bool _loadingHolder = true;
+  String? _error;
+  String? _result;
+  late String _requestKey = _newUuid();
+
+  String _newUuid() {
+    final random = Random.secure();
+    final b = List<int>.generate(16, (_) => random.nextInt(256));
+    b[6] = (b[6] & 15) | 64;
+    b[8] = (b[8] & 63) | 128;
+    final hex = b.map((n) => n.toRadixString(16).padLeft(2, '0')).join();
+    return '${hex.substring(0,8)}-${hex.substring(8,12)}-${hex.substring(12,16)}-${hex.substring(16,20)}-${hex.substring(20)}';
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _loadAccountHolder();
+  }
+
+  Future<void> _loadAccountHolder() async {
+    try {
+      final name = await widget.repository.signedInTechnicianName();
+      if (!mounted) return;
+      final phone = await widget.repository.signedInTechnicianPhone();
+      if (!mounted) return;
+      setState(() {
+        _holder.text = name;
+        if (phone.isNotEmpty) _account.text = phone;
+        _loadingHolder = false;
+      });
+    } catch (_) {
+      if (mounted) setState(() {
+        _loadingHolder = false;
+        _error = 'Không lấy được tên kỹ thuật viên. Vui lòng đăng nhập lại.';
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _amount.dispose(); _account.dispose(); _holder.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit() async {
+    if (_busy || _result != null || _loadingHolder) return;
+    final amount = int.tryParse(_amount.text.trim());
+    final phone = _account.text.trim();
+    if (amount == null || amount < 100000 || amount > 50000000 || amount > widget.availableBalance ||
+        !RegExp(r'^0[0-9]{9}$').hasMatch(phone) ||
+        _holder.text.trim().isEmpty) {
+      setState(() => _error = 'Kiểm tra số tiền và số điện thoại.');
+      return;
+    }
+    setState(() { _busy = true; _error = null; });
+    try {
+      final data = await widget.repository.createMockWithdrawal(
+        amount: amount, bankName: 'ZaloPay',
+        accountNumber: _account.text.trim(), accountHolder: _holder.text.trim(),
+        idempotencyKey: _requestKey,
+      );
+      if (!mounted) return;
+      setState(() => _result = 'Yêu cầu rút ${settlementMoney(context, data['amount'])} đã được xử lý trên CoolCare.');
+    } catch (e) {
+      if (!mounted) return;
+      // Keep the same request key for safe retries after network timeouts.
+      setState(() => _error = e.toString());
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final amount = int.tryParse(_amount.text.trim()) ?? 0;
+    const fee = 0;
+    return Scaffold(
+      appBar: AppBar(title: const Text('Rút tiền')),
+      body: ListView(
+        padding: const EdgeInsets.all(20),
+        children: [
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: const Color(0xFF078C99),
+              borderRadius: BorderRadius.circular(18),
+            ),
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              const Text('Số dư khả dụng', style: TextStyle(color: Colors.white70)),
+              const SizedBox(height: 8),
+              Text(settlementMoney(context, widget.availableBalance),
+                style: const TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.w700)),
+            ]),
+          ),
+          const SizedBox(height: 24),
+          Text('Thông tin rút tiền', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+          const SizedBox(height: 14),
+          TextField(
+            controller: _amount,
+            onChanged: (_) => setState(() { _error = null; }),
+            keyboardType: TextInputType.number,
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            decoration: const InputDecoration(
+              labelText: 'Số tiền rút', hintText: 'Tối thiểu 100.000đ',
+              prefixIcon: Icon(Icons.payments_outlined), border: OutlineInputBorder(),
+            ),
+          ),
+          const SizedBox(height: 14),
+          TextField(controller: _account, keyboardType: TextInputType.phone,
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(10)],
+            onChanged: (_) => setState(() { _error = null; }),
+            decoration: const InputDecoration(labelText: 'Số điện thoại ZaloPay', hintText: 'Nhập số điện thoại nhận tiền',
+              prefixIcon: Icon(Icons.phone_android_outlined), border: OutlineInputBorder())),
+          const SizedBox(height: 14),
+          TextField(controller: _holder, readOnly: true,
+            decoration: InputDecoration(labelText: 'Tên kỹ thuật viên',
+              helperText: 'Theo hồ sơ kỹ thuật viên CoolCare',
+              hintText: _loadingHolder ? 'Đang tải...' : 'Chưa có tên',
+              prefixIcon: const Icon(Icons.person_outline), border: const OutlineInputBorder())),
+          const SizedBox(height: 20),
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(color: theme.colorScheme.surfaceContainerHighest,
+              borderRadius: BorderRadius.circular(14)),
+            child: Column(children: [
+              _withdrawSummaryRow('Số tiền yêu cầu', settlementMoney(context, amount)),
+              const SizedBox(height: 10),
+              const Divider(height: 24),
+              _withdrawSummaryRow('Thực nhận dự kiến', settlementMoney(context, amount), bold: true),
+            ]),
+          ),
+
+          if (_error != null) ...[
+            const SizedBox(height: 14),
+            Text(_error!, style: TextStyle(color: theme.colorScheme.error)),
+          ],
+          if (_result != null) ...[
+            const SizedBox(height: 14),
+            Text(_result!, style: const TextStyle(color: Color(0xFF078C99), fontWeight: FontWeight.w600)),
+          ],
+          const SizedBox(height: 22),
+          SizedBox(height: 50, child: FilledButton.icon(
+            onPressed: _busy || _result != null || _loadingHolder || _holder.text.trim().isEmpty ? null : _submit,
+            icon: _busy ? const SizedBox(width: 18, height: 18,
+              child: CircularProgressIndicator(strokeWidth: 2)) : const Icon(Icons.arrow_upward),
+            label: Text(_busy ? 'Đang xử lý...' : _result != null ? 'Đã hoàn tất' : 'Xác nhận rút tiền'),
+          )),
+          if (_result != null) ...[
+            const SizedBox(height: 12),
+            TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Về ví đối soát')),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _withdrawSummaryRow(String label, String value, {bool bold = false}) =>
+      Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+        Text(label),
+        Text(value, style: TextStyle(fontWeight: bold ? FontWeight.bold : FontWeight.w500)),
+      ]);
 }

@@ -11,6 +11,8 @@ import '../../../auth/controllers/auth_controller.dart';
 import '../../../auth/pages/login_page.dart';
 import '../../../blogs/pages/blog_pages.dart';
 import '../../../booking/pages/my_bookings_page.dart';
+import '../../../chat/chat_inbox_page.dart';
+import '../../../chat/chat_unread.dart';
 import '../../../notifications/pages/customer_notifications_page.dart';
 import '../../../notifications/repositories/customer_notifications_repository.dart';
 import '../../../services/controllers/service_controller.dart';
@@ -40,7 +42,11 @@ class _HomePageState extends State<HomePage> {
     _notificationsRepository = CustomerNotificationsRepository();
     _wasAuthenticated = widget.controller.status == AuthStatus.authenticated;
     widget.controller.addListener(_handleAuthenticationChange);
-    if (_wasAuthenticated) _refreshUnreadNotificationCount();
+    ChatUnread.instance.addListener(_onChatChanged);
+    if (_wasAuthenticated) {
+      _refreshUnreadNotificationCount();
+      ChatUnread.instance.start();
+    }
     _notificationRefreshTimer = Timer.periodic(
       const Duration(seconds: 45),
       (_) => _refreshUnreadNotificationCount(),
@@ -64,6 +70,7 @@ class _HomePageState extends State<HomePage> {
 
   @override
   void dispose() {
+    ChatUnread.instance.removeListener(_onChatChanged);
     widget.controller.removeListener(_handleAuthenticationChange);
     _notificationRefreshTimer?.cancel();
     super.dispose();
@@ -75,9 +82,21 @@ class _HomePageState extends State<HomePage> {
     _wasAuthenticated = authenticated;
     if (authenticated) {
       _refreshUnreadNotificationCount();
-    } else if (mounted) {
-      setState(() => _unreadNotificationCount = 0);
+      ChatUnread.instance.start();
+    } else {
+      ChatUnread.instance.stop();
+      if (mounted) setState(() => _unreadNotificationCount = 0);
     }
+  }
+
+  void _onChatChanged() {
+    if (mounted) setState(() {});
+  }
+
+  Future<void> _openChat() async {
+    await Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const ChatInboxPage()),
+    );
   }
 
   Future<void> _refreshUnreadNotificationCount() async {
@@ -214,6 +233,8 @@ class _HomePageState extends State<HomePage> {
                   onLogin: () => _openLogin(context),
                   onNotifications: _openNotifications,
                   unreadNotificationCount: _unreadNotificationCount,
+                  onChat: _openChat,
+                  unreadChatCount: ChatUnread.instance.count,
                 ),
                 Expanded(child: _selectedPage()),
                 _HomeNavigation(
@@ -238,12 +259,16 @@ class _HomeHeader extends StatelessWidget {
     required this.onLogin,
     required this.onNotifications,
     required this.unreadNotificationCount,
+    required this.onChat,
+    required this.unreadChatCount,
   });
 
   final AuthController controller;
   final VoidCallback onLogin;
   final VoidCallback onNotifications;
   final int unreadNotificationCount;
+  final VoidCallback onChat;
+  final int unreadChatCount;
 
   @override
   Widget build(BuildContext context) {
@@ -338,11 +363,39 @@ class _HomeHeader extends StatelessWidget {
                         ],
                       ),
                     ),
-                    const SizedBox(width: 4),
-                    const Icon(
-                      Icons.chat_bubble_outline_rounded,
-                      color: CoolCareColors.primaryDark,
-                      size: 18,
+                    IconButton(
+                      onPressed: onChat,
+                      tooltip: unreadChatCount > 0
+                          ? 'Messages, $unreadChatCount unread'
+                          : 'Messages',
+                      visualDensity: VisualDensity.compact,
+                      icon: Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          const Icon(
+                            Icons.chat_bubble_outline_rounded,
+                            color: CoolCareColors.primaryDark,
+                            size: 20,
+                          ),
+                          if (unreadChatCount > 0)
+                            Positioned(
+                              top: -3,
+                              right: -4,
+                              child: Container(
+                                width: 10,
+                                height: 10,
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFDC2626),
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: Theme.of(context).colorScheme.surface,
+                                    width: 1.5,
+                                  ),
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
                     ),
                   ],
                 );

@@ -1,0 +1,231 @@
+import 'package:flutter/foundation.dart';
+
+import '../../../core/network/api_exception.dart';
+import '../../../core/network/cloudinary_image_uploader.dart';
+import '../models/auth_user.dart';
+import '../repositories/auth_repository.dart';
+
+enum AuthStatus { initial, loading, authenticated, unauthenticated }
+
+class AuthController extends ChangeNotifier {
+  AuthController(this._repository, {CloudinaryImageUploader? imageUploader})
+    : _imageUploader =
+          imageUploader ?? CloudinaryImageUploader.fromEnvironment();
+
+  final AuthRepository _repository;
+  final CloudinaryImageUploader _imageUploader;
+
+  AuthStatus status = AuthStatus.initial;
+  AuthUser? user;
+  String? errorMessage;
+  bool isBusy = false;
+
+  Future<void> initialize() async {
+    try {
+      final session = await _repository.restoreSession();
+      user = session?.user;
+      status = session == null
+          ? AuthStatus.unauthenticated
+          : AuthStatus.authenticated;
+    } catch (_) {
+      status = AuthStatus.unauthenticated;
+    }
+    notifyListeners();
+  }
+
+  Future<bool> login({required String email, required String password}) {
+    return _authenticate(
+      () => _repository.login(email: email, password: password),
+    );
+  }
+
+  Future<bool> loginWithGoogle() {
+    return _authenticate(_repository.loginWithGoogle);
+  }
+
+  Future<bool> register({
+    required String fullName,
+    required String email,
+    required String password,
+  }) {
+    return _runOperation(
+      () => _repository.register(
+        fullName: fullName,
+        email: email,
+        password: password,
+      ),
+    );
+  }
+
+  Future<bool> verifyRegistrationEmail({
+    required String email,
+    required String otp,
+  }) {
+    return _authenticate(
+      () => _repository.verifyRegistrationEmail(email: email, otp: otp),
+    );
+  }
+
+  Future<bool> resendRegistrationEmailVerification(String email) {
+    return _runOperation(
+      () => _repository.resendRegistrationEmailVerification(email: email),
+    );
+  }
+
+  Future<bool> _authenticate(Future<AuthSession> Function() action) async {
+    isBusy = true;
+    errorMessage = null;
+    notifyListeners();
+    try {
+      final session = await action();
+      user = session.user;
+      status = AuthStatus.authenticated;
+      isBusy = false;
+      notifyListeners();
+      return true;
+    } on ApiException catch (error) {
+      errorMessage = error.message;
+    } catch (_) {
+      errorMessage = 'Đã có lỗi xảy ra. Vui lòng thử lại.';
+    }
+    status = AuthStatus.unauthenticated;
+    isBusy = false;
+    notifyListeners();
+    return false;
+  }
+
+  Future<void> logout() async {
+    isBusy = true;
+    errorMessage = null;
+    notifyListeners();
+    await _repository.logout();
+    user = null;
+    status = AuthStatus.unauthenticated;
+    isBusy = false;
+    notifyListeners();
+  }
+
+  Future<void> refreshSession() async {
+    if (status != AuthStatus.authenticated || isBusy) return;
+    try {
+      final session = await _repository.refreshSession();
+      user = session.user;
+      notifyListeners();
+    } on ApiException {
+      // Keep the current local session when a background refresh is unavailable.
+    }
+  }
+
+  Future<bool> requestPasswordReset(String email) async {
+    return _runOperation(() => _repository.requestPasswordReset(email: email));
+  }
+
+  Future<String?> verifyResetOtp({
+    required String email,
+    required String otp,
+  }) async {
+    isBusy = true;
+    errorMessage = null;
+    notifyListeners();
+    try {
+      final resetToken = await _repository.verifyResetOtp(
+        email: email,
+        otp: otp,
+      );
+      isBusy = false;
+      notifyListeners();
+      return resetToken;
+    } on ApiException catch (error) {
+      errorMessage = error.message;
+    } catch (_) {
+      errorMessage = 'Đã có lỗi xảy ra. Vui lòng thử lại.';
+    }
+    isBusy = false;
+    notifyListeners();
+    return null;
+  }
+
+  Future<bool> resetPassword({
+    required String resetToken,
+    required String newPassword,
+  }) {
+    return _runOperation(
+      () => _repository.resetPassword(
+        resetToken: resetToken,
+        newPassword: newPassword,
+      ),
+    );
+  }
+
+  Future<bool> _runOperation(Future<void> Function() action) async {
+    isBusy = true;
+    errorMessage = null;
+    notifyListeners();
+    try {
+      await action();
+      isBusy = false;
+      notifyListeners();
+      return true;
+    } on ApiException catch (error) {
+      errorMessage = error.message;
+    } catch (_) {
+      errorMessage = 'Đã có lỗi xảy ra. Vui lòng thử lại.';
+    }
+    isBusy = false;
+    notifyListeners();
+    return false;
+  }
+
+  void clearError() {
+    if (errorMessage == null) return;
+    errorMessage = null;
+    notifyListeners();
+  }
+
+  Future<bool> updateProfile({
+    required String fullName,
+    String? phone,
+    String? dateOfBirth,
+    String? gender,
+    String? avatarPath,
+    bool avatarChanged = false,
+  }) async {
+    isBusy = true;
+    errorMessage = null;
+    notifyListeners();
+    try {
+      if (avatarChanged) {
+        final avatarUrl = avatarPath == null
+            ? null
+            : await _imageUploader.uploadProfilePhoto(avatarPath);
+        user = await _repository.updateAvatar(avatarUrl: avatarUrl);
+      }
+      user = await _repository.updateProfile(
+        fullName: fullName,
+        phone: phone,
+        dateOfBirth: dateOfBirth,
+        gender: gender,
+      );
+      isBusy = false;
+      notifyListeners();
+      return true;
+    } on ApiException catch (error) {
+      errorMessage = error.message;
+    } catch (_) {
+      errorMessage = 'Đã có lỗi xảy ra. Vui lòng thử lại.';
+    }
+    isBusy = false;
+    notifyListeners();
+    return false;
+  }
+
+  Future<bool> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) => _runOperation(
+    () => _repository.changePassword(
+      currentPassword: currentPassword,
+      newPassword: newPassword,
+    ),
+  );
+}

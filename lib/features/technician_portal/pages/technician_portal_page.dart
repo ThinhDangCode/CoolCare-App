@@ -7,6 +7,8 @@ import '../../../app/theme/coolcare_theme.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/network/api_exception.dart';
 import '../../auth/models/auth_user.dart';
+import '../../chat/chat_inbox_page.dart';
+import '../../chat/chat_unread.dart';
 import '../models/technician_dashboard.dart';
 import '../models/view_job_request.dart';
 import '../models/set_availability_status.dart';
@@ -48,6 +50,8 @@ class _TechnicianPortalPageState extends State<TechnicianPortalPage> {
       apiClient: ApiClient.fromEnvironment(),
     );
     _notificationsRepository = TechnicianNotificationsRepository();
+    ChatUnread.instance.addListener(_onChatChanged);
+    ChatUnread.instance.start();
     _load();
     _refreshUnreadNotifications();
     _notificationRefreshTimer = Timer.periodic(
@@ -58,8 +62,13 @@ class _TechnicianPortalPageState extends State<TechnicianPortalPage> {
 
   @override
   void dispose() {
+    ChatUnread.instance.removeListener(_onChatChanged);
     _notificationRefreshTimer?.cancel();
     super.dispose();
+  }
+
+  void _onChatChanged() {
+    if (mounted) setState(() {});
   }
 
   Future<void> _refreshUnreadNotifications() async {
@@ -213,11 +222,7 @@ class _TechnicianPortalPageState extends State<TechnicianPortalPage> {
                       repository: _repository,
                       onRequestChanged: _load,
                     ),
-                    _EmptyTab(
-                      icon: Icons.forum_outlined,
-                      title: context.tr('messages'),
-                      message: context.tr('technicianMessagesHint'),
-                    ),
+                    const ChatInboxPage(embedded: true),
                     const TechnicianWalletPage(),
                     _TechnicianProfile(
                       user: widget.user,
@@ -277,7 +282,11 @@ class _TechnicianPortalPageState extends State<TechnicianPortalPage> {
                       label: context.tr('jobs'),
                     ),
                     NavigationDestination(
-                      icon: const Icon(Icons.forum_outlined),
+                      icon: Badge(
+                        isLabelVisible: ChatUnread.instance.count > 0,
+                        label: Text('${ChatUnread.instance.count}'),
+                        child: const Icon(Icons.forum_outlined),
+                      ),
                       label: context.tr('messages'),
                     ),
                     NavigationDestination(
