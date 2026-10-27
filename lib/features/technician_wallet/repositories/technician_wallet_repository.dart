@@ -43,8 +43,8 @@ class TechnicianWalletRepository {
   Future<Map<String, dynamic>> overview({String? fromDate, String? toDate}) async => _data(_client.get(
         '/technician-wallet/overview', bearerToken: await _token(),
         queryParameters: {
-          if (fromDate != null) 'fromDate': fromDate,
-          if (toDate != null) 'toDate': toDate,
+          'fromDate': ?fromDate,
+          'toDate': ?toDate,
         }));
 
   Future<List<Map<String, dynamic>>> transactions({int page = 1}) async {

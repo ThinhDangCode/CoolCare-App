@@ -739,6 +739,40 @@ class _TechnicianWalletPageState
 
             const SizedBox(height: 12),
 
+            if (_topups.any((topup) =>
+                ['PENDING', 'PROCESSING', '0', '1'].contains('${topup['status']}'))) ...[
+              const Divider(),
+              WalletSectionTitle(
+                title: walletText(context, 'Giao dịch nạp đang xử lý', 'Pending top-ups'),
+              ),
+              ..._topups
+                  .where((topup) => ['PENDING', 'PROCESSING', '0', '1']
+                      .contains('${topup['status']}'))
+                  .map((topup) => ListTile(
+                    leading: const Icon(Icons.schedule_outlined),
+                    title: Text(settlementMoney(context, topup['amount'])),
+                    subtitle: Text(
+                      '${topup['method']} · ${walletStatus(context, topup['status'])}',
+                    ),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () async {
+                      await Navigator.of(context).push(MaterialPageRoute<void>(
+                        builder: (_) => TechnicianTopupCheckoutPage(
+                          repository: _repository,
+                          topup: {
+                            'topupId': topup['id'],
+                            'topupCode': topup['topup_code'],
+                            'amount': topup['amount'],
+                            'method': topup['method'],
+                            'status': topup['status'],
+                          },
+                        ),
+                      ));
+                      if (mounted) await _refresh();
+                    },
+                  )),
+            ],
+
           ],
 
           if (_loading && _overview != null)
@@ -1013,6 +1047,9 @@ class _TechnicianSettlementDetailsPageState
     final data = _filtered ?? widget.overview;
     final earnings = data['earnings'] as Map<String, dynamic>? ?? {};
     final movements = data['movements'] as Map<String, dynamic>? ?? {};
+    final weekly = (widget.overview['settlements'] as List? ?? const [])
+        .whereType<Map<String, dynamic>>()
+        .toList();
     final range = _rangeFor(_period);
     final vi = walletVietnamese(context);
 
@@ -1082,6 +1119,40 @@ class _TechnicianSettlementDetailsPageState
               _detailRow(context.tr('settlementWithdrawn'), movements['total_withdrawal']),
               _detailRow(context.tr('settlementNetAdjustments'), movements['net_adjustments']),
             ]))),
+            const SizedBox(height: 22),
+            WalletSectionTitle(title: context.tr('settlementWeekly')),
+            const SizedBox(height: 8),
+            if (weekly.isEmpty)
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Text(context.tr('settlementNoWeekly')),
+              )
+            else
+              ...weekly.map((period) => Card(
+                margin: const EdgeInsets.only(bottom: 10),
+                child: ExpansionTile(
+                  title: Text(
+                    '${settlementDate(period['period_start']).split(' ').first}'
+                    ' – ${settlementDate(period['period_end']).split(' ').first}',
+                    style: const TextStyle(fontWeight: FontWeight.w700),
+                  ),
+                  subtitle: Text(
+                    '${context.tr('settlementClosing')}: '
+                    '${settlementMoney(context, period['closing_balance'])}',
+                  ),
+                  childrenPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                  children: [
+                    _detailRow(context.tr('settlementOpening'), period['opening_balance']),
+                    _detailRow(context.tr('settlementCashMovement'), period['total_cash_settlement']),
+                    _detailRow(context.tr('settlementOnlineEarnings'), period['total_online_earning']),
+                    _detailRow(context.tr('settlementTopupTotal'), period['total_topup']),
+                    _detailRow(context.tr('settlementWithdrawn'), period['total_withdrawal']),
+                    _detailRow(context.tr('settlementNetAdjustments'), period['total_adjustment']),
+                    const Divider(),
+                    _detailRow(context.tr('settlementOutstandingDebt'), period['debt_remaining_amount']),
+                  ],
+                ),
+              )),
             const SizedBox(height: 12),
             Text(walletText(context,
               'Số dư là số liệu hiện tại; thu nhập và biến động được lọc theo ngày phát sinh.',

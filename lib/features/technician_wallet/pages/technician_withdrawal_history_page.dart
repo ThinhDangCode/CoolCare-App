@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../repositories/technician_wallet_repository.dart';
-import 'technician_wallet_page.dart' show settlementDate, settlementMoney, walletStatus, walletText;
+import 'technician_wallet_page.dart' show settlementDate, settlementMoney, walletStatus;
 
 /// Displays actual withdrawal requests, including unsuccessful attempts.
 /// The API currently returns 30 records per page and no total count.
