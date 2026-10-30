@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
+import '../../core/localization/language_state.dart';
+
 class AppPreferencesController extends ChangeNotifier {
   AppPreferencesController({
     FlutterSecureStorage storage = const FlutterSecureStorage(),
@@ -20,6 +22,7 @@ class AppPreferencesController extends ChangeNotifier {
     ]);
     themeMode = values[0] == 'dark' ? ThemeMode.dark : ThemeMode.light;
     locale = Locale(values[1] == 'vi' ? 'vi' : 'en');
+    LanguageState.code = locale.languageCode;
     notifyListeners();
   }
 
@@ -38,6 +41,7 @@ class AppPreferencesController extends ChangeNotifier {
 
   Future<void> toggleLocale() async {
     locale = Locale(locale.languageCode == 'vi' ? 'en' : 'vi');
+    LanguageState.code = locale.languageCode;
     notifyListeners();
     await _storage.write(key: _localeKey, value: locale.languageCode);
   }
@@ -45,6 +49,7 @@ class AppPreferencesController extends ChangeNotifier {
   Future<void> setLocale(Locale value) async {
     if (locale.languageCode == value.languageCode) return;
     locale = Locale(value.languageCode == 'vi' ? 'vi' : 'en');
+    LanguageState.code = locale.languageCode;
     notifyListeners();
     await _storage.write(key: _localeKey, value: locale.languageCode);
   }

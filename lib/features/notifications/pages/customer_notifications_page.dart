@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../app/localization/notification_text.dart';
+
 import '../models/customer_notification.dart';
 import '../repositories/customer_notifications_repository.dart';
 import '../widgets/notification_detail_dialog.dart';
@@ -166,8 +168,8 @@ class _CustomerNotificationsPageState extends State<CustomerNotificationsPage> {
     await showDialog<void>(
       context: context,
       builder: (_) => NotificationDetailDialog(
-        title: item.title,
-        message: item.message,
+        title: localizedNotificationTitle(context, item.title),
+        message: localizedNotificationMessage(context, item.message),
         bookingCode: item.bookingCode,
         timestamp: '${_dateGroup(item.createdAt)} · ${_time(item.createdAt)}',
         icon: iconStyle.$1,
@@ -350,8 +352,8 @@ class _CustomerNotificationsPageState extends State<CustomerNotificationsPage> {
             ),
           ),
           const SizedBox(height: 8),
-          const Text(
-            'An error occurred. Please try again.',
+          Text(
+            _error ?? 'An error occurred. Please try again.',
             textAlign: TextAlign.center,
             style: TextStyle(color: _muted, fontSize: 14),
           ),
@@ -459,7 +461,7 @@ class _CustomerNotificationsPageState extends State<CustomerNotificationsPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      item.title,
+                      localizedNotificationTitle(context, item.title),
                       style: TextStyle(
                         color: _ink,
                         fontSize: 14,
@@ -470,7 +472,7 @@ class _CustomerNotificationsPageState extends State<CustomerNotificationsPage> {
                     ),
                     const SizedBox(height: 3),
                     Text(
-                      item.message,
+                      localizedNotificationMessage(context, item.message),
                       style: const TextStyle(
                         color: _muted,
                         fontSize: 13,

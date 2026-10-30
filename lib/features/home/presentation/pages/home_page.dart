@@ -3,6 +3,7 @@ import 'dart:async';
 
 import '../../../../app/theme/coolcare_theme.dart';
 import '../../../../app/localization/app_strings.dart';
+import '../../../../app/localization/service_text.dart';
 import '../../../../app/preferences/preference_actions.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../account/pages/account_page.dart';
@@ -10,6 +11,8 @@ import '../../../address/pages/addresses_page.dart';
 import '../../../auth/controllers/auth_controller.dart';
 import '../../../auth/pages/login_page.dart';
 import '../../../blogs/pages/blog_pages.dart';
+import '../../../blogs/models/blog_article.dart';
+import '../../../blogs/repositories/blog_repository.dart';
 import '../../../booking/pages/my_bookings_page.dart';
 import '../../../chat/chat_inbox_page.dart';
 import '../../../chat/chat_unread.dart';
@@ -34,6 +37,7 @@ class _HomePageState extends State<HomePage> {
   int _unreadNotificationCount = 0;
   late final CustomerNotificationsRepository _notificationsRepository;
   Timer? _notificationRefreshTimer;
+  Timer? _sessionRefreshTimer;
   bool _wasAuthenticated = false;
 
   @override
@@ -50,6 +54,10 @@ class _HomePageState extends State<HomePage> {
     _notificationRefreshTimer = Timer.periodic(
       const Duration(seconds: 45),
       (_) => _refreshUnreadNotificationCount(),
+    );
+    _sessionRefreshTimer = Timer.periodic(
+      const Duration(seconds: 15),
+      (_) => widget.controller.refreshSession(),
     );
   }
 
@@ -73,6 +81,7 @@ class _HomePageState extends State<HomePage> {
     ChatUnread.instance.removeListener(_onChatChanged);
     widget.controller.removeListener(_handleAuthenticationChange);
     _notificationRefreshTimer?.cancel();
+    _sessionRefreshTimer?.cancel();
     super.dispose();
   }
 
@@ -85,7 +94,22 @@ class _HomePageState extends State<HomePage> {
       ChatUnread.instance.start();
     } else {
       ChatUnread.instance.stop();
-      if (mounted) setState(() => _unreadNotificationCount = 0);
+      if (mounted) {
+        setState(() {
+          _selectedIndex = 0;
+          _unreadNotificationCount = 0;
+        });
+        final notice = widget.controller.sessionNotice;
+        if (notice != null) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (!mounted) return;
+            Navigator.of(context).popUntil((route) => route.isFirst);
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text(context.tr(notice))));
+          });
+        }
+      }
     }
   }
 
@@ -94,9 +118,9 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _openChat() async {
-    await Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const ChatInboxPage()),
-    );
+    await Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => const ChatInboxPage()));
   }
 
   Future<void> _refreshUnreadNotificationCount() async {
@@ -388,7 +412,9 @@ class _HomeHeader extends StatelessWidget {
                                   color: const Color(0xFFDC2626),
                                   shape: BoxShape.circle,
                                   border: Border.all(
-                                    color: Theme.of(context).colorScheme.surface,
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.surface,
                                     width: 1.5,
                                   ),
                                 ),
@@ -443,6 +469,8 @@ class _HomeBody extends StatefulWidget {
 
 class _HomeBodyState extends State<_HomeBody> {
   late final ServiceController _serviceController;
+  late final BlogRepository _blogRepository;
+  late Future<List<BlogArticle>> _articles;
 
   @override
   void initState() {
@@ -451,6 +479,8 @@ class _HomeBodyState extends State<_HomeBody> {
     _serviceController = ServiceController(
       apiClient: ApiClient.fromEnvironment(),
     );
+    _blogRepository = BlogRepository();
+    _articles = _blogRepository.getPublishedBlogs();
 
     _serviceController.addListener(_refresh);
     _serviceController.loadInitialData();
@@ -459,6 +489,17 @@ class _HomeBodyState extends State<_HomeBody> {
   void _refresh() {
     if (mounted) {
       setState(() {});
+    }
+  }
+
+  Future<void> _refreshHome() async {
+    final articles = _blogRepository.getPublishedBlogs();
+    setState(() => _articles = articles);
+    await _serviceController.loadInitialData();
+    try {
+      await articles;
+    } catch (_) {
+      // The article card shows its own retry state.
     }
   }
 
@@ -481,7 +522,7 @@ class _HomeBodyState extends State<_HomeBody> {
   Widget build(BuildContext context) {
     return RefreshIndicator(
       color: CoolCareColors.primary,
-      onRefresh: _serviceController.loadInitialData,
+      onRefresh: _refreshHome,
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.fromLTRB(18, 14, 18, 24),
@@ -524,7 +565,7 @@ class _HomeBodyState extends State<_HomeBody> {
             const SizedBox(height: 22),
             Row(
               children: [
-                Expanded(child: _SectionTitle(context.tr('acCare'))),
+                Expanded(child: _SectionTitle(context.tr('latestArticles'))),
                 TextButton(
                   onPressed: () => Navigator.of(context).push(
                     MaterialPageRoute(builder: (_) => const BlogListPage()),
@@ -549,7 +590,7 @@ class _HomeBodyState extends State<_HomeBody> {
               ],
             ),
             const SizedBox(height: 8),
-            const _CareArticle(),
+            _CareArticle(articles: _articles, onRetry: _refreshHome),
           ],
         ),
       ),
@@ -624,7 +665,7 @@ class _HomeBodyState extends State<_HomeBody> {
               width: itemWidth,
               child: _ServiceShortcut(
                 icon: _serviceIcon(service.name),
-                label: service.name,
+                label: localizedServiceName(context, service.name),
                 onTap: () => _openService(service),
               ),
             );
@@ -871,18 +912,60 @@ class _BookingStep extends StatelessWidget {
 }
 
 // ============================================================
-// AC CARE
+// LATEST ARTICLE
 // ============================================================
 
 class _CareArticle extends StatelessWidget {
-  const _CareArticle();
+  const _CareArticle({required this.articles, required this.onRetry});
+
+  final Future<List<BlogArticle>> articles;
+  final VoidCallback onRetry;
+
+  String _summary(String content) {
+    for (final rawLine in content.split('\n')) {
+      final line = rawLine.trim();
+      if (line.isEmpty ||
+          line.startsWith('#') ||
+          line.startsWith('-') ||
+          RegExp(r'^\d+[.)]\s').hasMatch(line)) {
+        continue;
+      }
+      return line.replaceAll(RegExp(r'\*\*|__|`'), '');
+    }
+    return '';
+  }
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: () => Navigator.of(
-        context,
-      ).push(MaterialPageRoute(builder: (_) => const BlogListPage())),
+    return FutureBuilder<List<BlogArticle>>(
+      future: articles,
+      builder: (context, snapshot) {
+        final published = snapshot.data ?? const <BlogArticle>[];
+        final article = published.isEmpty ? null : published.first;
+        final loading = snapshot.connectionState == ConnectionState.waiting;
+        final title = loading
+            ? context.tr('loadingArticles')
+            : snapshot.hasError
+            ? context.tr('unableLoadArticles')
+            : article?.title ?? context.tr('noArticles');
+        final action = snapshot.hasError
+            ? context.tr('tryAgain')
+            : article == null
+            ? context.tr('seeMore')
+            : context.tr('readArticle');
+
+        return InkWell(
+      onTap: loading
+          ? null
+          : snapshot.hasError
+          ? onRetry
+          : () => Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => article == null
+                    ? const BlogListPage()
+                    : BlogDetailPage(articleId: article.id),
+              ),
+            ),
       borderRadius: BorderRadius.circular(12),
       child: Container(
         width: double.infinity,
@@ -897,15 +980,26 @@ class _CareArticle extends StatelessWidget {
             Container(
               width: 58,
               height: 58,
+              clipBehavior: Clip.antiAlias,
               decoration: BoxDecoration(
                 color: CoolCareColors.surfaceTint,
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: const Icon(
-                Icons.ac_unit_rounded,
-                color: CoolCareColors.primary,
-                size: 27,
-              ),
+              child: article?.thumbnailUrl?.isNotEmpty == true
+                  ? Image.network(
+                      article!.thumbnailUrl!,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, _, _) => const Icon(
+                        Icons.article_outlined,
+                        color: CoolCareColors.primary,
+                        size: 27,
+                      ),
+                    )
+                  : const Icon(
+                      Icons.article_outlined,
+                      color: CoolCareColors.primary,
+                      size: 27,
+                    ),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -913,7 +1007,7 @@ class _CareArticle extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    context.tr('tipsAndTricks'),
+                    'COOLCARE BLOG',
                     style: TextStyle(
                       color: CoolCareColors.primary,
                       fontSize: 7.5,
@@ -923,8 +1017,9 @@ class _CareArticle extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    context.tr('cleanAcQuestion'),
+                    title,
                     maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       color: context.appText,
                       fontSize: 10.5,
@@ -932,9 +1027,22 @@ class _CareArticle extends StatelessWidget {
                       fontWeight: FontWeight.w700,
                     ),
                   ),
+                  if (article != null) ...[
+                    const SizedBox(height: 5),
+                    Text(
+                      _summary(article.content),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: context.appMuted,
+                        fontSize: 9,
+                        height: 1.3,
+                      ),
+                    ),
+                  ],
                   const SizedBox(height: 5),
                   Text(
-                    context.tr('readArticle'),
+                    action,
                     style: const TextStyle(
                       color: CoolCareColors.primary,
                       fontSize: 8.5,
@@ -947,6 +1055,8 @@ class _CareArticle extends StatelessWidget {
           ],
         ),
       ),
+    );
+      },
     );
   }
 }

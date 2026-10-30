@@ -3,6 +3,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
+import '../../../app/localization/service_text.dart';
 import '../../../core/network/api_exception.dart';
 import '../models/payment_invoice.dart';
 import '../repositories/payment_repository.dart';
@@ -53,6 +54,20 @@ class _PaymentInvoicePageState extends State<PaymentInvoicePage> {
 
   String _t(String vi, String en) =>
       Localizations.localeOf(context).languageCode == 'vi' ? vi : en;
+
+  String _invoiceLabel(String value) {
+    if (Localizations.localeOf(context).languageCode == 'vi') return value;
+    return const {
+          'Đã thanh toán': 'Paid',
+          'Chờ thanh toán': 'Pending payment',
+          'Đang xử lý': 'Processing',
+          'Thất bại': 'Failed',
+          'Đã hủy': 'Cancelled',
+          'Không xác định': 'Unknown',
+          'Tiền mặt': 'Cash',
+          'Miễn phí': 'Free',
+        }[value] ?? value;
+  }
 
   String _errorMessage(Object error) {
     if (error is ApiException) {
@@ -121,8 +136,9 @@ class _PaymentInvoicePageState extends State<PaymentInvoicePage> {
     return Text.rich(
       TextSpan(style: style, children: [
         TextSpan(text: '${_digits(value)} '),
-        const TextSpan(
-            text: 'đ', style: TextStyle(decoration: TextDecoration.underline)),
+        TextSpan(
+            text: _t('đ', 'VND'),
+            style: const TextStyle(decoration: TextDecoration.underline)),
       ]),
       textAlign: TextAlign.end,
     );
@@ -178,13 +194,13 @@ class _PaymentInvoicePageState extends State<PaymentInvoicePage> {
           height: 52,
           child: CustomPaint(painter: _LogoPainter())),
       const SizedBox(width: 10),
-      Column(crossAxisAlignment: CrossAxisAlignment.start, children: const [
-        Text('CoolCare',
+      Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        const Text('CoolCare',
             style: TextStyle(
                 fontSize: 28, fontWeight: FontWeight.w800, color: _ink, height: 1)),
-        SizedBox(height: 4),
-        Text('DỊCH VỤ ĐIỆN LẠNH',
-            style: TextStyle(
+        const SizedBox(height: 4),
+        Text(_t('DỊCH VỤ ĐIỆN LẠNH', 'AIR CONDITIONING SERVICES'),
+            style: const TextStyle(
                 fontSize: 10,
                 fontWeight: FontWeight.w700,
                 letterSpacing: 1.6,
@@ -194,8 +210,8 @@ class _PaymentInvoicePageState extends State<PaymentInvoicePage> {
     final meta = Column(
       crossAxisAlignment: wide ? CrossAxisAlignment.end : CrossAxisAlignment.start,
       children: [
-        const Text('HÓA ĐƠN DỊCH VỤ',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: _ink)),
+        Text(_t('HÓA ĐƠN DỊCH VỤ', 'SERVICE INVOICE'),
+            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: _ink)),
         const SizedBox(height: 6),
         SelectableText(
             '${_t('Số hóa đơn', 'Invoice no.')}: ${invoice.invoiceNumber}',
@@ -293,7 +309,7 @@ class _PaymentInvoicePageState extends State<PaymentInvoicePage> {
           ]),
           for (final item in invoice.items)
             TableRow(children: [
-              pad(Text(item.description,
+              pad(Text(localizedServiceName(context, item.description),
                   style: const TextStyle(fontSize: 13.5, color: _ink, height: 1.3))),
               pad(Text(_quantity(item.quantity),
                   style: const TextStyle(fontSize: 13.5, color: _ink)),
@@ -367,8 +383,8 @@ class _PaymentInvoicePageState extends State<PaymentInvoicePage> {
           Text(invoice.providerName,
               style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 18, color: _ink)),
           _kv(_t('Địa chỉ', 'Address'),
-              invoice.providerAddress ?? '[Địa chỉ doanh nghiệp]'),
-          _kv('Hotline', invoice.providerHotline ?? '[Số hỗ trợ]'),
+              invoice.providerAddress ?? _t('[Địa chỉ doanh nghiệp]', '[Business address]')),
+          _kv('Hotline', invoice.providerHotline ?? _t('[Số hỗ trợ]', '[Support number]')),
           if ((invoice.providerTaxCode ?? '').isNotEmpty)
             _kv(_t('MST', 'Tax code'), invoice.providerTaxCode!),
           if (!invoice.providerConfigured)
@@ -393,8 +409,8 @@ class _PaymentInvoicePageState extends State<PaymentInvoicePage> {
   Widget _paymentCard(PaymentInvoice invoice) => _section(
         _t('THÔNG TIN THANH TOÁN', 'PAYMENT'),
         Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          _kv(_t('Trạng thái', 'Status'), invoice.statusLabel),
-          _kv(_t('Phương thức', 'Method'), invoice.methodLabel),
+          _kv(_t('Trạng thái', 'Status'), _invoiceLabel(invoice.statusLabel)),
+          _kv(_t('Phương thức', 'Method'), _invoiceLabel(invoice.methodLabel)),
           _kv(_t('Thời gian', 'Time'), _dateTime(invoice.paidAt)),
         ]),
       );
@@ -482,7 +498,8 @@ class _PaymentInvoicePageState extends State<PaymentInvoicePage> {
       _t('THÔNG TIN GIAO DỊCH', 'TRANSACTION'),
       Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         if ('${p['payment_code'] ?? ''}'.isNotEmpty) _kv(_t('Mã giao dịch', 'Payment code'), '${p['payment_code']}'),
-        _kv(_t('Số tiền', 'Amount'), '${_digits(num.tryParse('${p['amount']}') ?? 0)} đ'),
+        _kv(_t('Số tiền', 'Amount'),
+            '${_digits(num.tryParse('${p['amount']}') ?? 0)} ${_t('đ', 'VND')}'),
       ]),
     );
   }

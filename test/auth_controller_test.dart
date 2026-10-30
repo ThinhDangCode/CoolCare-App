@@ -1,3 +1,4 @@
+import 'package:coolcare_mobile/core/network/api_exception.dart';
 import 'package:coolcare_mobile/features/auth/controllers/auth_controller.dart';
 import 'package:coolcare_mobile/features/auth/models/auth_user.dart';
 import 'package:coolcare_mobile/features/auth/repositories/auth_repository.dart';
@@ -30,6 +31,30 @@ void main() {
     expect(controller.status, AuthStatus.unauthenticated);
     expect(controller.user, isNull);
   });
+
+  test(
+    'replaced session clears the old device without a manual logout',
+    () async {
+      final repository = _FakeAuthRepository();
+      final controller = AuthController(repository);
+      await controller.login(
+        email: 'customer@coolcare.test',
+        password: 'CoolCare@123',
+      );
+      repository.refreshError = const ApiException(
+        statusCode: 401,
+        code: 'SESSION_REPLACED',
+        message: 'Tài khoản đã đăng nhập trên thiết bị khác.',
+      );
+
+      await controller.refreshSession();
+
+      expect(controller.status, AuthStatus.unauthenticated);
+      expect(controller.user, isNull);
+      expect(controller.sessionNotice, 'sessionReplaced');
+      expect(repository.localSessionCleared, isTrue);
+    },
+  );
 
   test('register requires email verification before authenticating', () async {
     final controller = AuthController(_FakeAuthRepository());
@@ -88,6 +113,8 @@ void main() {
 
 class _FakeAuthRepository implements AuthRepository {
   bool passwordReset = false;
+  bool localSessionCleared = false;
+  ApiException? refreshError;
 
   static const _user = AuthUser(
     id: 'user-id',
@@ -111,6 +138,11 @@ class _FakeAuthRepository implements AuthRepository {
 
   @override
   Future<void> logout() async {}
+
+  @override
+  Future<void> clearLocalSession() async {
+    localSessionCleared = true;
+  }
 
   @override
   Future<void> register({
@@ -147,8 +179,10 @@ class _FakeAuthRepository implements AuthRepository {
   Future<AuthSession?> restoreSession() async => null;
 
   @override
-  Future<AuthSession> refreshSession() async =>
-      const AuthSession(token: 'token', user: _user);
+  Future<AuthSession> refreshSession() async {
+    if (refreshError != null) throw refreshError!;
+    return const AuthSession(token: 'token', user: _user);
+  }
 
   @override
   Future<String> verifyResetOtp({

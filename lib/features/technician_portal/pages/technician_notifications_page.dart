@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../../../app/theme/coolcare_theme.dart';
+import '../../../app/localization/app_strings.dart';
+import '../../../app/localization/notification_text.dart';
 import '../../notifications/models/customer_notification.dart';
 import '../../notifications/widgets/notification_detail_dialog.dart';
 import '../repositories/technician_notifications_repository.dart';
@@ -161,8 +163,8 @@ class _TechnicianNotificationsPageState
     await showDialog<void>(
       context: context,
       builder: (_) => NotificationDetailDialog(
-        title: item.title,
-        message: item.message,
+        title: localizedNotificationTitle(context, item.title),
+        message: localizedNotificationMessage(context, item.message),
         bookingCode: item.bookingCode,
         timestamp: _time(item.createdAt),
         icon: iconStyle.$1,
@@ -176,9 +178,11 @@ class _TechnicianNotificationsPageState
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          'Không thể cập nhật thông báo. Vui lòng thử lại. ($error)',
+          Localizations.localeOf(context).languageCode == 'vi'
+              ? 'Không thể cập nhật thông báo. Vui lòng thử lại. ($error)'
+              : 'Could not update the notification. Please try again.',
         ),
-        action: SnackBarAction(label: 'Thử lại', onPressed: retry),
+        action: SnackBarAction(label: context.tr('tryAgain'), onPressed: retry),
       ),
     );
   }
@@ -294,7 +298,7 @@ class _TechnicianNotificationsPageState
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      item.title,
+                      localizedNotificationTitle(context, item.title),
                       style: TextStyle(
                         color: _ink,
                         fontSize: 14,
@@ -305,7 +309,7 @@ class _TechnicianNotificationsPageState
                     ),
                     const SizedBox(height: 3),
                     Text(
-                      item.message,
+                      localizedNotificationMessage(context, item.message),
                       style: const TextStyle(
                         color: _muted,
                         fontSize: 13,

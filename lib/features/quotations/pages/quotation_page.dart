@@ -2,6 +2,29 @@ import 'package:flutter/material.dart';
 import '../../../app/theme/coolcare_theme.dart';
 import '../repositories/quotation_repository.dart';
 
+String _text(BuildContext context, String vi, String en) =>
+    Localizations.localeOf(context).languageCode == 'vi' ? vi : en;
+
+String _money(BuildContext context, Object? value) {
+  final amount = (value is num ? value : num.tryParse('$value') ?? 0).round();
+  final separator = Localizations.localeOf(context).languageCode == 'vi' ? '.' : ',';
+  final digits = amount.toString().replaceAllMapped(
+    RegExp(r'\B(?=(\d{3})+(?!\d))'),
+    (_) => separator,
+  );
+  return Localizations.localeOf(context).languageCode == 'vi'
+      ? '$digits đ'
+      : '$digits VND';
+}
+
+String _status(BuildContext context, String status) => switch (status) {
+  'DRAFT' => _text(context, 'Bản nháp', 'Draft'),
+  'PENDING' => _text(context, 'Chờ phản hồi', 'Awaiting response'),
+  'ACCEPTED' => _text(context, 'Đã chấp nhận', 'Accepted'),
+  'REJECTED' => _text(context, 'Đã từ chối', 'Rejected'),
+  _ => status,
+};
+
 class QuotationPage extends StatefulWidget {
   const QuotationPage({
     super.key,
@@ -59,7 +82,7 @@ class _QuotationPageState extends State<QuotationPage> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('Báo giá')),
+    appBar: AppBar(title: Text(_text(context, 'Báo giá', 'Quotations'))),
     floatingActionButton: widget.technician
         ? FloatingActionButton.extended(
             onPressed: busy
@@ -91,9 +114,9 @@ class _QuotationPageState extends State<QuotationPage> {
                         hasInitial &&
                         !hasApprovedInitial) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
+                        SnackBar(
                           content: Text(
-                            'Báo giá ban đầu phải được duyệt trước khi tạo báo giá bổ sung.',
+                            _text(context, 'Báo giá ban đầu phải được duyệt trước khi tạo báo giá bổ sung.', 'The initial quotation must be accepted before creating an additional quotation.'),
                           ),
                         ),
                       );
@@ -114,7 +137,7 @@ class _QuotationPageState extends State<QuotationPage> {
                     if (created == true) _refresh();
                   },
             icon: const Icon(Icons.add),
-            label: const Text('Tạo báo giá'),
+            label: Text(_text(context, 'Tạo báo giá', 'Create quotation')),
           )
         : null,
     body: FutureBuilder<List<Map<String, dynamic>>>(
@@ -126,10 +149,10 @@ class _QuotationPageState extends State<QuotationPage> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  'Không tải được báo giá: ${snapshot.error}',
+                  '${_text(context, 'Không tải được báo giá', 'Could not load quotations')}: ${snapshot.error}',
                   textAlign: TextAlign.center,
                 ),
-                TextButton(onPressed: _refresh, child: const Text('Thử lại')),
+                TextButton(onPressed: _refresh, child: Text(_text(context, 'Thử lại', 'Retry'))),
               ],
             ),
           );
@@ -139,8 +162,8 @@ class _QuotationPageState extends State<QuotationPage> {
         }
         final data = snapshot.data!;
         if (data.isEmpty) {
-          return const Center(
-            child: Text('Chưa có báo giá. Booking vẫn sử dụng giá mặc định.'),
+          return Center(
+            child: Text(_text(context, 'Chưa có báo giá. Đơn vẫn sử dụng giá mặc định.', 'No quotations yet. The booking still uses the listed price.')),
           );
         }
         return ListView.builder(
@@ -158,14 +181,14 @@ class _QuotationPageState extends State<QuotationPage> {
                   children: [
                     Text(
                       q['quotation_type'] == 'INITIAL'
-                          ? 'Báo giá ban đầu'
-                          : 'Báo giá bổ sung #${q['quotation_number']}',
+                          ? _text(context, 'Báo giá ban đầu', 'Initial quotation')
+                          : '${_text(context, 'Báo giá bổ sung', 'Additional quotation')} #${q['quotation_number']}',
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
                     const SizedBox(height: 5),
-                    Text('Trạng thái: $status'),
+                    Text('${_text(context, 'Trạng thái', 'Status')}: ${_status(context, status)}'),
                     if ((q['issue_description']?.toString() ?? '').isNotEmpty)
-                      Text('Lý do: ${q['issue_description']}'),
+                      Text('${_text(context, 'Lý do', 'Reason')}: ${q['issue_description']}'),
                     const Divider(),
                     for (final raw in items)
                       Builder(
@@ -180,7 +203,7 @@ class _QuotationPageState extends State<QuotationPage> {
                                     '${item['description']} × ${item['quantity']}',
                                   ),
                                 ),
-                                Text('${item['total_price']} đ'),
+                                Text(_money(context, item['total_price'])),
                               ],
                             ),
                           );
@@ -188,7 +211,7 @@ class _QuotationPageState extends State<QuotationPage> {
                       ),
                     const Divider(),
                     Text(
-                      'Tổng cộng: ${q['total_amount']} đ',
+                      '${_text(context, 'Tổng cộng', 'Total')}: ${_money(context, q['total_amount'])}',
                       style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                     if (widget.technician && status == 'DRAFT')
@@ -196,7 +219,7 @@ class _QuotationPageState extends State<QuotationPage> {
                         onPressed: busy
                             ? null
                             : () => _run(() => repository.send('${q['id']}')),
-                        child: const Text('Gửi báo giá'),
+                        child: Text(_text(context, 'Gửi báo giá', 'Send quotation')),
                       ),
                     if (!widget.technician && status == 'PENDING')
                       Row(
@@ -210,7 +233,7 @@ class _QuotationPageState extends State<QuotationPage> {
                                       'REJECTED',
                                     ),
                                   ),
-                            child: const Text('Từ chối'),
+                            child: Text(_text(context, 'Từ chối', 'Decline')),
                           ),
                           const SizedBox(width: 12),
                           FilledButton(
@@ -222,7 +245,7 @@ class _QuotationPageState extends State<QuotationPage> {
                                       'ACCEPTED',
                                     ),
                                   ),
-                            child: const Text('Chấp nhận'),
+                            child: Text(_text(context, 'Chấp nhận', 'Accept')),
                           ),
                         ],
                       ),
@@ -285,8 +308,8 @@ class _QuotationEditorState extends State<_QuotationEditor> {
         p == null ||
         p < 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Nhập mô tả, số lượng và đơn giá hợp lệ.'),
+        SnackBar(
+          content: Text(_text(context, 'Nhập mô tả, số lượng và đơn giá hợp lệ.', 'Enter a description, quantity and valid unit price.')),
         ),
       );
       return;
@@ -310,8 +333,8 @@ class _QuotationEditorState extends State<_QuotationEditor> {
     if (items.isEmpty ||
         (widget.type == 'ADDITIONAL' && reason.text.trim().isEmpty)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Cần có hạng mục và lý do báo giá bổ sung (nếu có).'),
+        SnackBar(
+          content: Text(_text(context, 'Hãy thêm ít nhất một hạng mục và lý do nếu là báo giá bổ sung.', 'Add at least one item and provide a reason for additional work.')),
         ),
       );
       return;
@@ -342,8 +365,15 @@ class _QuotationEditorState extends State<_QuotationEditor> {
   }
 
   String _money(num value) {
-    final digits = value.round().toString();
-    return '${digits.replaceAllMapped(RegExp(r'\B(?=(\d{3})+(?!\d))'), (match) => '.')}đ';
+    return _moneyForLocale(value);
+  }
+
+  String _moneyForLocale(num value) {
+    final amount = value.round().toString();
+    final vi = Localizations.localeOf(context).languageCode == 'vi';
+    final digits = amount.replaceAllMapped(
+      RegExp(r'\B(?=(\d{3})+(?!\d))'), (_) => vi ? '.' : ',');
+    return vi ? '$digits đ' : '$digits VND';
   }
 
   Widget _section({
@@ -419,7 +449,9 @@ class _QuotationEditorState extends State<_QuotationEditor> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          isAdditional ? 'Create Additional Quotation' : 'Create Quotation',
+          isAdditional
+              ? _text(context, 'Tạo báo giá bổ sung', 'Create additional quotation')
+              : _text(context, 'Tạo báo giá', 'Create quotation'),
         ),
       ),
       body: ListView(
@@ -436,27 +468,31 @@ class _QuotationEditorState extends State<_QuotationEditor> {
               ),
               borderRadius: BorderRadius.circular(16),
             ),
-            child: const Row(
+            child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(Icons.receipt_long_rounded, color: Colors.white, size: 28),
-                SizedBox(width: 12),
+                const Icon(Icons.receipt_long_rounded, color: Colors.white, size: 28),
+                const SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Additional service quotation',
-                        style: TextStyle(
+                        isAdditional
+                            ? _text(context, 'Báo giá công việc phát sinh', 'Additional work quotation')
+                            : _text(context, 'Báo giá dịch vụ', 'Service quotation'),
+                        style: const TextStyle(
                           color: Colors.white,
                           fontSize: 17,
                           fontWeight: FontWeight.w800,
                         ),
                       ),
-                      SizedBox(height: 5),
+                      const SizedBox(height: 5),
                       Text(
-                        'Only enter work that is outside the original service. The approved amount will be added to the current booking total.',
-                        style: TextStyle(
+                        isAdditional
+                            ? _text(context, 'Chỉ thêm công việc ngoài dịch vụ ban đầu. Số tiền được duyệt sẽ cộng vào tổng đơn.', 'Only add work outside the original service. Accepted charges will be added to the booking total.')
+                            : _text(context, 'Liệt kê các hạng mục để khách xem và duyệt báo giá.', 'List the work and prices for the customer to review and approve.'),
+                        style: const TextStyle(
                           color: Color(0xFFE4FAFB),
                           fontSize: 12,
                           height: 1.4,
@@ -473,17 +509,15 @@ class _QuotationEditorState extends State<_QuotationEditor> {
             _section(
               context: context,
               icon: Icons.info_outline_rounded,
-              title: 'Reason for additional work',
-              subtitle:
-                  'Explain why this work was not included in the original service.',
+              title: _text(context, 'Lý do phát sinh', 'Reason for additional work'),
+              subtitle: _text(context, 'Giải thích vì sao công việc này không nằm trong dịch vụ ban đầu.', 'Explain why this work was not included in the original service.'),
               child: TextField(
                 controller: reason,
                 minLines: 2,
                 maxLines: 4,
                 textCapitalization: TextCapitalization.sentences,
-                decoration: const InputDecoration(
-                  hintText:
-                      'Example: Additional refrigerant is required after inspection',
+                decoration: InputDecoration(
+                  hintText: _text(context, 'Ví dụ: Cần bổ sung gas sau khi kiểm tra', 'Example: Refrigerant needs topping up after inspection'),
                   alignLabelWithHint: true,
                 ),
               ),
@@ -493,18 +527,17 @@ class _QuotationEditorState extends State<_QuotationEditor> {
           _section(
             context: context,
             icon: Icons.home_repair_service_outlined,
-            title: 'Work details',
-            subtitle:
-                'Add each additional task with its quantity and unit price.',
+            title: _text(context, 'Chi tiết công việc', 'Work details'),
+            subtitle: _text(context, 'Thêm từng hạng mục cùng số lượng và đơn giá.', 'Add each task with its quantity and unit price.'),
             child: Column(
               children: [
                 TextField(
                   controller: description,
                   textCapitalization: TextCapitalization.sentences,
-                  decoration: const InputDecoration(
-                    labelText: 'Task or service name',
-                    hintText: 'Enter the additional work',
-                    prefixIcon: Icon(Icons.build_outlined),
+                  decoration: InputDecoration(
+                    labelText: _text(context, 'Tên công việc hoặc dịch vụ', 'Task or service name'),
+                    hintText: _text(context, 'Nhập công việc cần thực hiện', 'Describe the work'),
+                    prefixIcon: const Icon(Icons.build_outlined),
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -518,9 +551,9 @@ class _QuotationEditorState extends State<_QuotationEditor> {
                         keyboardType: const TextInputType.numberWithOptions(
                           decimal: true,
                         ),
-                        decoration: const InputDecoration(
-                          labelText: 'Quantity',
-                          prefixIcon: Icon(Icons.numbers_rounded),
+                        decoration: InputDecoration(
+                          labelText: _text(context, 'Số lượng', 'Quantity'),
+                          prefixIcon: const Icon(Icons.numbers_rounded),
                         ),
                       ),
                     ),
@@ -532,8 +565,8 @@ class _QuotationEditorState extends State<_QuotationEditor> {
                         keyboardType: const TextInputType.numberWithOptions(
                           decimal: true,
                         ),
-                        decoration: const InputDecoration(
-                          labelText: 'Unit price',
+                        decoration: InputDecoration(
+                          labelText: _text(context, 'Đơn giá', 'Unit price'),
                           suffixText: 'VND',
                         ),
                       ),
@@ -546,7 +579,7 @@ class _QuotationEditorState extends State<_QuotationEditor> {
                   child: OutlinedButton.icon(
                     onPressed: _add,
                     icon: const Icon(Icons.add_circle_outline_rounded),
-                    label: const Text('Add to quotation'),
+                    label: Text(_text(context, 'Thêm vào báo giá', 'Add to quotation')),
                     style: OutlinedButton.styleFrom(
                       minimumSize: const Size.fromHeight(48),
                       shape: RoundedRectangleBorder(
@@ -562,10 +595,10 @@ class _QuotationEditorState extends State<_QuotationEditor> {
           _section(
             context: context,
             icon: Icons.format_list_bulleted_rounded,
-            title: 'Quotation items',
+            title: _text(context, 'Hạng mục báo giá', 'Quotation items'),
             subtitle: items.isEmpty
-                ? 'No additional work has been added yet.'
-                : '${items.length} ${items.length == 1 ? 'item' : 'items'} added',
+                ? _text(context, 'Chưa thêm hạng mục nào.', 'No items added yet.')
+                : _text(context, 'Đã thêm ${items.length} hạng mục', '${items.length} ${items.length == 1 ? 'item' : 'items'} added'),
             child: items.isEmpty
                 ? Container(
                     width: double.infinity,
@@ -586,7 +619,7 @@ class _QuotationEditorState extends State<_QuotationEditor> {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          'Add at least one item to continue',
+                          _text(context, 'Thêm ít nhất một hạng mục để tiếp tục', 'Add at least one item to continue'),
                           style: TextStyle(
                             color: context.appMuted,
                             fontSize: 13,
@@ -666,7 +699,7 @@ class _QuotationEditorState extends State<_QuotationEditor> {
                                     height: 34,
                                     child: IconButton(
                                       padding: EdgeInsets.zero,
-                                      tooltip: 'Remove item',
+                                      tooltip: _text(context, 'Xóa hạng mục', 'Remove item'),
                                       onPressed: () =>
                                           setState(() => items.removeAt(i)),
                                       icon: const Icon(
@@ -692,16 +725,15 @@ class _QuotationEditorState extends State<_QuotationEditor> {
           _section(
             context: context,
             icon: Icons.sticky_note_2_outlined,
-            title: 'Customer note',
-            subtitle:
-                'Optional information that will appear with this quotation.',
+            title: _text(context, 'Ghi chú cho khách', 'Customer note'),
+            subtitle: _text(context, 'Thông tin tùy chọn sẽ hiển thị cùng báo giá.', 'Optional information shown with this quotation.'),
             child: TextField(
               controller: note,
               minLines: 2,
               maxLines: 4,
               textCapitalization: TextCapitalization.sentences,
-              decoration: const InputDecoration(
-                hintText: 'Add a clear note for the customer',
+              decoration: InputDecoration(
+                hintText: _text(context, 'Nhập ghi chú rõ ràng cho khách', 'Add a clear note for the customer'),
               ),
             ),
           ),
@@ -723,7 +755,7 @@ class _QuotationEditorState extends State<_QuotationEditor> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'CURRENT BOOKING',
+                      _text(context, 'ĐƠN HIỆN TẠI', 'CURRENT BOOKING'),
                       style: TextStyle(
                         color: context.appMuted,
                         fontSize: 10,
@@ -742,7 +774,7 @@ class _QuotationEditorState extends State<_QuotationEditor> {
                     ),
                     const SizedBox(height: 3),
                     Text(
-                      '+ ${_money(total)} additional',
+                      '+ ${_money(total)} ${_text(context, 'phát sinh', 'additional')}',
                       style: TextStyle(
                         color: context.appMuted,
                         fontSize: 12,
@@ -751,7 +783,7 @@ class _QuotationEditorState extends State<_QuotationEditor> {
                     ),
                     const SizedBox(height: 5),
                     Text(
-                      'ESTIMATED FINAL TOTAL',
+                      _text(context, 'TỔNG DỰ KIẾN', 'ESTIMATED FINAL TOTAL'),
                       style: TextStyle(
                         color: context.appMuted,
                         fontSize: 10,
@@ -783,7 +815,9 @@ class _QuotationEditorState extends State<_QuotationEditor> {
                         ),
                       )
                     : const Icon(Icons.save_outlined),
-                label: Text(sending ? 'Saving...' : 'Save draft'),
+                label: Text(sending
+                    ? _text(context, 'Đang lưu...', 'Saving...')
+                    : _text(context, 'Lưu bản nháp', 'Save draft')),
                 style: FilledButton.styleFrom(
                   minimumSize: const Size(150, 50),
                   shape: RoundedRectangleBorder(

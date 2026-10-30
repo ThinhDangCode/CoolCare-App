@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
+import '../../../app/localization/app_strings.dart';
+
 /// Reusable input field used by authentication pages.
 class AuthTextField extends StatefulWidget {
   const AuthTextField({
@@ -109,7 +111,9 @@ class AuthErrorBanner extends StatelessWidget {
             color: Theme.of(context).colorScheme.error,
           ),
           const SizedBox(width: 10),
-          Expanded(child: Text(message!)),
+          Expanded(child: Text(message == 'Đã có lỗi xảy ra. Vui lòng thử lại.'
+              ? context.tr('genericTryAgain')
+              : message!)),
         ],
       ),
     );

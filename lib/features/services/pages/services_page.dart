@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../app/localization/app_strings.dart';
+import '../../../app/localization/service_text.dart';
 import '../../../app/theme/coolcare_theme.dart';
 import '../../../core/network/api_client.dart';
 import '../controllers/service_controller.dart';
@@ -210,24 +211,25 @@ class _ServicesPageState extends State<ServicesPage> {
 
   String _chipName(String name) {
     final value = name.toLowerCase();
+    final english = Localizations.localeOf(context).languageCode == 'en';
 
     if (value.contains('vệ sinh')) {
-      return 'Vệ sinh';
+      return english ? 'Cleaning' : 'Vệ sinh';
     }
 
     if (value.contains('kiểm tra') || value.contains('chẩn đoán')) {
-      return 'Kiểm tra';
+      return english ? 'Inspection' : 'Kiểm tra';
     }
 
     if (value.contains('bảo dưỡng')) {
-      return 'Bảo dưỡng';
+      return english ? 'Maintenance' : 'Bảo dưỡng';
     }
 
     if (value.contains('sửa chữa')) {
-      return 'Sửa chữa';
+      return english ? 'Repair' : 'Sửa chữa';
     }
 
-    return name;
+    return localizedServiceName(context, name);
   }
 
   // ============================================================
@@ -289,7 +291,7 @@ class _ServicesPageState extends State<ServicesPage> {
             ),
             const SizedBox(height: 7),
             Text(
-              _controller.errorMessage ?? 'Something went wrong.',
+              localizedServiceError(context, _controller.errorMessage ?? context.tr('genericError')),
               textAlign: TextAlign.center,
               style: const TextStyle(color: Color(0xFF758686), fontSize: 11),
             ),
@@ -390,7 +392,7 @@ class _ServicesPageState extends State<ServicesPage> {
     if (_controller.selectedServiceId != null) {
       for (final service in _controller.allServices) {
         if (service.id == _controller.selectedServiceId) {
-          title = service.name;
+          title = localizedServiceName(context, service.name);
           break;
         }
       }
@@ -502,7 +504,7 @@ class _ServiceCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  _serviceType(service.name).toUpperCase(),
+                  _serviceType(context, service.name).toUpperCase(),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
@@ -516,7 +518,7 @@ class _ServiceCard extends StatelessWidget {
                 const SizedBox(height: 2),
 
                 Text(
-                  service.name,
+                  localizedServiceName(context, service.name),
                   style: TextStyle(
                     color: context.appText,
                     fontSize: 12,
@@ -530,7 +532,7 @@ class _ServiceCard extends StatelessWidget {
                   const SizedBox(height: 4),
 
                   Text(
-                    service.description!,
+                    localizedServiceDescription(context, service.description!),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
@@ -576,26 +578,27 @@ class _ServiceCard extends StatelessWidget {
     );
   }
 
-  String _serviceType(String name) {
+  String _serviceType(BuildContext context, String name) {
     final value = name.toLowerCase();
+    final english = Localizations.localeOf(context).languageCode == 'en';
 
     if (value.contains('vệ sinh')) {
-      return 'Vệ sinh';
+      return english ? 'Cleaning' : 'Vệ sinh';
     }
 
     if (value.contains('kiểm tra') || value.contains('chẩn đoán')) {
-      return 'Kiểm tra';
+      return english ? 'Inspection' : 'Kiểm tra';
     }
 
     if (value.contains('bảo dưỡng')) {
-      return 'Bảo dưỡng';
+      return english ? 'Maintenance' : 'Bảo dưỡng';
     }
 
     if (value.contains('sửa chữa')) {
-      return 'Sửa chữa';
+      return english ? 'Repair' : 'Sửa chữa';
     }
 
-    return 'Dịch vụ';
+    return english ? 'Service' : 'Dịch vụ';
   }
 
   Widget _buildIcon(BuildContext context) {

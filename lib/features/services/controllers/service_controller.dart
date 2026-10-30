@@ -74,6 +74,7 @@ class ServiceController extends ChangeNotifier {
       _applyFilters();
     } catch (error) {
       if (_disposed) return;
+      debugPrint('Unable to load services: $error');
       errorMessage = _cleanErrorMessage(error);
     } finally {
       if (!_disposed) {

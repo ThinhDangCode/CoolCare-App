@@ -5,6 +5,7 @@ import '../../quotations/pages/quotation_page.dart';
 import 'package:flutter/material.dart';
 
 import '../../../app/localization/app_strings.dart';
+import '../../../app/localization/service_text.dart';
 import '../../../app/theme/coolcare_theme.dart';
 import '../../../core/network/api_exception.dart';
 import '../models/view_job_request.dart';
@@ -725,7 +726,7 @@ class _ViewJobRequestDetailPageState extends State<ViewJobRequestDetailPage> {
     final suffix = count == 0
         ? ''
         : ' (${context.tr(count == 1 ? 'jobUnitCount' : 'jobUnitsCount').replaceFirst('{count}', '$count')})';
-    return '${booking.primaryServiceName}$suffix';
+    return '${localizedServiceName(context, booking.primaryServiceName)}$suffix';
   }
 
   Future<void> _confirmAccept() async {
@@ -1035,7 +1036,7 @@ class _UnitSpecification extends StatelessWidget {
         _InformationRow(
           label: context.tr('jobServices'),
           value: unit.services
-              .map((service) => service.name)
+              .map((service) => localizedServiceName(context, service.name))
               .where((name) => name.trim().isNotEmpty)
               .join(', '),
         ),

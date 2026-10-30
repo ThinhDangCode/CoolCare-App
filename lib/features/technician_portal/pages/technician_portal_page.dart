@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../../../app/localization/app_strings.dart';
+import '../../../app/localization/service_text.dart';
 import '../../../app/theme/coolcare_theme.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/network/api_exception.dart';
@@ -565,7 +566,7 @@ class _NextJobCard extends StatelessWidget {
                 ],
               ),
               Text(
-                job!.serviceName,
+                localizedServiceName(context, job!.serviceName),
                 style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w800,

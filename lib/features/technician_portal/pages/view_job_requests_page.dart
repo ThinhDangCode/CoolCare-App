@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../payments/repositories/payment_repository.dart';
 
 import '../../../app/localization/app_strings.dart';
+import '../../../app/localization/service_text.dart';
 import '../../../app/theme/coolcare_theme.dart';
 import '../../../core/network/api_exception.dart';
 import '../models/view_job_request.dart';
@@ -328,7 +329,7 @@ class _ViewJobRequestCardState extends State<_ViewJobRequestCard> {
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  booking.primaryServiceName,
+                  localizedServiceName(context, booking.primaryServiceName),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../app/localization/app_strings.dart';
+import '../../../app/localization/service_text.dart';
 import '../../../app/theme/coolcare_theme.dart';
 import '../models/service_model.dart';
 
@@ -68,7 +69,7 @@ class ServiceCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        service.name,
+                        localizedServiceName(context, service.name),
                         style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w700,
@@ -93,7 +94,7 @@ class ServiceCard extends StatelessWidget {
                 service.description!.trim().isNotEmpty) ...[
               const SizedBox(height: 14),
               Text(
-                service.description!,
+                localizedServiceDescription(context, service.description!),
                 maxLines: 3,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(height: 1.5, color: context.appMuted),
