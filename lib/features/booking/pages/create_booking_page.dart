@@ -1,4 +1,5 @@
 import '../../../app/localization/app_strings.dart';
+import '../../../app/localization/service_text.dart';
 import 'package:flutter/material.dart';
 
 import '../../../app/theme/coolcare_theme.dart';
@@ -481,7 +482,7 @@ class _CreateBookingPageState extends State<CreateBookingPage> {
           const SizedBox(width: 8),
           Expanded(
             child: Text(
-              service['name']?.toString() ?? '',
+              localizedServiceName(context, service['name']?.toString() ?? ''),
               style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
             ),
           ),
@@ -532,7 +533,7 @@ class _CreateBookingPageState extends State<CreateBookingPage> {
                           return CheckboxListTile(
                             value: selected.contains(id),
                             activeColor: primary,
-                            title: Text(service['name']?.toString() ?? ''),
+                            title: Text(localizedServiceName(context, service['name']?.toString() ?? '')),
                             subtitle: Text(
                               '${context.tr('bookingUiFrom')} ${_formatPrice(service['base_price'])}',
                             ),
@@ -1111,7 +1112,7 @@ class _CreateBookingPageState extends State<CreateBookingPage> {
         children: [
           Expanded(
             child: Text(
-              "${service['name']} ${context.tr('bookingUiUnit')} ${unitIndex + 1}",
+              "${localizedServiceName(context, service['name']?.toString() ?? '')} ${context.tr('bookingUiUnit')} ${unitIndex + 1}",
               style: const TextStyle(fontSize: 12),
             ),
           ),

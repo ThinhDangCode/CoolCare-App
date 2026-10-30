@@ -23,6 +23,8 @@ abstract interface class AuthRepository {
 
   Future<void> logout();
 
+  Future<void> clearLocalSession();
+
   Future<void> requestPasswordReset({required String email});
 
   Future<String> verifyResetOtp({required String email, required String otp});

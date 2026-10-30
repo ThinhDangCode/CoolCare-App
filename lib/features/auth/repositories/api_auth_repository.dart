@@ -137,6 +137,9 @@ class ApiAuthRepository implements AuthRepository {
   }
 
   @override
+  Future<void> clearLocalSession() => _sessionStore.clear();
+
+  @override
   Future<void> requestPasswordReset({required String email}) async {
     await _apiClient.post(
       '/auth/forgot-password',

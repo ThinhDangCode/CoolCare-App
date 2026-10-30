@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../app/localization/app_strings.dart';
+import '../../../app/localization/service_text.dart';
 import '../../../app/theme/coolcare_theme.dart';
 import '../../reviews/pages/review_pages.dart';
 import '../../reviews/models/reviewable_booking.dart';
@@ -91,9 +92,10 @@ class _MyBookingsPageState extends State<MyBookingsPage> {
       id: booking.id,
       code: booking.code,
       status: booking.status,
-      services: booking.serviceNames ??
-          '${booking.unitCount} ${context.tr('bookingUiUnits')} · ${booking.serviceCount} ${context.tr('bookingUiServices')}',
-      technician: booking.technicianName ?? 'Unassigned',
+      services: booking.serviceNames == null
+          ? '${booking.unitCount} ${context.tr('bookingUiUnits')} · ${booking.serviceCount} ${context.tr('bookingUiServices')}'
+          : localizedServiceNames(context, booking.serviceNames!),
+      technician: booking.technicianName ?? context.tr('unassigned'),
       reviewed: booking.reviewed,
       scheduledAt: booking.scheduledAt,
     );
@@ -396,7 +398,7 @@ class _BookingCard extends StatelessWidget {
               ),
               if (awaitingPayment) ...[
                 const SizedBox(height: 8),
-                const Text('Công việc đã hoàn thành · Cần thanh toán', style: TextStyle(fontSize: 12, color: Color(0xFF946500))),
+                Text(context.tr('bookingAwaitingPayment'), style: const TextStyle(fontSize: 12, color: Color(0xFF946500))),
               ],
               const SizedBox(height: 12),
               _line(Icons.calendar_today_outlined, _date(booking.scheduledAt)),

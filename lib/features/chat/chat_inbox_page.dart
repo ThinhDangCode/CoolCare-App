@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../../app/localization/app_strings.dart';
+import '../../app/localization/service_text.dart';
+
 import 'booking_chat_page.dart';
 import 'chat_repository.dart';
 import 'chat_unread.dart';
@@ -65,16 +68,16 @@ class _ChatInboxPageState extends State<ChatInboxPage> {
     final rooms = _unread.rooms;
     if (rooms.isEmpty) {
       return ListView(
-        children: const [
-          SizedBox(height: 120),
-          Icon(Icons.forum_outlined, size: 44, color: Colors.black38),
-          SizedBox(height: 12),
+        children: [
+          const SizedBox(height: 120),
+          const Icon(Icons.forum_outlined, size: 44, color: Colors.black38),
+          const SizedBox(height: 12),
           Padding(
-            padding: EdgeInsets.symmetric(horizontal: 32),
+            padding: const EdgeInsets.symmetric(horizontal: 32),
             child: Text(
-              'Chưa có cuộc trò chuyện nào. Chat sẽ xuất hiện khi booking đã có kỹ thuật viên nhận việc.',
+              context.tr('chatEmptyInbox'),
               textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.black54),
+              style: const TextStyle(color: Colors.black54),
             ),
           ),
         ],
@@ -88,13 +91,13 @@ class _ChatInboxPageState extends State<ChatInboxPage> {
         final unread = _unread.isUnread(room);
         // One row per order: identify it by code + service + date, then the other person.
         final code = room.bookingCode.isEmpty ? '' : '#${room.bookingCode}';
-        final service = room.serviceNames.isEmpty ? 'Đơn dịch vụ' : room.serviceNames;
+        final service = room.serviceNames.isEmpty ? context.tr('chatBooking') : localizedServiceNames(context, room.serviceNames);
         final date = room.scheduledAt == null
             ? ''
             : ' · ${room.scheduledAt!.day.toString().padLeft(2, '0')}/${room.scheduledAt!.month.toString().padLeft(2, '0')}';
         final title = code.isEmpty ? service : '$code · $service';
         final mine = room.lastSenderId == _unread.userId;
-        final who = mine ? 'Bạn: ' : (room.otherName.isEmpty ? '' : '${room.otherName}: ');
+        final who = mine ? '${context.tr('chatYou')}: ' : (room.otherName.isEmpty ? '' : '${room.otherName}: ');
         return ListTile(
           onTap: () => _open(room),
           leading: const CircleAvatar(
@@ -109,7 +112,7 @@ class _ChatInboxPageState extends State<ChatInboxPage> {
           ),
           subtitle: Text(
             room.lastContent == null
-                ? '${room.otherName}$date · chưa có tin nhắn'
+                ? '${room.otherName}$date · ${context.tr('chatNoMessagesPreview')}'
                 : '$who${room.lastContent}',
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
@@ -145,7 +148,7 @@ class _ChatInboxPageState extends State<ChatInboxPage> {
     if (widget.embedded) return content;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Tin nhắn'),
+        title: Text(context.tr('chatInboxTitle')),
         backgroundColor: _teal,
         foregroundColor: Colors.white,
       ),

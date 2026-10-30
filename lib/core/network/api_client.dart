@@ -13,16 +13,22 @@ class DownloadedFile {
 }
 
 class ApiClient {
+  static ApiClient? _environmentClient;
+
   factory ApiClient.fromEnvironment({HttpClient? httpClient}) {
+    if (httpClient == null && _environmentClient != null) {
+      return _environmentClient!;
+    }
+
     const configuredBaseUrl = String.fromEnvironment('API_BASE_URL');
-    final platformDefault = Platform.isIOS || Platform.isMacOS
-        ? 'http://127.0.0.1:3000/api'
-        : 'http://10.0.2.2:3000/api';
+    // Android emulators can reach the host reliably through `adb reverse`.
+    // The emulator bridge remains a fallback when no reverse mapping exists.
+    const platformDefault = 'http://127.0.0.1:3000/api';
     final baseUrl = configuredBaseUrl.trim().isEmpty
         ? platformDefault
         : configuredBaseUrl;
 
-    return ApiClient(
+    final client = ApiClient(
       baseUrl: baseUrl,
       fallbackBaseUrls: const [
         'http://127.0.0.1:3000/api',
@@ -32,6 +38,8 @@ class ApiClient {
       ],
       httpClient: httpClient,
     );
+    if (httpClient == null) _environmentClient = client;
+    return client;
   }
 
   ApiClient({
@@ -54,13 +62,24 @@ class ApiClient {
     String path, {
     Map<String, String>? queryParameters,
     String? bearerToken,
-  }) {
-    return _request(
-      'GET',
-      path,
-      queryParameters: queryParameters,
-      bearerToken: bearerToken,
-    );
+  }) async {
+    for (var attempt = 0; ; attempt++) {
+      try {
+        return await _request(
+          'GET',
+          path,
+          queryParameters: queryParameters,
+          bearerToken: bearerToken,
+        );
+      } on ApiException catch (error) {
+        final transient =
+            error.code == 'NETWORK_ERROR' ||
+            error.code == 'REQUEST_TIMEOUT' ||
+            {500, 502, 503, 504}.contains(error.statusCode);
+        if (attempt > 0 || !transient) rethrow;
+        await Future<void>.delayed(const Duration(milliseconds: 500));
+      }
+    }
   }
 
   Future<Map<String, dynamic>> post(
@@ -155,7 +174,10 @@ class ApiClient {
         const Duration(seconds: 15),
       );
 
-      final responseText = await utf8.decoder.bind(response).join();
+      final responseText = await utf8.decoder
+          .bind(response)
+          .join()
+          .timeout(const Duration(seconds: 15));
 
       final dynamic decoded = responseText.isEmpty
           ? <String, dynamic>{}
@@ -208,7 +230,10 @@ class ApiClient {
 
     try {
       final request = await _httpClient.getUrl(uri).timeout(timeout);
-      request.headers.set(HttpHeaders.acceptHeader, '$accept, application/json');
+      request.headers.set(
+        HttpHeaders.acceptHeader,
+        '$accept, application/json',
+      );
       if (bearerToken != null && bearerToken.isNotEmpty) {
         request.headers.set(
           HttpHeaders.authorizationHeader,

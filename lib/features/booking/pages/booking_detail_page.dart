@@ -5,6 +5,7 @@ import '../../quotations/pages/quotation_page.dart';
 import 'package:flutter/material.dart';
 
 import '../../../app/localization/app_strings.dart';
+import '../../../app/localization/service_text.dart';
 import '../repositories/booking_detail_repository.dart';
 import 'create_booking_page.dart';
 import 'recommended_technicians_page.dart';
@@ -518,7 +519,7 @@ class _BookingDetailPageState extends State<BookingDetailPage> {
                                   children: [
                                     Expanded(
                                       child: Text(
-                                        service['name']?.toString() ?? '',
+                                        localizedServiceName(context, service['name']?.toString() ?? ''),
                                         style: const TextStyle(fontSize: 12),
                                       ),
                                     ),

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 
 import '../../../core/network/api_exception.dart';
@@ -19,6 +21,9 @@ class AuthController extends ChangeNotifier {
   AuthUser? user;
   String? errorMessage;
   bool isBusy = false;
+  String? sessionNotice;
+  bool _checkingSession = false;
+  int _sessionGeneration = 0;
 
   Future<void> initialize() async {
     try {
@@ -31,6 +36,9 @@ class AuthController extends ChangeNotifier {
       status = AuthStatus.unauthenticated;
     }
     notifyListeners();
+    if (status == AuthStatus.authenticated) {
+      unawaited(refreshSession());
+    }
   }
 
   Future<bool> login({required String email, required String password}) {
@@ -73,8 +81,10 @@ class AuthController extends ChangeNotifier {
   }
 
   Future<bool> _authenticate(Future<AuthSession> Function() action) async {
+    _sessionGeneration++;
     isBusy = true;
     errorMessage = null;
+    sessionNotice = null;
     notifyListeners();
     try {
       final session = await action();
@@ -95,8 +105,10 @@ class AuthController extends ChangeNotifier {
   }
 
   Future<void> logout() async {
+    _sessionGeneration++;
     isBusy = true;
     errorMessage = null;
+    sessionNotice = null;
     notifyListeners();
     await _repository.logout();
     user = null;
@@ -106,13 +118,36 @@ class AuthController extends ChangeNotifier {
   }
 
   Future<void> refreshSession() async {
-    if (status != AuthStatus.authenticated || isBusy) return;
+    if (status != AuthStatus.authenticated || isBusy || _checkingSession) {
+      return;
+    }
+    final generation = _sessionGeneration;
+    _checkingSession = true;
     try {
       final session = await _repository.refreshSession();
+      if (generation != _sessionGeneration) return;
       user = session.user;
       notifyListeners();
-    } on ApiException {
-      // Keep the current local session when a background refresh is unavailable.
+    } on ApiException catch (error) {
+      if (generation != _sessionGeneration) return;
+      if (error.code == 'SESSION_REPLACED' || error.statusCode == 401) {
+        await _expireLocalSession(error.code == 'SESSION_REPLACED');
+      }
+      // Keep the session when only the network is temporarily unavailable.
+    } finally {
+      _checkingSession = false;
+    }
+  }
+
+  Future<void> _expireLocalSession(bool replaced) async {
+    _sessionGeneration++;
+    try {
+      await _repository.clearLocalSession();
+    } finally {
+      user = null;
+      status = AuthStatus.unauthenticated;
+      sessionNotice = replaced ? 'sessionReplaced' : 'sessionExpired';
+      notifyListeners();
     }
   }
 

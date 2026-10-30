@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import '../../app/localization/app_strings.dart';
 import 'chat_repository.dart';
 import 'chat_unread.dart';
 
@@ -37,10 +38,11 @@ class _BookingChatPageState extends State<BookingChatPage> {
   }
 
   Future<void> _initialize() async {
+    final roomMissingMessage = context.tr('chatRoomMissing');
     try {
       final room = await _repo.openBookingRoom(widget.bookingId);
       final roomId = room['id']?.toString();
-      if (roomId == null || roomId.isEmpty) throw StateError('Không tìm thấy phòng chat.');
+      if (roomId == null || roomId.isEmpty) throw StateError(roomMissingMessage);
       final messages = await _repo.messages(roomId);
       final myId = await _repo.currentUserId();
       if (!mounted) return;
@@ -159,7 +161,7 @@ class _BookingChatPageState extends State<BookingChatPage> {
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Không gửi được tin nhắn: $e')),
+        SnackBar(content: Text('${context.tr('chatSendFailed')}: $e')),
       );
     } finally {
       if (mounted) setState(() => _sending = false);
@@ -194,7 +196,7 @@ class _BookingChatPageState extends State<BookingChatPage> {
         title: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('Chat dịch vụ'),
+            Text(context.tr('chatTitle')),
             const SizedBox(width: 8),
             Icon(Icons.circle, size: 9, color: _online ? Colors.greenAccent : Colors.white54),
           ],
@@ -218,7 +220,7 @@ class _BookingChatPageState extends State<BookingChatPage> {
                         OutlinedButton(onPressed: () {
                           setState(() { _loading = true; _error = null; });
                           _initialize();
-                        }, child: const Text('Thử lại')),
+                        }, child: Text(context.tr('tryAgain'))),
                       ],
                     ),
                   ),
@@ -229,14 +231,14 @@ class _BookingChatPageState extends State<BookingChatPage> {
                       width: double.infinity,
                       color: const Color(0xFFEAF7F7),
                       padding: const EdgeInsets.all(12),
-                      child: const Text(
-                        'Trao đổi trực tiếp về booking này. Không chia sẻ mật khẩu hoặc mã xác thực.',
-                        style: TextStyle(fontSize: 12, color: Color(0xFF23656A)),
+                      child: Text(
+                        context.tr('chatNotice'),
+                        style: const TextStyle(fontSize: 12, color: Color(0xFF23656A)),
                       ),
                     ),
                     Expanded(
                       child: _messages.isEmpty
-                          ? const Center(child: Text('Chưa có tin nhắn. Hãy bắt đầu cuộc trò chuyện.'))
+                          ? Center(child: Text(context.tr('chatEmptyRoom')))
                           : ListView.builder(
                               controller: _scrollController,
                               padding: const EdgeInsets.all(16),
@@ -273,11 +275,11 @@ class _BookingChatPageState extends State<BookingChatPage> {
                             ),
                     ),
                     if (_otherTyping)
-                      const Padding(
-                        padding: EdgeInsets.only(left: 16, bottom: 4),
+                      Padding(
+                        padding: const EdgeInsets.only(left: 16, bottom: 4),
                         child: Align(
                           alignment: Alignment.centerLeft,
-                          child: Text('Đang nhập...', style: TextStyle(fontSize: 12, color: Colors.black54)),
+                          child: Text(context.tr('chatTyping'), style: const TextStyle(fontSize: 12, color: Colors.black54)),
                         ),
                       ),
                     SafeArea(
@@ -295,7 +297,7 @@ class _BookingChatPageState extends State<BookingChatPage> {
                                 onChanged: _onTextChanged,
                                 onSubmitted: (_) => _send(),
                                 decoration: InputDecoration(
-                                  hintText: 'Nhập tin nhắn...',
+                                  hintText: context.tr('chatMessageHint'),
                                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(24)),
                                   contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                                 ),

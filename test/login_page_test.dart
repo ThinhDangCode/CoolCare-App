@@ -1,5 +1,6 @@
 import 'package:coolcare_mobile/app/coolcare_app.dart';
 import 'package:coolcare_mobile/app/preferences/app_preferences_controller.dart';
+import 'package:coolcare_mobile/core/network/api_exception.dart';
 import 'package:coolcare_mobile/features/auth/controllers/auth_controller.dart';
 import 'package:coolcare_mobile/features/auth/models/auth_user.dart';
 import 'package:coolcare_mobile/features/auth/repositories/auth_repository.dart';
@@ -70,6 +71,45 @@ void main() {
     expect(find.text('nguyenvana@gmail.com'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('replaced session closes account pages and shows a message', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(390, 932));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    const user = AuthUser(
+      id: 'customer-1',
+      email: 'nguyenvana@gmail.com',
+      fullName: 'Nguyễn Văn A',
+      role: 'CUSTOMER',
+    );
+    final repository = _NoopAuthRepository(
+      session: const AuthSession(token: 'test-token', user: user),
+    );
+    final controller = AuthController(repository);
+    await controller.initialize();
+    await tester.pumpWidget(_buildVietnameseApp(controller));
+    await tester.tap(find.text('Tài khoản'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Xem hồ sơ →'));
+    await tester.pumpAndSettle();
+
+    repository.refreshError = const ApiException(
+      statusCode: 401,
+      code: 'SESSION_REPLACED',
+      message: 'Tài khoản đã đăng nhập trên thiết bị khác.',
+    );
+    await controller.refreshSession();
+    await tester.pumpAndSettle();
+
+    expect(controller.status, AuthStatus.unauthenticated);
+    expect(repository.localSessionCleared, isTrue);
+    expect(find.text('Hồ sơ cá nhân'), findsNothing);
+    expect(
+      find.text('Tài khoản đã đăng nhập trên thiết bị khác.'),
+      findsOneWidget,
+    );
+  });
 }
 
 CoolCareApp _buildVietnameseApp(AuthController controller) {
@@ -85,6 +125,8 @@ class _NoopAuthRepository implements AuthRepository {
   _NoopAuthRepository({this.session});
 
   final AuthSession? session;
+  ApiException? refreshError;
+  bool localSessionCleared = false;
 
   @override
   Future<AuthSession> login({required String email, required String password}) {
@@ -98,6 +140,11 @@ class _NoopAuthRepository implements AuthRepository {
 
   @override
   Future<void> logout() async {}
+
+  @override
+  Future<void> clearLocalSession() async {
+    localSessionCleared = true;
+  }
 
   @override
   Future<void> register({
@@ -134,7 +181,10 @@ class _NoopAuthRepository implements AuthRepository {
   Future<AuthSession?> restoreSession() async => session;
 
   @override
-  Future<AuthSession> refreshSession() async => session!;
+  Future<AuthSession> refreshSession() async {
+    if (refreshError != null) throw refreshError!;
+    return session!;
+  }
 
   @override
   Future<String> verifyResetOtp({

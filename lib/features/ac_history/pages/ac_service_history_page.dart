@@ -1,6 +1,8 @@
 
 import 'package:flutter/material.dart';
 
+import '../../../app/localization/service_text.dart';
+
 import '../../../core/network/api_exception.dart';
 import '../models/customer_ac_history.dart';
 import '../repositories/ac_history_repository.dart';
@@ -293,7 +295,7 @@ class _AcServiceHistoryPageState extends State<AcServiceHistoryPage> {
               const Divider(height: 24),
 
               for (final service in entry.services)
-                _price(service.name, service.price),
+                _price(localizedServiceName(context, service.name), service.price),
 
               if (entry.additionalWork.isNotEmpty) ...[
                 Padding(

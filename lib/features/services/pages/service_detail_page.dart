@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../app/localization/app_strings.dart';
+import '../../../app/localization/service_text.dart';
 import '../../../app/theme/coolcare_theme.dart';
 import '../../../core/network/api_client.dart';
 import '../../booking/pages/create_booking_page.dart';
@@ -153,7 +154,7 @@ class _ServiceDetailPageState extends State<ServiceDetailPage> {
             ),
             const SizedBox(height: 7),
             Text(
-              _controller.detailErrorMessage ?? context.tr('genericError'),
+              localizedServiceError(context, _controller.detailErrorMessage ?? context.tr('genericError')),
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: context.appMuted,
@@ -228,7 +229,7 @@ class _ServiceDetailPageState extends State<ServiceDetailPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            service.name,
+            localizedServiceName(context, service.name),
             style: TextStyle(
               color: context.appText,
               fontSize: 20,
@@ -242,7 +243,7 @@ class _ServiceDetailPageState extends State<ServiceDetailPage> {
               service.description!.trim().isNotEmpty) ...[
             const SizedBox(height: 7),
             Text(
-              service.description!,
+              localizedServiceDescription(context, service.description!),
               style: TextStyle(
                 color: context.appMuted,
                 fontSize: 10,
@@ -296,7 +297,7 @@ class _ServiceDetailPageState extends State<ServiceDetailPage> {
       title: context.tr('aboutService'),
       child: Text(
         description != null && description.isNotEmpty
-            ? description
+            ? localizedServiceDescription(context, description)
             : context.tr('serviceInfoUpdating'),
         style: TextStyle(color: context.appMuted, fontSize: 10, height: 1.5),
       ),
