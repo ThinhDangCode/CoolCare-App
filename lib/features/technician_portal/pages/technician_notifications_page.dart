@@ -21,8 +21,8 @@ class TechnicianNotificationsPage extends StatefulWidget {
 
 class _TechnicianNotificationsPageState
     extends State<TechnicianNotificationsPage> {
-  static const _ink = Color(0xFF193943);
-  static const _muted = Color(0xFF657F8A);
+  String _text(String vietnamese, String english) =>
+      Localizations.localeOf(context).languageCode == 'vi' ? vietnamese : english;
 
   late final TechnicianNotificationsRepository _repository;
   Timer? _refreshTimer;
@@ -177,11 +177,8 @@ class _TechnicianNotificationsPageState
   void _showError(Object error, Future<void> Function() retry) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(
-          Localizations.localeOf(context).languageCode == 'vi'
-              ? 'Không thể cập nhật thông báo. Vui lòng thử lại. ($error)'
-              : 'Could not update the notification. Please try again.',
-        ),
+        content: Text(_text('Không thể cập nhật thông báo. Vui lòng thử lại.',
+            'Could not update the notification. Please try again.')),
         action: SnackBarAction(label: context.tr('tryAgain'), onPressed: retry),
       ),
     );
@@ -190,24 +187,30 @@ class _TechnicianNotificationsPageState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF6F8F9),
+      backgroundColor: context.appBackground,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: context.appSurface,
+        foregroundColor: context.appText,
         surfaceTintColor: Colors.transparent,
-        title: const Text(
-          'Notifications',
-          style: TextStyle(fontWeight: FontWeight.w700),
+        title: Text(
+          _text('Thông báo', 'Notifications'),
+          style: TextStyle(fontWeight: FontWeight.w700, color: context.appText),
         ),
         actions: [
           TextButton(
             onPressed: _unreadCount == 0 || _markingAll ? null : _markAllRead,
+            style: TextButton.styleFrom(
+              foregroundColor: context.isDarkMode
+                  ? const Color(0xFF8FE1E5)
+                  : CoolCareColors.primaryDark,
+            ),
             child: _markingAll
                 ? const SizedBox(
                     width: 18,
                     height: 18,
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
-                : const Text('Mark all read'),
+                : Text(_text('Đánh dấu đã đọc', 'Mark all read')),
           ),
         ],
       ),
@@ -218,15 +221,18 @@ class _TechnicianNotificationsPageState
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Text('Unable to load notifications.'),
+                  Text(_text('Không thể tải thông báo.',
+                      'Unable to load notifications.')),
                   const SizedBox(height: 8),
-                  FilledButton(onPressed: _load, child: const Text('Retry')),
+                  FilledButton(onPressed: _load,
+                      child: Text(_text('Thử lại', 'Retry'))),
                 ],
               ),
             )
           : _items.isEmpty
-          ? const Center(
-              child: Text('No Notifications', style: TextStyle(color: _muted)),
+          ? Center(
+              child: Text(_text('Chưa có thông báo', 'No notifications'),
+                  style: TextStyle(color: context.appMuted)),
             )
           : RefreshIndicator(
               onRefresh: _load,
@@ -257,8 +263,8 @@ class _TechnicianNotificationsPageState
                             padding: const EdgeInsets.fromLTRB(20, 18, 20, 8),
                             child: Text(
                               _dateLabel(item.createdAt),
-                              style: const TextStyle(
-                                color: _muted,
+                              style: TextStyle(
+                                color: context.appMuted,
                                 fontSize: 12,
                                 fontWeight: FontWeight.w700,
                               ),
@@ -277,13 +283,13 @@ class _TechnicianNotificationsPageState
   Widget _tile(CustomerNotification item) {
     final style = _iconStyle(item.type, item.title);
     return Material(
-      color: item.isRead ? Colors.white : const Color(0xFFEAF6F7),
+      color: item.isRead ? context.appSurface : context.appAccentSurface,
       child: InkWell(
         onTap: () => _openNotification(item),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-          decoration: const BoxDecoration(
-            border: Border(bottom: BorderSide(color: Color(0xFFDBE7EB))),
+          decoration: BoxDecoration(
+            border: Border(bottom: BorderSide(color: context.appBorder)),
           ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -300,7 +306,7 @@ class _TechnicianNotificationsPageState
                     Text(
                       localizedNotificationTitle(context, item.title),
                       style: TextStyle(
-                        color: _ink,
+                        color: context.appText,
                         fontSize: 14,
                         fontWeight: item.isRead
                             ? FontWeight.w500
@@ -310,8 +316,8 @@ class _TechnicianNotificationsPageState
                     const SizedBox(height: 3),
                     Text(
                       localizedNotificationMessage(context, item.message),
-                      style: const TextStyle(
-                        color: _muted,
+                      style: TextStyle(
+                        color: context.appSubtleText,
                         fontSize: 13,
                         height: 1.4,
                       ),
@@ -320,8 +326,10 @@ class _TechnicianNotificationsPageState
                       const SizedBox(height: 3),
                       Text(
                         item.bookingCode!,
-                        style: const TextStyle(
-                          color: CoolCareColors.primary,
+                        style: TextStyle(
+                          color: context.isDarkMode
+                              ? const Color(0xFF8FE1E5)
+                              : CoolCareColors.primaryDark,
                           fontSize: 11,
                           fontWeight: FontWeight.w600,
                         ),
@@ -330,8 +338,8 @@ class _TechnicianNotificationsPageState
                     const SizedBox(height: 3),
                     Text(
                       _time(item.createdAt),
-                      style: const TextStyle(
-                        color: Color(0xFF9CA3AF),
+                      style: TextStyle(
+                        color: context.appMuted,
                         fontSize: 11,
                       ),
                     ),
@@ -409,12 +417,14 @@ class _TechnicianNotificationsPageState
   }
 
   String _dateLabel(DateTime? value) {
-    if (value == null) return 'EARLIER';
+    if (value == null) return _text('TRƯỚC ĐÓ', 'EARLIER');
     final now = DateTime.now();
     final date = DateTime(value.year, value.month, value.day);
     final today = DateTime(now.year, now.month, now.day);
-    if (date == today) return 'TODAY';
-    if (date == today.subtract(const Duration(days: 1))) return 'YESTERDAY';
+    if (date == today) return _text('HÔM NAY', 'TODAY');
+    if (date == today.subtract(const Duration(days: 1))) {
+      return _text('HÔM QUA', 'YESTERDAY');
+    }
     return '${value.day.toString().padLeft(2, '0')}/${value.month.toString().padLeft(2, '0')}/${value.year}';
   }
 
@@ -424,10 +434,16 @@ class _TechnicianNotificationsPageState
   String _time(DateTime? value) {
     if (value == null) return '';
     final difference = DateTime.now().difference(value);
-    if (difference.inMinutes < 1) return 'Just now';
-    if (difference.inHours < 1) return '${difference.inMinutes} min ago';
-    if (difference.inDays < 1) return '${difference.inHours} hr ago';
-    if (difference.inDays == 1) return 'Yesterday';
+    if (difference.inMinutes < 1) return _text('Vừa xong', 'Just now');
+    if (difference.inHours < 1) {
+      return _text('${difference.inMinutes} phút trước',
+          '${difference.inMinutes} min ago');
+    }
+    if (difference.inDays < 1) {
+      return _text('${difference.inHours} giờ trước',
+          '${difference.inHours} hr ago');
+    }
+    if (difference.inDays == 1) return _text('Hôm qua', 'Yesterday');
     return '${value.day.toString().padLeft(2, '0')}/${value.month.toString().padLeft(2, '0')}/${value.year}';
   }
 }

@@ -2123,8 +2123,9 @@ class _TechnicianWithdrawPageState extends State<TechnicianWithdrawPage> {
       await _refreshAvailableBalance();
       if (!mounted) return;
       setState(() => _result = data['status'] == 'SUCCESS'
-          ? walletText(context, 'Rút tiền thành công! Tiền thử nghiệm đã được chuyển vào tài khoản nhận của KTV.',
-              'Withdrawal successful! Test funds have reached your receiving account.')
+          ? walletText(context,
+              'Yêu cầu rút tiền đã được xử lý thành công. Xem chi tiết trong lịch sử giao dịch.',
+              'Your withdrawal request was processed successfully. View the details in transaction history.')
           : walletText(context, 'Yêu cầu đang được đối soát. Vui lòng kiểm tra lịch sử trước khi thử lại.',
               'Withdrawal is being reconciled. Check history before retrying.'));
     } catch (e) {
@@ -2219,8 +2220,8 @@ class _TechnicianWithdrawPageState extends State<TechnicianWithdrawPage> {
             OutlinedButton.icon(
               onPressed: _busy ? null : _setupReceivingAccount,
               icon: const Icon(Icons.open_in_browser),
-              label: Text(walletText(context, 'Thiết lập tài khoản nhận tiền thử nghiệm',
-                  'Set up a test receiving account')),
+              label: Text(walletText(context, 'Thiết lập tài khoản nhận tiền',
+                  'Set up a receiving account')),
             ),
           ],
           if (_error != null) ...[

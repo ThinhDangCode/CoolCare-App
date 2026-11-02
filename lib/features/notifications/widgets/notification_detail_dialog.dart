@@ -25,6 +25,7 @@ class NotificationDetailDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final code = bookingCode?.trim();
+    final vietnamese = Localizations.localeOf(context).languageCode == 'vi';
     return Dialog(
       insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
       backgroundColor: Colors.transparent,
@@ -64,7 +65,7 @@ class NotificationDetailDialog extends StatelessWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'NOTIFICATION DETAILS',
+                                  vietnamese ? 'CHI TIẾT THÔNG BÁO' : 'NOTIFICATION DETAILS',
                                   style: TextStyle(
                                     color: context.appMuted,
                                     fontSize: 10,
@@ -89,7 +90,7 @@ class NotificationDetailDialog extends StatelessWidget {
                           const SizedBox(width: 8),
                           IconButton(
                             visualDensity: VisualDensity.compact,
-                            tooltip: 'Close',
+                            tooltip: vietnamese ? 'Đóng' : 'Close',
                             onPressed: () => Navigator.of(context).pop(),
                             style: IconButton.styleFrom(
                               backgroundColor: context.appSoftSurface,
@@ -121,7 +122,7 @@ class NotificationDetailDialog extends StatelessWidget {
                       if (code?.isNotEmpty == true) ...[
                         const SizedBox(height: 18),
                         Text(
-                          'RELATED BOOKING',
+                          vietnamese ? 'LỊCH ĐẶT LIÊN QUAN' : 'RELATED BOOKING',
                           style: TextStyle(
                             color: context.appMuted,
                             fontSize: 10,
@@ -142,9 +143,11 @@ class NotificationDetailDialog extends StatelessWidget {
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Icon(
+                              Icon(
                                 Icons.receipt_long_outlined,
-                                color: CoolCareColors.primaryDark,
+                                color: context.isDarkMode
+                                    ? const Color(0xFF8FE1E5)
+                                    : CoolCareColors.primaryDark,
                                 size: 17,
                               ),
                               const SizedBox(width: 7),
@@ -152,8 +155,10 @@ class NotificationDetailDialog extends StatelessWidget {
                                 child: Text(
                                   code!,
                                   overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(
-                                    color: CoolCareColors.primaryDark,
+                                  style: TextStyle(
+                                    color: context.isDarkMode
+                                        ? const Color(0xFF8FE1E5)
+                                        : CoolCareColors.primaryDark,
                                     fontSize: 13,
                                     fontWeight: FontWeight.w700,
                                   ),
@@ -202,9 +207,9 @@ class NotificationDetailDialog extends StatelessWidget {
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                    child: const Text(
-                      'Close',
-                      style: TextStyle(fontWeight: FontWeight.w700),
+                    child: Text(
+                      vietnamese ? 'Đóng' : 'Close',
+                      style: const TextStyle(fontWeight: FontWeight.w700),
                     ),
                   ),
                 ),

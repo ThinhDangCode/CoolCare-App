@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import '../../app/localization/app_strings.dart';
+import '../../app/theme/coolcare_theme.dart';
 import 'chat_repository.dart';
 import 'chat_unread.dart';
 
@@ -229,11 +230,11 @@ class _BookingChatPageState extends State<BookingChatPage> {
                   children: [
                     Container(
                       width: double.infinity,
-                      color: const Color(0xFFEAF7F7),
+                      color: context.appAccentSurface,
                       padding: const EdgeInsets.all(12),
                       child: Text(
                         context.tr('chatNotice'),
-                        style: const TextStyle(fontSize: 12, color: Color(0xFF23656A)),
+                        style: TextStyle(fontSize: 12, color: context.appSubtleText),
                       ),
                     ),
                     Expanded(
@@ -255,17 +256,17 @@ class _BookingChatPageState extends State<BookingChatPage> {
                                     margin: const EdgeInsets.only(bottom: 10),
                                     padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 10),
                                     decoration: BoxDecoration(
-                                      color: mine ? const Color(0xFFD5F0F2) : const Color(0xFFF0F2F4),
+                                      color: mine ? context.appAccentSurface : context.appSoftSurface,
                                       borderRadius: BorderRadius.circular(14),
                                     ),
                                     child: Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
-                                        Text(content),
+                                        Text(content, style: TextStyle(color: context.appText)),
                                         if (time != null) ...[
                                           const SizedBox(height: 4),
                                           Text('${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}',
-                                            style: const TextStyle(fontSize: 10, color: Colors.black54)),
+                                            style: TextStyle(fontSize: 10, color: context.appMuted)),
                                         ],
                                       ],
                                     ),
@@ -279,7 +280,7 @@ class _BookingChatPageState extends State<BookingChatPage> {
                         padding: const EdgeInsets.only(left: 16, bottom: 4),
                         child: Align(
                           alignment: Alignment.centerLeft,
-                          child: Text(context.tr('chatTyping'), style: const TextStyle(fontSize: 12, color: Colors.black54)),
+                          child: Text(context.tr('chatTyping'), style: TextStyle(fontSize: 12, color: context.appMuted)),
                         ),
                       ),
                     SafeArea(
