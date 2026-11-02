@@ -37,7 +37,9 @@ class _BookingChatPageState extends State<BookingChatPage> {
   @override
   void initState() {
     super.initState();
-    _initialize();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) unawaited(_initialize());
+    });
   }
 
   Future<void> _initialize() async {
