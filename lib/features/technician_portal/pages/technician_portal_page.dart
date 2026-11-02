@@ -52,7 +52,9 @@ class _TechnicianPortalPageState extends State<TechnicianPortalPage> {
     );
     _notificationsRepository = TechnicianNotificationsRepository();
     ChatUnread.instance.addListener(_onChatChanged);
-    ChatUnread.instance.start();
+    unawaited(ChatUnread.instance.start().catchError((Object error) {
+      debugPrint('Chat inbox initialization failed: $error');
+    }));
     _load();
     _refreshUnreadNotifications();
     _notificationRefreshTimer = Timer.periodic(

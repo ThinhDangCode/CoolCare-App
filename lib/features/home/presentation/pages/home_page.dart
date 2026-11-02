@@ -49,7 +49,9 @@ class _HomePageState extends State<HomePage> {
     ChatUnread.instance.addListener(_onChatChanged);
     if (_wasAuthenticated) {
       _refreshUnreadNotificationCount();
-      ChatUnread.instance.start();
+      unawaited(ChatUnread.instance.start().catchError((Object error) {
+        debugPrint('Chat inbox initialization failed: $error');
+      }));
     }
     _notificationRefreshTimer = Timer.periodic(
       const Duration(seconds: 45),
@@ -91,7 +93,9 @@ class _HomePageState extends State<HomePage> {
     _wasAuthenticated = authenticated;
     if (authenticated) {
       _refreshUnreadNotificationCount();
-      ChatUnread.instance.start();
+      unawaited(ChatUnread.instance.start().catchError((Object error) {
+        debugPrint('Chat inbox initialization failed: $error');
+      }));
     } else {
       ChatUnread.instance.stop();
       if (mounted) {

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import '../../chat/booking_chat_page.dart';
 import '../../payments/pages/payment_page.dart';
 import '../../payments/repositories/payment_repository.dart';
@@ -11,6 +13,7 @@ import '../../../core/network/api_exception.dart';
 import '../models/view_job_request.dart';
 import '../repositories/technician_portal_repository.dart';
 import 'customer_ac_service_history_page.dart';
+import 'job_request_deadline.dart';
 
 class ViewJobRequestDetailPage extends StatefulWidget {
   const ViewJobRequestDetailPage({
@@ -29,6 +32,7 @@ class ViewJobRequestDetailPage extends StatefulWidget {
 
 class _ViewJobRequestDetailPageState extends State<ViewJobRequestDetailPage> {
   bool _submitting = false;
+  Timer? _deadlineTimer;
   final PaymentRepository _paymentRepository = PaymentRepository();
   bool? _isPaid;
   bool _paymentPending = false;
@@ -258,9 +262,20 @@ class _ViewJobRequestDetailPageState extends State<ViewJobRequestDetailPage> {
   @override
   void initState() {
     super.initState();
+    if (widget.request.status == 'SELECTED') {
+      _deadlineTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+        if (mounted) setState(() {});
+      });
+    }
     if (widget.request.status == 'COMPLETED') {
       _loadPaymentStatus();
     }
+  }
+
+  @override
+  void dispose() {
+    _deadlineTimer?.cancel();
+    super.dispose();
   }
 
   Future<void> _loadPaymentStatus() async {
@@ -571,6 +586,8 @@ class _ViewJobRequestDetailPageState extends State<ViewJobRequestDetailPage> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
+                    JobRequestDeadline(request: request),
+                    const SizedBox(height: 10),
                     if (_canViewAcHistory) ...[
                       _buildAcHistoryButton(),
                       const SizedBox(height: 12),
@@ -598,7 +615,7 @@ class _ViewJobRequestDetailPageState extends State<ViewJobRequestDetailPage> {
                         const SizedBox(width: 12),
                         Expanded(
                           child: FilledButton(
-                            onPressed: _submitting ? null : _confirmAccept,
+                            onPressed: _submitting || _requestExpired ? null : _confirmAccept,
                             style: FilledButton.styleFrom(
                               backgroundColor: CoolCareColors.primary,
                               minimumSize: const Size.fromHeight(41),
@@ -730,6 +747,7 @@ class _ViewJobRequestDetailPageState extends State<ViewJobRequestDetailPage> {
   }
 
   Future<void> _confirmAccept() async {
+    if (_showExpiredRequest()) return;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -747,7 +765,9 @@ class _ViewJobRequestDetailPageState extends State<ViewJobRequestDetailPage> {
         ],
       ),
     );
-    if (confirmed == true) await _respond(accept: true);
+    if (confirmed == true && mounted && !_showExpiredRequest()) {
+      await _respond(accept: true);
+    }
   }
 
   Future<void> _confirmDecline() async {
@@ -932,9 +952,24 @@ class _ViewJobRequestDetailPageState extends State<ViewJobRequestDetailPage> {
     }
   }
 
+  bool get _requestExpired {
+    final deadline = jobRequestDeadline(widget.request);
+    return deadline != null && !DateTime.now().isBefore(deadline);
+  }
+
+  bool _showExpiredRequest() {
+    if (!_requestExpired) return false;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(Localizations.localeOf(context).languageCode == 'vi'
+          ? 'Yêu cầu đã hết hạn. Vui lòng tải lại danh sách.'
+          : 'This request has expired. Please refresh the list.'),
+    ));
+    return true;
+  }
+
   Future<void> _respond({required bool accept, String? reason}) async {
     final repository = widget.repository;
-    if (repository == null || _submitting) return;
+    if (repository == null || _submitting || (accept && _showExpiredRequest())) return;
     setState(() => _submitting = true);
     try {
       await repository.respondToJobRequest(
