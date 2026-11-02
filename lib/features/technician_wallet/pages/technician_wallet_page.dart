@@ -4,9 +4,11 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../app/localization/app_strings.dart';
 import '../../../app/theme/coolcare_theme.dart';
+import '../../../core/network/api_exception.dart';
 import '../repositories/technician_wallet_repository.dart';
 import 'technician_withdrawal_history_page.dart';
 
@@ -436,6 +438,8 @@ class _TechnicianWalletPageState
 
     final settlementBalance =
     walletNumber(balance['settlement_balance']);
+    final reservedAmount = walletNumber(balance['reserved_amount']);
+    final availableBalance = walletNumber(balance['available_balance']);
 
     final recentTransactions =
     _transactions.take(4).toList();
@@ -537,6 +541,33 @@ class _TechnicianWalletPageState
                   ),
                   const SizedBox(height: 14),
                   Container(
+                    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 14),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.13),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(child: Text(walletText(context, 'Đang xử lý rút tiền', 'Pending withdrawals'), style: const TextStyle(color: Colors.white70, fontSize: 12))),
+                            Text(settlementMoney(context, reservedAmount), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
+                          ],
+                        ),
+                        const SizedBox(height: 10),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(child: Text(walletText(context, 'Có thể rút', 'Available to withdraw'), style: const TextStyle(color: Colors.white70, fontSize: 12))),
+                            Text(settlementMoney(context, availableBalance), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800)),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
                       color: Colors.white.withValues(
@@ -570,11 +601,12 @@ class _TechnicianWalletPageState
                                 : settlementBalance > 0
                                 ? walletText(
                               context,
-                              'CoolCare đang giữ '
-                                  '${settlementMoney(context, settlementBalance)} '
-                                  'cần trả cho bạn.',
-                              'CoolCare owes you '
-                                  '${settlementMoney(context, settlementBalance)}.',
+                              'Tổng số dư quyết toán: '
+                                  '${settlementMoney(context, settlementBalance)}. '
+                                  'Số tiền có thể rút đã trừ các yêu cầu đang xử lý.',
+                              'Settlement balance: '
+                                  '${settlementMoney(context, settlementBalance)}. '
+                                  'Available balance excludes pending withdrawals.',
                             )
                                 : walletText(
                               context,
@@ -621,7 +653,7 @@ class _TechnicianWalletPageState
               child: OutlinedButton.icon(
                 onPressed: _openWithdraw,
                 icon: const Icon(Icons.arrow_upward),
-                label: Text(walletText(context, 'Rút tiền mô phỏng', 'Simulated withdrawal')),
+                label: Text(walletText(context, 'Rút tiền', 'Withdraw')),
               ),
             ),
 
@@ -747,30 +779,30 @@ class _TechnicianWalletPageState
               ),
               ..._topups
                   .where((topup) => ['PENDING', 'PROCESSING', '0', '1']
-                      .contains('${topup['status']}'))
+                  .contains('${topup['status']}'))
                   .map((topup) => ListTile(
-                    leading: const Icon(Icons.schedule_outlined),
-                    title: Text(settlementMoney(context, topup['amount'])),
-                    subtitle: Text(
-                      '${topup['method']} · ${walletStatus(context, topup['status'])}',
+                leading: const Icon(Icons.schedule_outlined),
+                title: Text(settlementMoney(context, topup['amount'])),
+                subtitle: Text(
+                  '${topup['method']} · ${walletStatus(context, topup['status'])}',
+                ),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () async {
+                  await Navigator.of(context).push(MaterialPageRoute<void>(
+                    builder: (_) => TechnicianTopupCheckoutPage(
+                      repository: _repository,
+                      topup: {
+                        'topupId': topup['id'],
+                        'topupCode': topup['topup_code'],
+                        'amount': topup['amount'],
+                        'method': topup['method'],
+                        'status': topup['status'],
+                      },
                     ),
-                    trailing: const Icon(Icons.chevron_right),
-                    onTap: () async {
-                      await Navigator.of(context).push(MaterialPageRoute<void>(
-                        builder: (_) => TechnicianTopupCheckoutPage(
-                          repository: _repository,
-                          topup: {
-                            'topupId': topup['id'],
-                            'topupCode': topup['topup_code'],
-                            'amount': topup['amount'],
-                            'method': topup['method'],
-                            'status': topup['status'],
-                          },
-                        ),
-                      ));
-                      if (mounted) await _refresh();
-                    },
-                  )),
+                  ));
+                  if (mounted) await _refresh();
+                },
+              )),
             ],
 
           ],
@@ -1079,24 +1111,24 @@ class _TechnicianSettlementDetailsPageState
                 ('custom', vi ? 'Tùy chọn' : 'Custom'),
               ])
                 ChoiceChip(label: Text(entry.$2), selected: _period == entry.$1,
-                  onSelected: (_) async {
-                    if (entry.$1 == 'custom') {
-                      final picked = await showDateRangePicker(
-                        context: context,
-                        firstDate: DateTime(2020),
-                        lastDate: DateTime.now(),
-                        initialDateRange: _customRange ?? _rangeFor('month'),
-                      );
-                      if (picked == null || !mounted) return;
-                      _customRange = picked;
-                    }
-                    setState(() => _period = entry.$1);
-                    await _load();
-                  }),
+                    onSelected: (_) async {
+                      if (entry.$1 == 'custom') {
+                        final picked = await showDateRangePicker(
+                          context: context,
+                          firstDate: DateTime(2020),
+                          lastDate: DateTime.now(),
+                          initialDateRange: _customRange ?? _rangeFor('month'),
+                        );
+                        if (picked == null || !mounted) return;
+                        _customRange = picked;
+                      }
+                      setState(() => _period = entry.$1);
+                      await _load();
+                    }),
             ]),
             const SizedBox(height: 10),
             Text('${_date(range.start)} → ${_date(range.end)}',
-              style: TextStyle(color: context.appMuted, fontSize: 12)),
+                style: TextStyle(color: context.appMuted, fontSize: 12)),
             if (_loading) const LinearProgressIndicator(),
             if (_error != null) ...[
               const SizedBox(height: 8),
@@ -1133,12 +1165,12 @@ class _TechnicianSettlementDetailsPageState
                 child: ExpansionTile(
                   title: Text(
                     '${settlementDate(period['period_start']).split(' ').first}'
-                    ' – ${settlementDate(period['period_end']).split(' ').first}',
+                        ' – ${settlementDate(period['period_end']).split(' ').first}',
                     style: const TextStyle(fontWeight: FontWeight.w700),
                   ),
                   subtitle: Text(
                     '${context.tr('settlementClosing')}: '
-                    '${settlementMoney(context, period['closing_balance'])}',
+                        '${settlementMoney(context, period['closing_balance'])}',
                   ),
                   childrenPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                   children: [
@@ -1155,9 +1187,9 @@ class _TechnicianSettlementDetailsPageState
               )),
             const SizedBox(height: 12),
             Text(walletText(context,
-              'Số dư là số liệu hiện tại; thu nhập và biến động được lọc theo ngày phát sinh.',
-              'Balances are current; earnings and movements are filtered by transaction date.'),
-              style: TextStyle(color: context.appMuted, fontSize: 12)),
+                'Số dư là số liệu hiện tại; thu nhập và biến động được lọc theo ngày phát sinh.',
+                'Balances are current; earnings and movements are filtered by transaction date.'),
+                style: TextStyle(color: context.appMuted, fontSize: 12)),
           ],
         ),
       ),
@@ -1964,13 +1996,15 @@ class TechnicianWithdrawPage extends StatefulWidget {
 
 class _TechnicianWithdrawPageState extends State<TechnicianWithdrawPage> {
   final _amount = TextEditingController();
-  final _account = TextEditingController();
   final _holder = TextEditingController();
+  num? _liveAvailableBalance;
+  bool _refreshingBalance = false;
   bool _busy = false;
+  bool _needsSetup = false;
   bool _loadingHolder = true;
   String? _error;
   String? _result;
-  late final String _requestKey;
+  late String _requestKey;
 
   String _newUuid() {
     final random = Random.secure();
@@ -1986,6 +2020,32 @@ class _TechnicianWithdrawPageState extends State<TechnicianWithdrawPage> {
     super.initState();
     _requestKey = _newUuid();
     _loadAccountHolder();
+    _refreshAvailableBalance();
+  }
+
+  num get _availableBalance => _liveAvailableBalance ?? widget.availableBalance;
+
+  Future<void> _refreshAvailableBalance() async {
+    if (!mounted) return;
+    setState(() => _refreshingBalance = true);
+    try {
+      final overview = await widget.repository.overview();
+      final balance = overview['balance'];
+      if (balance is! Map || balance['available_balance'] == null) {
+        throw const FormatException('Missing available balance');
+      }
+      if (!mounted) return;
+      setState(() => _liveAvailableBalance = walletNumber(balance['available_balance']));
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _error = walletText(context,
+          'Không cập nhật được số dư. Vui lòng thử lại.',
+          'Could not refresh balance. Please try again.'));
+    } finally {
+      if (mounted) {
+        setState(() => _refreshingBalance = false);
+      }
+    }
   }
 
   Future<void> _loadAccountHolder() async {
@@ -1994,13 +2054,8 @@ class _TechnicianWithdrawPageState extends State<TechnicianWithdrawPage> {
       if (!mounted) {
         return;
       }
-      final phone = await widget.repository.signedInTechnicianPhone();
-      if (!mounted) {
-        return;
-      }
       setState(() {
         _holder.text = name;
-        if (phone.isNotEmpty) _account.text = phone;
         _loadingHolder = false;
       });
     } catch (_) {
@@ -2015,35 +2070,80 @@ class _TechnicianWithdrawPageState extends State<TechnicianWithdrawPage> {
 
   @override
   void dispose() {
-    _amount.dispose(); _account.dispose(); _holder.dispose();
+    _amount.dispose(); _holder.dispose();
     super.dispose();
+  }
+
+  Future<void> _setupReceivingAccount() async {
+    if (_busy) return;
+    setState(() { _busy = true; _error = null; });
+    try {
+      final result = await widget.repository.stripeOnboard();
+      if (result['ready'] == true) {
+        if (mounted) setState(() => _needsSetup = false);
+        return;
+      }
+      final url = Uri.tryParse('${result['url'] ?? ''}');
+      if (url == null || url.scheme != 'https' || !await launchUrl(url, mode: LaunchMode.externalApplication)) {
+        throw Exception('Không mở được trang thiết lập nhận tiền.');
+      }
+      if (mounted) {
+        setState(() => _error = walletText(context,
+            'Hoàn tất thiết lập trên trình duyệt, sau đó quay lại và nhấn Xác nhận rút tiền.',
+            'Finish setup in the browser, then return and confirm the withdrawal.'));
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _error = e.toString();
+          if (e is ApiException && e.code == 'ONBOARDING_REQUIRED') {
+            _needsSetup = true;
+          }
+        });
+      }
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
   }
 
   Future<void> _submit() async {
     if (_busy || _result != null || _loadingHolder) return;
+    await _refreshAvailableBalance();
+    if (!mounted || _liveAvailableBalance == null) return;
     final amount = int.tryParse(_amount.text.trim());
-    final phone = _account.text.trim();
-    if (amount == null || amount < 100000 || amount > 50000000 || amount > widget.availableBalance ||
-        !RegExp(r'^0[0-9]{9}$').hasMatch(phone) ||
+    if (amount == null || amount < 100000 || amount > 50000000 || amount > _availableBalance ||
         _holder.text.trim().isEmpty) {
-      setState(() => _error = walletText(context, 'Kiểm tra số tiền và số điện thoại.', 'Check the amount and phone number.'));
+      setState(() => _error = walletText(context, 'Kiểm tra số tiền rút.', 'Check the withdrawal amount.'));
       return;
     }
     setState(() { _busy = true; _error = null; });
     try {
-      final data = await widget.repository.createMockWithdrawal(
-        amount: amount, bankName: 'ZaloPay',
-        accountNumber: _account.text.trim(), accountHolder: _holder.text.trim(),
-        idempotencyKey: _requestKey,
-      );
+      final data = await widget.repository.stripeWithdraw(amount: amount, idempotencyKey: _requestKey);
       if (!mounted) return;
-      setState(() => _result = walletText(context,
-          'Đã ghi giao dịch mô phỏng ${settlementMoney(context, data['amount'])} trên ví CoolCare. Không có tiền được chuyển sang ZaloPay.',
-          'A simulated withdrawal of ${settlementMoney(context, data['amount'])} was recorded in your CoolCare wallet. No money was sent to ZaloPay.'));
+      await _refreshAvailableBalance();
+      if (!mounted) return;
+      setState(() => _result = data['status'] == 'SUCCESS'
+          ? walletText(context, 'Rút tiền thành công! Tiền thử nghiệm đã được chuyển vào tài khoản nhận của KTV.',
+              'Withdrawal successful! Test funds have reached your receiving account.')
+          : walletText(context, 'Yêu cầu đang được đối soát. Vui lòng kiểm tra lịch sử trước khi thử lại.',
+              'Withdrawal is being reconciled. Check history before retrying.'));
     } catch (e) {
       if (!mounted) return;
       // Keep the same request key for safe retries after network timeouts.
-      setState(() => _error = e.toString());
+      final text = e.toString();
+      // Stripe definitively rejected this withdrawal, so the old key is closed: use a new one.
+      if (e is ApiException && (e.code == 'STRIPE_TRANSFER_FAILED' || e.code == 'WITHDRAWAL_ALREADY_FAILED')) {
+        _requestKey = _newUuid();
+      }
+      await _refreshAvailableBalance();
+      if (!mounted) return;
+      setState(() {
+        _error = text;
+        // Show the "set up receiving account" button when onboarding is incomplete.
+        if (e is ApiException && e.code == 'ONBOARDING_REQUIRED') {
+          _needsSetup = true;
+        }
+      });
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -2054,7 +2154,7 @@ class _TechnicianWithdrawPageState extends State<TechnicianWithdrawPage> {
     final theme = Theme.of(context);
     final amount = int.tryParse(_amount.text.trim()) ?? 0;
     return Scaffold(
-      appBar: AppBar(title: Text(walletText(context, 'Rút tiền mô phỏng', 'Simulated withdrawal'))),
+      appBar: AppBar(title: Text(walletText(context, 'Rút tiền', 'Withdraw'))),
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
@@ -2067,12 +2167,22 @@ class _TechnicianWithdrawPageState extends State<TechnicianWithdrawPage> {
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Text(walletText(context, 'Số dư khả dụng', 'Available balance'), style: const TextStyle(color: Colors.white70)),
               const SizedBox(height: 8),
-              Text(settlementMoney(context, widget.availableBalance),
-                style: const TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.w700)),
+              Text(settlementMoney(context, _availableBalance),
+                  style: const TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.w700)),
             ]),
           ),
-          const SizedBox(height: 24),
-          Text(walletText(context, 'Thử nghiệm rút tiền — không chuyển tiền thật sang ZaloPay.', 'This is a simulation. No real money will be sent to ZaloPay.'),
+          Align(
+            alignment: Alignment.centerRight,
+            child: TextButton.icon(
+              onPressed: _refreshingBalance || _busy ? null : _refreshAvailableBalance,
+              icon: _refreshingBalance
+                  ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
+                  : const Icon(Icons.refresh, size: 18),
+              label: Text(walletText(context, 'Cập nhật số dư', 'Refresh balance')),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(walletText(context, 'Rút tiền từ ví CoolCare', 'Withdraw from your CoolCare wallet'),
               style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
           const SizedBox(height: 14),
           TextField(
@@ -2086,30 +2196,33 @@ class _TechnicianWithdrawPageState extends State<TechnicianWithdrawPage> {
             ),
           ),
           const SizedBox(height: 14),
-          TextField(controller: _account, keyboardType: TextInputType.phone,
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(10)],
-            onChanged: (_) => setState(() { _error = null; }),
-            decoration: InputDecoration(labelText: walletText(context, 'Số điện thoại ZaloPay', 'ZaloPay phone number'), hintText: walletText(context, 'Nhập số điện thoại nhận tiền', 'Enter the receiving phone number'),
-              prefixIcon: const Icon(Icons.phone_android_outlined), border: const OutlineInputBorder())),
-          const SizedBox(height: 14),
           TextField(controller: _holder, readOnly: true,
-            decoration: InputDecoration(labelText: walletText(context, 'Tên kỹ thuật viên', 'Technician name'),
-              helperText: walletText(context, 'Theo hồ sơ kỹ thuật viên CoolCare', 'From your CoolCare technician profile'),
-              hintText: _loadingHolder ? walletText(context, 'Đang tải...', 'Loading...') : walletText(context, 'Chưa có tên', 'Name unavailable'),
-              prefixIcon: const Icon(Icons.person_outline), border: const OutlineInputBorder())),
+              decoration: InputDecoration(labelText: walletText(context, 'Tên kỹ thuật viên', 'Technician name'),
+                  helperText: walletText(context, 'Theo hồ sơ kỹ thuật viên CoolCare', 'From your CoolCare technician profile'),
+                  hintText: _loadingHolder ? walletText(context, 'Đang tải...', 'Loading...') : walletText(context, 'Chưa có tên', 'Name unavailable'),
+                  prefixIcon: const Icon(Icons.person_outline), border: const OutlineInputBorder())),
           const SizedBox(height: 20),
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(color: theme.colorScheme.surfaceContainerHighest,
-              borderRadius: BorderRadius.circular(14)),
+                borderRadius: BorderRadius.circular(14)),
             child: Column(children: [
               _withdrawSummaryRow(walletText(context, 'Số tiền yêu cầu', 'Requested amount'), settlementMoney(context, amount)),
               const SizedBox(height: 10),
               const Divider(height: 24),
-              _withdrawSummaryRow(walletText(context, 'Số tiền mô phỏng', 'Simulated amount'), settlementMoney(context, amount), bold: true),
+              _withdrawSummaryRow(walletText(context, 'Số tiền rút (VND)', 'Withdrawal (VND)'), settlementMoney(context, amount), bold: true),
             ]),
           ),
 
+          if (_needsSetup) ...[
+            const SizedBox(height: 14),
+            OutlinedButton.icon(
+              onPressed: _busy ? null : _setupReceivingAccount,
+              icon: const Icon(Icons.open_in_browser),
+              label: Text(walletText(context, 'Thiết lập tài khoản nhận tiền thử nghiệm',
+                  'Set up a test receiving account')),
+            ),
+          ],
           if (_error != null) ...[
             const SizedBox(height: 14),
             Text(_error!, style: TextStyle(color: theme.colorScheme.error)),
@@ -2120,10 +2233,10 @@ class _TechnicianWithdrawPageState extends State<TechnicianWithdrawPage> {
           ],
           const SizedBox(height: 22),
           SizedBox(height: 50, child: FilledButton.icon(
-            onPressed: _busy || _result != null || _loadingHolder || _holder.text.trim().isEmpty ? null : _submit,
+            onPressed: _busy || _refreshingBalance || _liveAvailableBalance == null || _result != null || _loadingHolder || _holder.text.trim().isEmpty ? null : _submit,
             icon: _busy ? const SizedBox(width: 18, height: 18,
-              child: CircularProgressIndicator(strokeWidth: 2)) : const Icon(Icons.arrow_upward),
-            label: Text(_busy ? walletText(context, 'Đang xử lý...', 'Processing...') : _result != null ? walletText(context, 'Đã hoàn tất', 'Completed') : walletText(context, 'Xác nhận giao dịch mô phỏng', 'Confirm simulated withdrawal')),
+                child: CircularProgressIndicator(strokeWidth: 2)) : const Icon(Icons.arrow_upward),
+            label: Text(_busy ? walletText(context, 'Đang xử lý...', 'Processing...') : _result != null ? walletText(context, 'Đã gửi yêu cầu', 'Requested') : walletText(context, 'Xác nhận rút tiền', 'Confirm withdrawal')),
           )),
           if (_result != null) ...[
             const SizedBox(height: 12),
