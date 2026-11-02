@@ -118,9 +118,17 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _openChat() async {
-    await Navigator.of(
-      context,
-    ).push(MaterialPageRoute(builder: (_) => const ChatInboxPage()));
+    debugPrint('[CHAT NAV] Chat button pressed');
+    if (!mounted) return;
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) {
+          debugPrint('[CHAT NAV] Building ChatInboxPage');
+          return const ChatInboxPage();
+        },
+      ),
+    );
+    debugPrint('[CHAT NAV] Returned from ChatInboxPage');
   }
 
   Future<void> _refreshUnreadNotificationCount() async {

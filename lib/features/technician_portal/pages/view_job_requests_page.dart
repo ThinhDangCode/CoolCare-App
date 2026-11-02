@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'job_request_deadline.dart';
 import '../../payments/repositories/payment_repository.dart';
 
 import '../../../app/localization/app_strings.dart';
@@ -346,6 +347,10 @@ class _ViewJobRequestCardState extends State<_ViewJobRequestCard> {
               ),
             ],
           ),
+          if (isNew) ...[
+            const SizedBox(height: 10),
+            JobRequestDeadline(request: widget.request),
+          ],
           if (widget.request.status == 'COMPLETED') ...[
             const SizedBox(height: 8),
             FutureBuilder<String>(

@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:socket_io_client/socket_io_client.dart' as io;
 
 import '../../core/network/api_client.dart';
@@ -21,7 +22,6 @@ class ChatRepository {
     return session.token;
   }
 
-  /// Current signed-in user id; used to tell own messages from the other party's.
   Future<String> currentUserId() async {
     final session = await _sessions.read();
     return session?.user.id ?? '';
@@ -38,13 +38,17 @@ class ChatRepository {
         .toList();
   }
 
-  /// Personal socket (not tied to one room) that receives `chat:notify` pings.
+  /// Caller registers listeners before calling socket.connect().
   Future<io.Socket> openUserSocket() async {
+    final origin = await _api.resolveOrigin();
+    final token = await _token();
     return io.io(
-      await _api.resolveOrigin(),
+      origin,
       io.OptionBuilder()
           .setTransports(['websocket'])
-          .setAuth({'token': await _token()})
+          .setAuth({'token': token})
+          .disableAutoConnect()
+          .enableForceNew()
           .enableReconnection()
           .build(),
     );
@@ -56,7 +60,9 @@ class ChatRepository {
       bearerToken: await _token(),
       body: const {},
     );
-    if (response['data'] is! Map) throw const FormatException('Dữ liệu phòng chat không hợp lệ.');
+    if (response['data'] is! Map) {
+      throw const FormatException('Dữ liệu phòng chat không hợp lệ.');
+    }
     return Map<String, dynamic>.from(response['data'] as Map);
   }
 
@@ -79,12 +85,12 @@ class ChatRepository {
       bearerToken: await _token(),
       body: {'content': content},
     );
-    if (response['data'] is! Map) throw const FormatException('Không gửi được tin nhắn.');
+    if (response['data'] is! Map) {
+      throw const FormatException('Không gửi được tin nhắn.');
+    }
     return Map<String, dynamic>.from(response['data'] as Map);
   }
 
-  /// Opens a realtime connection for [roomId]. Messages are still sent over REST
-  /// (so they are validated and stored), then pushed to everyone in the room.
   Future<ChatConnection> connect(String roomId) async {
     final connection = ChatConnection._(
       roomId: roomId,
@@ -110,6 +116,7 @@ class ChatConnection {
           .setTransports(['websocket'])
           .setAuth({'token': token})
           .disableAutoConnect()
+          .enableForceNew()
           .enableReconnection()
           .build(),
     );
@@ -124,19 +131,17 @@ class ChatConnection {
   final _connected = StreamController<bool>.broadcast();
   bool _disposed = false;
 
-  /// New messages pushed by the server (including your own — dedupe by `id`).
   Stream<Map<String, dynamic>> get messages => _messages.stream;
-
-  /// Whether the other party is typing.
   Stream<bool> get typing => _typing.stream;
-
-  /// Emits true after every (re)connect once the room is joined, false on disconnect.
-  /// On a `true` after a drop, reload history to fill messages missed offline.
   Stream<bool> get connected => _connected.stream;
+
+  bool _sessionReplaced(dynamic error) =>
+      error.toString().contains('SESSION_REPLACED');
 
   void _open() {
     _socket
       ..onConnect((_) {
+        if (_disposed) return;
         _socket.emitWithAck('chat:join', {'roomId': roomId}, ack: (data) {
           if (_disposed) return;
           final ok = data is Map && data['ok'] == true;
@@ -146,11 +151,21 @@ class ChatConnection {
       ..onDisconnect((_) {
         if (!_disposed) _connected.add(false);
       })
-      ..onConnectError((_) async {
-        // Token may have been refreshed by the app; retry with the latest one.
+      ..onConnectError((error) async {
+        if (_disposed) return;
+        debugPrint('[CHAT SOCKET] Room connection error: $error');
+        if (_sessionReplaced(error)) {
+          // A revoked session must not reconnect indefinitely.
+          _socket.disconnect();
+          _connected.add(false);
+          return;
+        }
         try {
-          _socket.auth = {'token': await _refreshToken()};
-        } catch (_) {}
+          final token = await _refreshToken();
+          if (!_disposed) _socket.auth = {'token': token};
+        } catch (e) {
+          debugPrint('[CHAT SOCKET] Token reload failed: $e');
+        }
       })
       ..on('chat:message', (data) {
         if (_disposed || data is! Map) return;
@@ -170,6 +185,7 @@ class ChatConnection {
   }
 
   void dispose() {
+    if (_disposed) return;
     _disposed = true;
     _socket
       ..off('chat:message')

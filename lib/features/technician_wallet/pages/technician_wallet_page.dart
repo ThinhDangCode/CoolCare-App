@@ -510,6 +510,37 @@ class _TechnicianWalletPageState
             ),
 
           if (_overview != null) ...[
+            // Debt policy warning (VND): shown without hiding the wallet balance.
+            if (settlementBalance <= -300000) ...[
+              Card(
+                color: settlementBalance <= -1000000
+                    ? const Color(0xFFFFE5E5)
+                    : const Color(0xFFFFF3D6),
+                child: Padding(
+                  padding: const EdgeInsets.all(14),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(Icons.warning_amber_rounded,
+                          color: settlementBalance <= -1000000
+                              ? Colors.red.shade800 : Colors.orange.shade900),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          settlementBalance <= -1000000
+                              ? 'Ví đang nợ ${settlementMoney(context, -settlementBalance)}. Bạn tạm thời không thể nhận việc mới cho đến khi giảm nợ dưới 1.000.000đ.'
+                              : settlementBalance <= -500000
+                                  ? 'Ví đang nợ ${settlementMoney(context, -settlementBalance)}. Tài khoản sẽ bị giảm ưu tiên đề xuất cho khách hàng.'
+                                  : 'Cảnh báo: Ví đang nợ ${settlementMoney(context, -settlementBalance)}. Vui lòng nạp tiền để thanh toán công nợ.',
+                          style: const TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+            ],
             // MAIN BALANCE CARD
             Container(
               padding: const EdgeInsets.all(20),
