@@ -70,7 +70,6 @@ class RecommendedTechniciansPage extends StatefulWidget {
 class _RecommendedTechniciansPageState
     extends State<RecommendedTechniciansPage> {
   static const _teal = Color(0xFF078795);
-  static const _ink = Color(0xFF193841);
 
   bool _loading = true;
   bool _submitting = false;
@@ -278,8 +277,8 @@ class _RecommendedTechniciansPageState
             children: [
               Text(
                 technician.name,
-                style: const TextStyle(
-                  color: _ink,
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurface,
                   fontWeight: FontWeight.w700,
                 ),
               ),

@@ -17,6 +17,10 @@ const _titles = <String, String>{
   'Đăng ký kỹ thuật viên cần cập nhật': 'Technician application needs changes',
 };
 
+const _englishTitles = <String, String>{
+  'New Job Request': 'Yêu cầu công việc mới',
+};
+
 const _messages = <String, String>{
   'Bạn có báo giá cần phản hồi.': 'You have a quotation to review.',
   'Khách hàng đã chấp nhận báo giá.': 'The customer accepted the quotation.',
@@ -26,12 +30,22 @@ const _messages = <String, String>{
 };
 
 String localizedNotificationTitle(BuildContext context, String title) {
-  if (Localizations.localeOf(context).languageCode != 'en') return title;
+  if (Localizations.localeOf(context).languageCode != 'en') {
+    return _englishTitles[title] ?? title;
+  }
   return _titles[title] ?? title;
 }
 
 String localizedNotificationMessage(BuildContext context, String message) {
-  if (Localizations.localeOf(context).languageCode != 'en') return message;
+  if (Localizations.localeOf(context).languageCode != 'en') {
+    final request = RegExp(
+      r'^A customer sent you a new service request for booking (.+)\.$',
+    ).firstMatch(message);
+    if (request != null) {
+      return 'Khách hàng đã gửi yêu cầu dịch vụ mới cho lịch đặt ${request[1]}.';
+    }
+    return message;
+  }
   final exact = _messages[message];
   if (exact != null) return exact;
 

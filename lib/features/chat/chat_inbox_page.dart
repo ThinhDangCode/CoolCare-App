@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../app/localization/app_strings.dart';
 import '../../app/localization/service_text.dart';
+import '../../app/theme/coolcare_theme.dart';
 
 import 'booking_chat_page.dart';
 import 'chat_repository.dart';
@@ -70,14 +71,14 @@ class _ChatInboxPageState extends State<ChatInboxPage> {
       return ListView(
         children: [
           const SizedBox(height: 120),
-          const Icon(Icons.forum_outlined, size: 44, color: Colors.black38),
+          Icon(Icons.forum_outlined, size: 44, color: context.appMuted),
           const SizedBox(height: 12),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 32),
             child: Text(
               context.tr('chatEmptyInbox'),
               textAlign: TextAlign.center,
-              style: const TextStyle(color: Colors.black54),
+              style: TextStyle(color: context.appSubtleText),
             ),
           ),
         ],
@@ -117,7 +118,7 @@ class _ChatInboxPageState extends State<ChatInboxPage> {
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
-              color: unread ? Colors.black87 : Colors.black54,
+              color: unread ? context.appText : context.appSubtleText,
               fontWeight: unread ? FontWeight.w600 : FontWeight.w400,
             ),
           ),
@@ -125,7 +126,7 @@ class _ChatInboxPageState extends State<ChatInboxPage> {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Text(_time(room.lastAt), style: const TextStyle(fontSize: 11, color: Colors.black54)),
+              Text(_time(room.lastAt), style: TextStyle(fontSize: 11, color: context.appMuted)),
               const SizedBox(height: 6),
               if (unread)
                 Container(
@@ -147,6 +148,7 @@ class _ChatInboxPageState extends State<ChatInboxPage> {
     final content = RefreshIndicator(onRefresh: _unread.refresh, child: _body());
     if (widget.embedded) return content;
     return Scaffold(
+      backgroundColor: context.appBackground,
       appBar: AppBar(
         title: Text(context.tr('chatInboxTitle')),
         backgroundColor: _teal,

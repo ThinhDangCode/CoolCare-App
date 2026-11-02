@@ -71,6 +71,11 @@ class TechnicianWalletRepository {
         'accountHolder': accountHolder, 'idempotencyKey': idempotencyKey,
       }));
 
+  Future<Map<String, dynamic>> stripeAccount() async => _data(_client.get('/stripe-withdrawals/account', bearerToken: await _token()));
+  Future<Map<String, dynamic>> stripeOnboard() async => _data(_client.post('/stripe-withdrawals/account', bearerToken: await _token(), body: {}));
+  Future<Map<String, dynamic>> stripeWithdraw({required int amount, required String idempotencyKey}) async =>
+      _data(_client.post('/stripe-withdrawals/withdraw', bearerToken: await _token(), body: {'amount': amount, 'idempotencyKey': idempotencyKey}));
+
   Future<List<Map<String, dynamic>>> withdrawals({int page = 1}) async {
     final data = await _data(_client.get('/technician-wallet/withdrawals',
         bearerToken: await _token(), queryParameters: {'page':'$page','limit':'30'}));
