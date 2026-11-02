@@ -170,8 +170,6 @@ class _ManageServiceAreasPageState extends State<ManageServiceAreasPage> {
             child: ListView(
               padding: const EdgeInsets.all(16),
               children: [
-                const _CanThoMapCard(),
-                const SizedBox(height: 12),
                 _ScopeCard(
                   city: options.city,
                   selectedCount: _selectedWards.length,
@@ -347,76 +345,6 @@ class _ManageServiceAreasPageState extends State<ManageServiceAreasPage> {
     );
     if (discard == true && mounted) Navigator.pop(context);
   }
-}
-
-class _CanThoMapCard extends StatelessWidget {
-  const _CanThoMapCard();
-  @override
-  Widget build(BuildContext context) => Container(
-    height: 140,
-    decoration: BoxDecoration(
-      color: const Color(0xFFE2E8F0),
-      borderRadius: BorderRadius.circular(12),
-    ),
-    clipBehavior: Clip.antiAlias,
-    child: Stack(
-      fit: StackFit.expand,
-      children: [
-        CustomPaint(painter: _MapPatternPainter()),
-        Center(
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              color: CoolCareColors.primary,
-              borderRadius: BorderRadius.all(Radius.circular(20)),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-              child: Text(
-                context.tr('canThoArea').toUpperCase(),
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 11,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
-          ),
-        ),
-      ],
-    ),
-  );
-}
-
-class _MapPatternPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final road = Paint()
-      ..color = Colors.white.withValues(alpha: .72)
-      ..strokeWidth = 3;
-    for (var x = -40.0; x < size.width + 40; x += 55) {
-      canvas.drawLine(Offset(x, 0), Offset(x + 90, size.height), road);
-    }
-    for (var y = 22.0; y < size.height; y += 42) {
-      canvas.drawLine(Offset(0, y), Offset(size.width, y + 12), road);
-    }
-    final pin = Paint()..color = CoolCareColors.primary;
-    for (final point in [
-      Offset(size.width * .25, 35),
-      Offset(size.width * .72, 40),
-      Offset(size.width * .37, 105),
-      Offset(size.width * .78, 102),
-    ]) {
-      canvas.drawCircle(point, 5, pin);
-      canvas.drawCircle(
-        point,
-        9,
-        Paint()..color = CoolCareColors.primary.withValues(alpha: .15),
-      );
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 class _ScopeCard extends StatelessWidget {
