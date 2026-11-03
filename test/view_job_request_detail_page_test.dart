@@ -171,7 +171,10 @@ ViewJobRequest _request({
     'id': 'booking-id',
     'code': 'BK-001',
     'status': canComplete ? 'ACCEPTED' : 'TECHNICIAN_SELECTED',
-    'scheduledAt': '2026-10-16T07:00:00.000Z',
+    'scheduledAt': DateTime.now()
+        .add(const Duration(days: 1))
+        .toUtc()
+        .toIso8601String(),
     'address': {
       'addressLine': '1 Nguyễn Văn Cừ',
       'ward': 'Phường Ninh Kiều',

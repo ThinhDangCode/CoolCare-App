@@ -548,7 +548,7 @@ const _messages = <String, Map<String, String>>{
         'Khách hàng sẽ được yêu cầu xác nhận. Công việc vẫn ở trạng thái Đang thực hiện cho đến khi họ xác nhận.',
     'jobCancelAcceptedTitle': 'Hủy công việc đã nhận?',
     'jobCancelAcceptedMessage':
-        'Lịch đặt của khách hàng sẽ bị hủy. Hủy muộn có thể bị cộng điểm phạt.',
+        'Lịch đặt sẽ trở về trạng thái chờ để khách hàng chọn kỹ thuật viên khác. Bạn sẽ bị trừ 2 điểm và giảm ưu tiên đề xuất. Điểm phạt không tự hết hạn.',
     'jobCancellationReason': 'Lý do hủy',
     'jobReasonMinLength': 'Ít nhất 5 ký tự',
     'jobCancelledSuccess': 'Đã hủy công việc.',
@@ -1339,7 +1339,7 @@ const _messages = <String, Map<String, String>>{
         'The customer will be asked to confirm completion. The job stays Ongoing until they confirm.',
     'jobCancelAcceptedTitle': 'Cancel accepted job?',
     'jobCancelAcceptedMessage':
-        'The customer booking will be cancelled. A late cancellation may add penalty points.',
+        'The booking will return to pending so the customer can choose another technician. You will receive 2 penalty points and lower recommendation priority. The penalty does not expire automatically.',
     'jobCancellationReason': 'Cancellation reason',
     'jobReasonMinLength': 'At least 5 characters',
     'jobCancelledSuccess': 'Job cancelled successfully.',
