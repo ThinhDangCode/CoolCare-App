@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 
 import '../../../app/localization/app_strings.dart';
@@ -10,6 +8,7 @@ import '../../../core/network/api_exception.dart';
 import '../../auth/models/auth_user.dart';
 import '../../chat/chat_inbox_page.dart';
 import '../../chat/chat_unread.dart';
+import '../../notifications/widgets/foreground_notifications.dart';
 import '../models/technician_dashboard.dart';
 import '../models/view_job_request.dart';
 import '../models/set_availability_status.dart';
@@ -36,13 +35,11 @@ class TechnicianPortalPage extends StatefulWidget {
 class _TechnicianPortalPageState extends State<TechnicianPortalPage> {
   late final TechnicianPortalRepository _repository;
   late final TechnicianNotificationsRepository _notificationsRepository;
-  Timer? _notificationRefreshTimer;
   TechnicianDashboard? _dashboard;
   List<ViewJobRequest> _jobRequests = const [];
   String? _error;
   int _tab = 0;
   bool _changingAvailability = false;
-  int _unreadNotificationCount = 0;
 
   @override
   void initState() {
@@ -54,17 +51,12 @@ class _TechnicianPortalPageState extends State<TechnicianPortalPage> {
     ChatUnread.instance.addListener(_onChatChanged);
     ChatUnread.instance.start();
     _load();
-    _refreshUnreadNotifications();
-    _notificationRefreshTimer = Timer.periodic(
-      const Duration(seconds: 45),
-      (_) => _refreshUnreadNotifications(),
-    );
+    _loadNotificationHistory();
   }
 
   @override
   void dispose() {
     ChatUnread.instance.removeListener(_onChatChanged);
-    _notificationRefreshTimer?.cancel();
     super.dispose();
   }
 
@@ -72,24 +64,24 @@ class _TechnicianPortalPageState extends State<TechnicianPortalPage> {
     if (mounted) setState(() {});
   }
 
-  Future<void> _refreshUnreadNotifications() async {
+  Future<void> _loadNotificationHistory() async {
     try {
-      final result = await _notificationsRepository.list();
-      if (mounted) setState(() => _unreadNotificationCount = result.unreadCount);
+      // The technician endpoint also backfills older review notifications.
+      await _notificationsRepository.list();
+      if (mounted) await ForegroundNotifications.refresh(context);
     } catch (_) {
-      // Keep the last known badge count if this background refresh fails.
+      // The notification page can retry when opened.
     }
   }
 
   Future<void> _openNotifications() async {
     await Navigator.of(context).push<void>(
       MaterialPageRoute<void>(
-        builder: (_) => TechnicianNotificationsPage(
-          repository: _notificationsRepository,
-        ),
+        builder: (_) =>
+            TechnicianNotificationsPage(repository: _notificationsRepository),
       ),
     );
-    await _refreshUnreadNotifications();
+    if (mounted) await ForegroundNotifications.refresh(context);
   }
 
   Future<void> _load() async {
@@ -152,6 +144,9 @@ class _TechnicianPortalPageState extends State<TechnicianPortalPage> {
 
   @override
   Widget build(BuildContext context) {
+    final unreadNotificationCount = ForegroundNotifications.unreadCountOf(
+      context,
+    );
     return Scaffold(
       backgroundColor: context.appBackground,
       appBar: AppBar(
@@ -164,15 +159,15 @@ class _TechnicianPortalPageState extends State<TechnicianPortalPage> {
         ),
         actions: [
           IconButton(
-            tooltip: _unreadNotificationCount > 0
-                ? '$_unreadNotificationCount unread notifications'
+            tooltip: unreadNotificationCount > 0
+                ? '$unreadNotificationCount unread notifications'
                 : 'Notifications',
             onPressed: _openNotifications,
             icon: Stack(
               clipBehavior: Clip.none,
               children: [
                 const Icon(Icons.notifications_none_rounded),
-                if (_unreadNotificationCount > 0)
+                if (unreadNotificationCount > 0)
                   Positioned(
                     top: -7,
                     right: -9,
@@ -186,7 +181,7 @@ class _TechnicianPortalPageState extends State<TechnicianPortalPage> {
                       ),
                       alignment: Alignment.center,
                       child: Text(
-                        '$_unreadNotificationCount',
+                        '$unreadNotificationCount',
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 10,

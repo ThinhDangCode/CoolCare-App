@@ -3,6 +3,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 
 import '../features/auth/controllers/auth_controller.dart';
 import '../features/home/presentation/pages/home_page.dart';
+import '../features/notifications/widgets/foreground_notifications.dart';
 import 'theme/coolcare_theme.dart';
 import 'preferences/app_preferences_controller.dart';
 
@@ -32,6 +33,16 @@ class CoolCareApp extends StatelessWidget {
           locale: preferencesController.locale,
           supportedLocales: const [Locale('vi'), Locale('en')],
           localizationsDelegates: GlobalMaterialLocalizations.delegates,
+          builder: (context, child) => ListenableBuilder(
+            listenable: authController,
+            child: child,
+            builder: (context, child) => ForegroundNotifications(
+              userId: authController.status == AuthStatus.authenticated
+                  ? authController.user?.id
+                  : null,
+              child: child!,
+            ),
+          ),
           home: ListenableBuilder(
             listenable: authController,
             builder: (context, _) {
