@@ -17,7 +17,7 @@ import '../../../booking/pages/my_bookings_page.dart';
 import '../../../chat/chat_inbox_page.dart';
 import '../../../chat/chat_unread.dart';
 import '../../../notifications/pages/customer_notifications_page.dart';
-import '../../../notifications/repositories/customer_notifications_repository.dart';
+import '../../../notifications/widgets/foreground_notifications.dart';
 import '../../../services/controllers/service_controller.dart';
 import '../../../services/models/service_model.dart';
 import '../../../services/pages/service_detail_page.dart';
@@ -34,29 +34,20 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
-  int _unreadNotificationCount = 0;
-  late final CustomerNotificationsRepository _notificationsRepository;
-  Timer? _notificationRefreshTimer;
   Timer? _sessionRefreshTimer;
   bool _wasAuthenticated = false;
 
   @override
   void initState() {
     super.initState();
-    _notificationsRepository = CustomerNotificationsRepository();
     _wasAuthenticated = widget.controller.status == AuthStatus.authenticated;
     widget.controller.addListener(_handleAuthenticationChange);
     ChatUnread.instance.addListener(_onChatChanged);
     if (_wasAuthenticated) {
-      _refreshUnreadNotificationCount();
       unawaited(ChatUnread.instance.start().catchError((Object error) {
         debugPrint('Chat inbox initialization failed: $error');
       }));
     }
-    _notificationRefreshTimer = Timer.periodic(
-      const Duration(seconds: 45),
-      (_) => _refreshUnreadNotificationCount(),
-    );
     _sessionRefreshTimer = Timer.periodic(
       const Duration(seconds: 15),
       (_) => widget.controller.refreshSession(),
@@ -70,11 +61,6 @@ class _HomePageState extends State<HomePage> {
       oldWidget.controller.removeListener(_handleAuthenticationChange);
       widget.controller.addListener(_handleAuthenticationChange);
       _wasAuthenticated = widget.controller.status == AuthStatus.authenticated;
-      if (_wasAuthenticated) {
-        _refreshUnreadNotificationCount();
-      } else {
-        setState(() => _unreadNotificationCount = 0);
-      }
     }
   }
 
@@ -82,7 +68,6 @@ class _HomePageState extends State<HomePage> {
   void dispose() {
     ChatUnread.instance.removeListener(_onChatChanged);
     widget.controller.removeListener(_handleAuthenticationChange);
-    _notificationRefreshTimer?.cancel();
     _sessionRefreshTimer?.cancel();
     super.dispose();
   }
@@ -92,7 +77,6 @@ class _HomePageState extends State<HomePage> {
     if (authenticated == _wasAuthenticated) return;
     _wasAuthenticated = authenticated;
     if (authenticated) {
-      _refreshUnreadNotificationCount();
       unawaited(ChatUnread.instance.start().catchError((Object error) {
         debugPrint('Chat inbox initialization failed: $error');
       }));
@@ -101,7 +85,6 @@ class _HomePageState extends State<HomePage> {
       if (mounted) {
         setState(() {
           _selectedIndex = 0;
-          _unreadNotificationCount = 0;
         });
         final notice = widget.controller.sessionNotice;
         if (notice != null) {
@@ -125,28 +108,6 @@ class _HomePageState extends State<HomePage> {
     await Navigator.of(
       context,
     ).push(MaterialPageRoute(builder: (_) => const ChatInboxPage()));
-  }
-
-  Future<void> _refreshUnreadNotificationCount() async {
-    if (widget.controller.status != AuthStatus.authenticated) return;
-    final userId = widget.controller.user?.id;
-    if (userId == null || userId.isEmpty) return;
-    try {
-      final result = await _notificationsRepository.list(
-        page: 1,
-        unreadOnly: true,
-      );
-      if (!mounted ||
-          widget.controller.status != AuthStatus.authenticated ||
-          widget.controller.user?.id != userId) {
-        return;
-      }
-      if (_unreadNotificationCount != result.unreadCount) {
-        setState(() => _unreadNotificationCount = result.unreadCount);
-      }
-    } catch (_) {
-      // Keep the last known count when a brief network failure occurs.
-    }
   }
 
   Future<void> _openLogin(BuildContext context) async {
@@ -188,7 +149,7 @@ class _HomePageState extends State<HomePage> {
         builder: (_) => const CustomerNotificationsPage(),
       ),
     );
-    await _refreshUnreadNotificationCount();
+    if (mounted) await ForegroundNotifications.refresh(context);
   }
 
   void _selectTab(int index) {
@@ -260,7 +221,8 @@ class _HomePageState extends State<HomePage> {
                   controller: widget.controller,
                   onLogin: () => _openLogin(context),
                   onNotifications: _openNotifications,
-                  unreadNotificationCount: _unreadNotificationCount,
+                  unreadNotificationCount:
+                      ForegroundNotifications.unreadCountOf(context),
                   onChat: _openChat,
                   unreadChatCount: ChatUnread.instance.count,
                 ),
