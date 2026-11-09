@@ -7,16 +7,17 @@ import '../models/reviewable_booking.dart';
 import '../repositories/review_repository.dart';
 
 class CustomerActivityPage extends StatefulWidget {
-  const CustomerActivityPage({super.key, this.showHeader = true});
+  const CustomerActivityPage({super.key, this.showHeader = true, this.repository});
 
   final bool showHeader;
+  final ReviewRepository? repository;
 
   @override
   State<CustomerActivityPage> createState() => _CustomerActivityPageState();
 }
 
 class _CustomerActivityPageState extends State<CustomerActivityPage> {
-  final _repository = ReviewRepository();
+  late final ReviewRepository _repository = widget.repository ?? ReviewRepository();
   late Future<List<ReviewableBooking>> _bookings;
 
   @override
@@ -27,7 +28,11 @@ class _CustomerActivityPageState extends State<CustomerActivityPage> {
 
   Future<void> _reload() async {
     final request = _repository.getBookings();
-    if (mounted) setState(() => _bookings = request);
+    if (mounted) {
+      setState(() {
+        _bookings = request;
+      });
+    }
     try {
       await request;
     } catch (_) {
