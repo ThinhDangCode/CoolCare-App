@@ -21,11 +21,13 @@ class ViewJobRequestDetailPage extends StatefulWidget {
   const ViewJobRequestDetailPage({
     required this.request,
     this.repository,
+    this.currentPosition,
     super.key,
   });
 
   final ViewJobRequest request;
   final TechnicianPortalRepository? repository;
+  final Future<({double latitude, double longitude})> Function()? currentPosition;
 
   @override
   State<ViewJobRequestDetailPage> createState() =>
@@ -42,11 +44,13 @@ class _ViewJobRequestDetailPageState extends State<ViewJobRequestDetailPage> {
     if (widget.request.status != 'ACCEPTED' || widget.repository == null) return;
     try {
       final travel = await widget.repository!.travelStatus(widget.request.booking.id);
-      if (mounted) setState(() {
-        _arrived = travel['status'] == 'ARRIVED';
-        _earlyStartAllowed = travel['early_start_allowed'] == true;
-        _scheduledStart = DateTime.tryParse('${travel['scheduled_at'] ?? ''}')?.toLocal();
-      });
+      if (mounted) {
+        setState(() {
+          _arrived = travel['status'] == 'ARRIVED';
+          _earlyStartAllowed = travel['early_start_allowed'] == true;
+          _scheduledStart = DateTime.tryParse('${travel['scheduled_at'] ?? ''}')?.toLocal();
+        });
+      }
     } catch (_) { /* Server still validates arrival before completion. */ }
   }
 
@@ -1015,23 +1019,7 @@ class _ViewJobRequestDetailPageState extends State<ViewJobRequestDetailPage> {
     final repository = widget.repository;
     if (repository == null) return;
     try {
-      if (!await Geolocator.isLocationServiceEnabled()) {
-        throw StateError('Vui lòng bật GPS để tính thời gian di chuyển.');
-      }
-      var permission = await Geolocator.checkPermission();
-      if (permission == LocationPermission.denied) {
-        permission = await Geolocator.requestPermission();
-      }
-      if (permission == LocationPermission.denied ||
-          permission == LocationPermission.deniedForever) {
-        throw StateError('Ứng dụng chưa được cấp quyền GPS.');
-      }
-      final position = await Geolocator.getCurrentPosition(
-        locationSettings: const LocationSettings(
-          accuracy: LocationAccuracy.high,
-          timeLimit: Duration(seconds: 15),
-        ),
-      );
+      final position = await (widget.currentPosition?.call() ?? _currentPosition());
       final estimate = await repository.estimateTravel(
         widget.request.booking.id, position.latitude, position.longitude,
       );
@@ -1059,6 +1047,27 @@ class _ViewJobRequestDetailPageState extends State<ViewJobRequestDetailPage> {
         actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Đóng'))],
       ));
     }
+  }
+
+  Future<({double latitude, double longitude})> _currentPosition() async {
+    if (!await Geolocator.isLocationServiceEnabled()) {
+      throw StateError('Vui lòng bật GPS để tính thời gian di chuyển.');
+    }
+    var permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+    }
+    if (permission == LocationPermission.denied ||
+        permission == LocationPermission.deniedForever) {
+      throw StateError('Ứng dụng chưa được cấp quyền GPS.');
+    }
+    final position = await Geolocator.getCurrentPosition(
+      locationSettings: const LocationSettings(
+        accuracy: LocationAccuracy.high,
+        timeLimit: Duration(seconds: 15),
+      ),
+    );
+    return (latitude: position.latitude, longitude: position.longitude);
   }
 
   Future<void> _respond({required bool accept, String? reason}) async {

@@ -120,7 +120,7 @@ class _BookingTravelPanelState extends State<BookingTravelPanel> {
   Future<void> _confirmStart() async {
     final scheduled = DateTime.tryParse('${status?['scheduled_at'] ?? ''}')?.toLocal();
     final seconds = (status?['predeparture_duration_seconds'] as num?)?.toInt();
-    final recommended = scheduled == null ? null : scheduled.subtract(
+    final recommended = scheduled?.subtract(
       Duration(seconds: seconds ?? 1800) + const Duration(minutes: 10));
     if (recommended != null && DateTime.now().isBefore(recommended)) {
       final confirmed = await showDialog<bool>(context: context, builder: (ctx) => AlertDialog(

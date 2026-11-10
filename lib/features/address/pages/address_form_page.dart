@@ -542,8 +542,10 @@ class _AddressFormPageState extends State<AddressFormPage> {
       _longitude = candidate.longitude;
       return true;
     } catch (_) {
-      if (mounted) setState(() => _formError =
-          'Không xác định được tọa độ địa chỉ. Kiểm tra mạng hoặc nhập địa chỉ chi tiết hơn.');
+      if (mounted) {
+        setState(() => _formError =
+            'Không xác định được tọa độ địa chỉ. Kiểm tra mạng hoặc nhập địa chỉ chi tiết hơn.');
+      }
       return false;
     } finally {
       if (mounted) setState(() => _isResolvingAddress = false);

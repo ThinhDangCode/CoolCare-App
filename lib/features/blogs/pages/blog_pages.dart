@@ -29,9 +29,12 @@ class _BlogListPageState extends State<BlogListPage> {
     _articles = _repository.getPublishedBlogs();
   }
 
-  void _load() => setState(
-    () => _articles = _repository.getPublishedBlogs(search: _search.text),
-  );
+  void _load() {
+    final request = _repository.getPublishedBlogs(search: _search.text);
+    setState(() {
+      _articles = request;
+    });
+  }
 
   @override
   void dispose() {

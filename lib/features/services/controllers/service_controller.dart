@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 
+import '../../../app/localization/service_text.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/network/api_endpoints.dart';
 import '../models/service_category_model.dart';
@@ -186,14 +187,16 @@ class ServiceController extends ChangeNotifier {
       final keyword = _normalizeText(searchKeyword);
 
       result = result.where((service) {
-        final normalizedName = _normalizeText(service.name);
-
-        final words = normalizedName
-            .split(RegExp(r'[\s/]+'))
-            .where((word) => word.isNotEmpty);
-
-        // Search theo đầu mỗi từ trong tên service
-        return words.any((word) => word.startsWith(keyword));
+        final searchableNames = [
+          service.name,
+          englishServiceName(service.name),
+        ];
+        return searchableNames.any((name) {
+          final words = _normalizeText(name)
+              .split(RegExp(r'[\s/]+'))
+              .where((word) => word.isNotEmpty);
+          return words.any((word) => word.startsWith(keyword));
+        });
       });
     } else if (selectedServiceId != null && selectedServiceId!.isNotEmpty) {
       result = result.where((service) => service.id == selectedServiceId);

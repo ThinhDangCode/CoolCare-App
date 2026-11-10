@@ -41,15 +41,19 @@ class _ViewJobRequestsPageState extends State<ViewJobRequestsPage> {
     if (!mounted || _reminderVisible || ModalRoute.of(context)?.isCurrent != true) return;
     final now = DateTime.now();
     if (_lastDepartureReminder != null &&
-        now.difference(_lastDepartureReminder!) < const Duration(minutes: 5)) return;
+        now.difference(_lastDepartureReminder!) < const Duration(minutes: 5)) {
+      return;
+    }
     try {
       final jobs = await widget.repository.viewJobRequests(status: 'ACCEPTED_NOT_DEPARTED');
-      if (!mounted || ModalRoute.of(context)?.isCurrent != true || _reminderVisible) return;
+      if (!mounted) return;
+      if (ModalRoute.of(context)?.isCurrent != true || _reminderVisible) return;
       for (final job in jobs) {
         final schedule = job.booking.scheduledAt?.toLocal();
         if (schedule == null || now.isBefore(schedule.subtract(const Duration(minutes: 30)))) continue;
         _reminderVisible = true;
         _lastDepartureReminder = now;
+        if (!mounted) return;
         final open = await showDialog<bool>(context: context, builder: (dialogContext) => AlertDialog(
           title: const Text('Nhắc bắt đầu di chuyển'),
           content: Text('Đơn ${job.booking.code} sắp đến giờ hẹn. Bạn chưa bắt đầu di chuyển.'),

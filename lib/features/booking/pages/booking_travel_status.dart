@@ -70,7 +70,6 @@ class _BookingTravelStatusState extends State<BookingTravelStatus> {
   Widget build(BuildContext context) {
     final phase = data?['status']?.toString() ?? 'NOT_STARTED';
     final scheduled = DateTime.tryParse('${data?['scheduled_at'] ?? ''}')?.toLocal();
-    final beforeAppointment = scheduled != null && DateTime.now().isBefore(scheduled);
     final needsEarlyConsent = scheduled != null &&
         DateTime.now().isBefore(scheduled.subtract(const Duration(minutes: 15)));
     final arrived = phase == 'ARRIVED';
