@@ -59,6 +59,17 @@ class BookingDetailRepository {
       bearerToken: await _token(), body: {'description': description});
   }
 
+  Future<Map<String, dynamic>> travelStatus(String id) async {
+    final response = await _api.get('/booking-travel/$id', bearerToken: await _token());
+    return Map<String, dynamic>.from(response['data'] as Map);
+  }
+
+  Future<Map<String, dynamic>> approveEarlyStart(String id) async {
+    final response = await _api.post('/booking-travel/$id/approve-early',
+      bearerToken: await _token(), body: const {});
+    return Map<String, dynamic>.from(response['data'] as Map);
+  }
+
   Future<void> cancel(String id, String reason) async {
     await _api.post(
       '/bookings/$id/cancel',

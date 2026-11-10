@@ -33,10 +33,8 @@ const _englishErrors = <String, String>{
 bool _english(BuildContext context) =>
     Localizations.localeOf(context).languageCode == 'en';
 
-String englishServiceName(String name) => _englishNames[name.trim()] ?? name;
-
 String localizedServiceName(BuildContext context, String name) =>
-    _english(context) ? englishServiceName(name) : name;
+    _english(context) ? _englishNames[name.trim()] ?? name : name;
 
 String localizedServiceNames(BuildContext context, String names) => names
     .split(',')

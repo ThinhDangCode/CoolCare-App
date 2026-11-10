@@ -168,10 +168,13 @@ class _HomePageState extends State<HomePage> {
   Widget _selectedPage() {
     switch (_selectedIndex) {
       case 0:
-        return _HomeBody(onExploreServices: () => _selectTab(1));
+        return _HomeBody(
+          controller: widget.controller,
+          onExploreServices: () => _selectTab(1),
+        );
 
       case 1:
-        return const ServicesPage();
+        return ServicesPage(authController: widget.controller);
 
       case 2:
         if (widget.controller.status == AuthStatus.authenticated) {
@@ -425,8 +428,9 @@ class _HomeHeader extends StatelessWidget {
 // ============================================================
 
 class _HomeBody extends StatefulWidget {
-  const _HomeBody({required this.onExploreServices});
+  const _HomeBody({required this.controller, required this.onExploreServices});
 
+  final AuthController controller;
   final VoidCallback onExploreServices;
 
   @override
@@ -472,7 +476,7 @@ class _HomeBodyState extends State<_HomeBody> {
   void _openService(ServiceModel service) {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) => ServiceDetailPage(serviceId: service.id),
+        builder: (_) => ServiceDetailPage(serviceId: service.id, authController: widget.controller),
       ),
     );
   }

@@ -1,3 +1,5 @@
+import 'dart:async';
+import 'booking_travel_status.dart';
 import '../../payments/pages/payment_page.dart';
 import '../../payments/pages/payment_history_page.dart';
 import '../../payments/repositories/payment_repository.dart';
@@ -37,6 +39,10 @@ class _BookingDetailPageState extends State<BookingDetailPage> {
   bool confirmingCompletion = false;
   bool reportingNoShow = false;
   bool _timelineFailed = false;
+  Timer? _acceptanceTimer;
+  String? _previousBookingStatus;
+  bool _acceptanceChecking = false;
+
 
   @override
   void initState() {
@@ -44,6 +50,48 @@ class _BookingDetailPageState extends State<BookingDetailPage> {
     repo = widget.repository ?? BookingDetailRepository();
     _paymentRepo = widget.paymentRepository ?? PaymentRepository();
     detail = _load();
+    // Poll only while this detail screen is open; initial status is not a new event.
+    detail.then((value) {
+      if (mounted) _previousBookingStatus = value['status']?.toString();
+    }).catchError((Object _) {});
+    _acceptanceTimer = Timer.periodic(const Duration(seconds: 15), (_) => _checkTechnicianAccepted());
+  }
+
+  @override
+  void dispose() {
+    _acceptanceTimer?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _checkTechnicianAccepted() async {
+    if (!mounted || _acceptanceChecking || _previousBookingStatus == null) return;
+    _acceptanceChecking = true;
+    try {
+      final latest = await repo.getDetail(widget.bookingId);
+      final current = latest['status']?.toString();
+      final previous = _previousBookingStatus;
+      if (!mounted) return;
+      if (current != null) _previousBookingStatus = current;
+      if (current == 'ACCEPTED' && previous != 'ACCEPTED') {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 6),
+            backgroundColor: teal,
+            content: const Row(children: [
+              Icon(Icons.check_circle_outline, color: Colors.white),
+              SizedBox(width: 12),
+              Expanded(child: Text('Kỹ thuật viên đã nhận lịch đặt của bạn!')),
+            ]),
+          ),
+        );
+        _reload();
+      }
+    } catch (_) {
+      // A transient network failure must not disrupt the booking detail screen.
+    } finally {
+      _acceptanceChecking = false;
+    }
   }
 
   Future<Map<String, dynamic>> _load() async {
@@ -403,6 +451,8 @@ class _BookingDetailPageState extends State<BookingDetailPage> {
             physics: const AlwaysScrollableScrollPhysics(),
             padding: const EdgeInsets.fromLTRB(14, 12, 14, 30),
             children: [
+              if (status == 'ACCEPTED')
+                BookingTravelStatus(bookingId: widget.bookingId, repository: repo),
               Text(
                 data['bookingCode']?.toString() ?? '',
                 style: const TextStyle(
@@ -599,10 +649,7 @@ class _BookingDetailPageState extends State<BookingDetailPage> {
                 label: Text(Localizations.localeOf(context).languageCode == 'vi'
                     ? 'Xem / phản hồi báo giá' : 'View / Respond to Quotation'),
               )),
-              if (status == 'ACCEPTED' &&
-                  (DateTime.tryParse('${data['scheduledAt'] ?? ''}')?.toLocal()
-                    .add(const Duration(minutes: 30))
-                    .isBefore(DateTime.now()) ?? false))
+              if (data['canReportNoShow'] == true)
                 Padding(
                   padding: const EdgeInsets.only(bottom: 12),
                   child: OutlinedButton.icon(

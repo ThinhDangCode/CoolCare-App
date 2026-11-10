@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'job_request_deadline.dart';
 import '../../payments/repositories/payment_repository.dart';
@@ -26,18 +27,60 @@ class ViewJobRequestsPage extends StatefulWidget {
 
 class _ViewJobRequestsPageState extends State<ViewJobRequestsPage> {
   int _tab = 0;
+  Timer? _departureClock;
+  DateTime? _lastDepartureReminder;
+  bool _reminderVisible = false;
+
+  @override
+  void dispose() {
+    _departureClock?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _checkDepartureReminder() async {
+    if (!mounted || _reminderVisible || ModalRoute.of(context)?.isCurrent != true) return;
+    final now = DateTime.now();
+    if (_lastDepartureReminder != null &&
+        now.difference(_lastDepartureReminder!) < const Duration(minutes: 5)) return;
+    try {
+      final jobs = await widget.repository.viewJobRequests(status: 'ACCEPTED_NOT_DEPARTED');
+      if (!mounted || ModalRoute.of(context)?.isCurrent != true || _reminderVisible) return;
+      for (final job in jobs) {
+        final schedule = job.booking.scheduledAt?.toLocal();
+        if (schedule == null || now.isBefore(schedule.subtract(const Duration(minutes: 30)))) continue;
+        _reminderVisible = true;
+        _lastDepartureReminder = now;
+        final open = await showDialog<bool>(context: context, builder: (dialogContext) => AlertDialog(
+          title: const Text('Nhắc bắt đầu di chuyển'),
+          content: Text('Đơn ${job.booking.code} sắp đến giờ hẹn. Bạn chưa bắt đầu di chuyển.'),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(dialogContext, false),
+              child: const Text('Nhắc lại sau 5 phút')),
+            FilledButton(onPressed: () => Navigator.pop(dialogContext, true),
+              child: const Text('Xem đơn và xuất phát')),
+          ],
+        ));
+        _reminderVisible = false;
+        if (open == true && mounted) await _showDetails(job);
+        break;
+      }
+    } catch (_) { /* The request list remains usable if reminder polling fails. */ }
+  }
+
   late Future<List<ViewJobRequest>> _requests;
 
   @override
   void initState() {
     super.initState();
     _requests = _fetch();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _checkDepartureReminder());
+    _departureClock = Timer.periodic(const Duration(minutes: 1), (_) => _checkDepartureReminder());
   }
 
   Future<List<ViewJobRequest>> _fetch() async {
     final status = switch (_tab) {
-      0 => 'SELECTED',
-      1 => 'ACCEPTED',
+      0 => 'REQUESTS',
+      1 => 'ONGOING',
       2 => 'COMPLETED',
       _ => 'CLOSED',
     };
@@ -126,6 +169,7 @@ class _ViewJobRequestsPageState extends State<ViewJobRequestsPage> {
                   itemCount: items.length,
                   itemBuilder: (context, index) => _ViewJobRequestCard(
                     request: items[index],
+                    waitingForDeparture: _tab == 0 && items[index].status == 'ACCEPTED',
                     onView: () => _showDetails(items[index]),
                   ),
                 ),
@@ -138,16 +182,21 @@ class _ViewJobRequestsPageState extends State<ViewJobRequestsPage> {
   }
 
   Future<void> _showDetails(ViewJobRequest request) async {
-    final changed = await Navigator.of(context).push<bool>(
-      MaterialPageRoute<bool>(
+    final changed = await Navigator.of(context).push<Object?>(
+      MaterialPageRoute<Object?>(
         builder: (context) => ViewJobRequestDetailPage(
           request: request,
           repository: widget.repository,
         ),
       ),
     );
-    if (changed == true && mounted) {
-      await Future.wait([_refresh(), widget.onRequestChanged()]);
+    if ((changed == true || changed == 'ARRIVED') && mounted) {
+      setState(() {
+        if (changed == 'ARRIVED') _tab = 1;
+        // Accepting a job must leave the technician on the first tab.
+        _requests = _fetch();
+      });
+      await widget.onRequestChanged();
     }
   }
 }
@@ -175,7 +224,7 @@ class _ViewJobRequestsTabs extends StatelessWidget {
     padding: const EdgeInsets.symmetric(horizontal: 16),
     child: Row(
       children: [
-        _tab(context, context.tr('newRequests'), 0, count: newCount),
+        _tab(context, Localizations.localeOf(context).languageCode == 'vi' ? 'Yêu cầu công việc' : 'Job requests', 0, count: newCount),
         _tab(context, context.tr('ongoing'), 1),
         _tab(context, context.tr('statusCompleted'), 2),
         _tab(context, Localizations.localeOf(context).languageCode == 'vi' ? 'Đã đóng' : 'Closed', 3),
@@ -243,9 +292,10 @@ class _ViewJobRequestsTabs extends StatelessWidget {
 }
 
 class _ViewJobRequestCard extends StatefulWidget {
-  const _ViewJobRequestCard({required this.request, required this.onView});
+  const _ViewJobRequestCard({required this.request, required this.onView, required this.waitingForDeparture});
 
   final ViewJobRequest request;
+  final bool waitingForDeparture;
   final VoidCallback onView;
 
   @override
@@ -254,10 +304,17 @@ class _ViewJobRequestCard extends StatefulWidget {
 
 class _ViewJobRequestCardState extends State<_ViewJobRequestCard> {
   Future<String>? _paymentStatus;
+  Timer? _clock;
+
+  @override
+  void dispose() { _clock?.cancel(); super.dispose(); }
 
   @override
   void initState() {
     super.initState();
+    _clock = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (mounted && widget.waitingForDeparture) setState(() {});
+    });
     if (widget.request.status == 'COMPLETED') {
       _paymentStatus = _fetchPaymentStatus();
     }
@@ -350,6 +407,17 @@ class _ViewJobRequestCardState extends State<_ViewJobRequestCard> {
           if (isNew) ...[
             const SizedBox(height: 10),
             JobRequestDeadline(request: widget.request),
+          ],
+          if (widget.waitingForDeparture && booking.scheduledAt != null) ...[
+            const SizedBox(height: 8),
+            Text(() {
+              final remaining = booking.scheduledAt!.toLocal().difference(DateTime.now());
+              if (remaining.isNegative) return 'Đã quá giờ hẹn ${remaining.abs().inMinutes} phút';
+              final hours = remaining.inHours.toString().padLeft(2, '0');
+              final minutes = (remaining.inMinutes % 60).toString().padLeft(2, '0');
+              final seconds = (remaining.inSeconds % 60).toString().padLeft(2, '0');
+              return 'Còn $hours:$minutes:$seconds đến giờ hẹn';
+            }(), style: const TextStyle(fontWeight: FontWeight.w700)),
           ],
           if (widget.request.status == 'COMPLETED') ...[
             const SizedBox(height: 8),
@@ -462,7 +530,7 @@ class _ViewJobRequestCardState extends State<_ViewJobRequestCard> {
                     ),
                   ),
                   child: Text(
-                    context.tr('view'),
+                    widget.waitingForDeparture ? 'Xác nhận di chuyển' : context.tr('view'),
                     style: const TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w700,
