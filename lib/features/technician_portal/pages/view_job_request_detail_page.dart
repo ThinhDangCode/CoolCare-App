@@ -1035,7 +1035,7 @@ class _ViewJobRequestDetailPageState extends State<ViewJobRequestDetailPage> {
               ? 'Hành trình đã bắt đầu. Chưa có ETA từ dịch vụ định tuyến.'
               : 'Hành trình đã bắt đầu. Thời gian di chuyển dự kiến: ${(seconds / 60).ceil()} phút.')
           : (seconds == null
-              ? 'Đã nhận việc nhưng chưa tính được thời gian di chuyển. Kiểm tra OPENROUTESERVICE_API_KEY và GPS địa chỉ khách.'
+              ? 'Đã nhận việc. Chưa có thời gian đến dự kiến; bạn vẫn có thể bắt đầu di chuyển và xác nhận khi đến nơi.'
               : 'Thời gian di chuyển dự kiến từ vị trí hiện tại: ${(seconds / 60).ceil()} phút. Bạn có thể bắt đầu di chuyển khi sẵn sàng.')),
         actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Đóng'))],
       ));

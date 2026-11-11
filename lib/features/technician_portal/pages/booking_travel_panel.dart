@@ -161,7 +161,9 @@ class _BookingTravelPanelState extends State<BookingTravelPanel> {
       if (action == 'arrive') {
         throw StateError('Máy chủ chưa xác nhận đến nơi (trạng thái: $nextPhase).');
       }
-      _showTravelMessage('Đã xác nhận bắt đầu di chuyển.');
+      _showTravelMessage(data['routing_available'] == false
+          ? 'Đã bắt đầu di chuyển. Chưa có giờ đến dự kiến; hãy xác nhận khi đến nơi.'
+          : 'Đã xác nhận bắt đầu di chuyển.');
       await _refresh();
     } catch (e) {
       if (!mounted) return;
