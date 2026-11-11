@@ -192,11 +192,9 @@ class ServiceController extends ChangeNotifier {
           englishServiceName(service.name),
         ];
         return searchableNames.any((name) {
-          final words = _normalizeText(
-            name,
-          ).split(RegExp(r'[\s/]+')).where((word) => word.isNotEmpty);
-
-          // Search theo đầu mỗi từ trong tên service
+          final words = _normalizeText(name)
+              .split(RegExp(r'[\s/]+'))
+              .where((word) => word.isNotEmpty);
           return words.any((word) => word.startsWith(keyword));
         });
       });

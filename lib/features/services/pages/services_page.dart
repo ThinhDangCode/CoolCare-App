@@ -4,12 +4,15 @@ import '../../../app/localization/app_strings.dart';
 import '../../../app/localization/service_text.dart';
 import '../../../app/theme/coolcare_theme.dart';
 import '../../../core/network/api_client.dart';
+import '../../auth/controllers/auth_controller.dart';
 import '../controllers/service_controller.dart';
 import '../models/service_model.dart';
 import 'service_detail_page.dart';
 
 class ServicesPage extends StatefulWidget {
-  const ServicesPage({super.key});
+  const ServicesPage({required this.authController, super.key});
+
+  final AuthController authController;
 
   @override
   State<ServicesPage> createState() => _ServicesPageState();
@@ -57,7 +60,7 @@ class _ServicesPageState extends State<ServicesPage> {
   void _openDetails(String serviceId) {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) => ServiceDetailPage(serviceId: serviceId),
+        builder: (_) => ServiceDetailPage(serviceId: serviceId, authController: widget.authController),
       ),
     );
   }

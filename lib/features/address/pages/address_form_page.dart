@@ -43,6 +43,8 @@ class _AddressFormPageState extends State<AddressFormPage> {
   bool _initializing = true;
   bool _hasChanges = false;
   bool _isGettingLocation = false;
+  bool _isResolvingAddress = false;
+  bool _applyingGpsAddress = false;
 
   String? _formError;
 
@@ -66,7 +68,7 @@ class _AddressFormPageState extends State<AddressFormPage> {
 
     _nameController.addListener(_changed);
     _phoneController.addListener(_changed);
-    _detailController.addListener(_changed);
+    _detailController.addListener(_addressDetailChanged);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _initialize();
@@ -120,6 +122,16 @@ class _AddressFormPageState extends State<AddressFormPage> {
         _hasChanges = true;
       });
     }
+  }
+
+  // A manually edited service address must never retain coordinates from
+  // the customer's current GPS or from a previous address.
+  void _addressDetailChanged() {
+    if (!_initializing && !_applyingGpsAddress) {
+      _latitude = null;
+      _longitude = null;
+    }
+    _changed();
   }
 
   // ============================================================
@@ -192,7 +204,12 @@ class _AddressFormPageState extends State<AddressFormPage> {
 
       final placemark = placemarks.first;
 
-      await _applyPlacemark(placemark);
+      _applyingGpsAddress = true;
+      try {
+        await _applyPlacemark(placemark);
+      } finally {
+        _applyingGpsAddress = false;
+      }
 
       if (!mounted) return;
 
@@ -477,11 +494,70 @@ class _AddressFormPageState extends State<AddressFormPage> {
     });
   }
 
+  // Convert the customer's chosen service address to a routeable destination.
+  // This does NOT read the customer's current GPS.
+  Future<bool> _resolveManualAddress() async {
+    if (_latitude != null && _longitude != null) return true;
+    final query = [
+      _detailController.text.trim(),
+      _selectedWard!.name,
+      _selectedProvince!.name,
+      'Việt Nam',
+    ].join(', ');
+    setState(() => _isResolvingAddress = true);
+    try {
+      final matches = await _geocoding.locationFromAddress(query);
+      if (!mounted) return false;
+      if (matches.isEmpty) {
+        setState(() => _formError =
+            'Không tìm thấy vị trí địa chỉ sửa chữa. Vui lòng nhập địa chỉ chi tiết hơn.');
+        return false;
+      }
+      final candidate = matches.first;
+      if (!candidate.latitude.isFinite || !candidate.longitude.isFinite ||
+          candidate.latitude.abs() > 90 || candidate.longitude.abs() > 180) {
+        setState(() => _formError = 'Tọa độ địa chỉ không hợp lệ.');
+        return false;
+      }
+      // Never silently use the first approximate geocoding match.
+      final accepted = await showDialog<bool>(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          title: const Text('Xác nhận vị trí sửa chữa'),
+          content: Text('Địa chỉ: $query\n\n'
+              'Tọa độ tìm được: ${candidate.latitude.toStringAsFixed(6)}, '
+              '${candidate.longitude.toStringAsFixed(6)}\n\n'
+              'Vui lòng xác nhận đây là vị trí thợ cần đến. '
+              'Nếu chưa chính xác, hãy sửa địa chỉ chi tiết.'),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(dialogContext, false),
+                child: const Text('Sửa địa chỉ')),
+            FilledButton(onPressed: () => Navigator.pop(dialogContext, true),
+                child: const Text('Xác nhận vị trí')),
+          ],
+        ),
+      );
+      if (!mounted || accepted != true) return false;
+      _latitude = candidate.latitude;
+      _longitude = candidate.longitude;
+      return true;
+    } catch (_) {
+      if (mounted) {
+        setState(() => _formError =
+            'Không xác định được tọa độ địa chỉ. Kiểm tra mạng hoặc nhập địa chỉ chi tiết hơn.');
+      }
+      return false;
+    } finally {
+      if (mounted) setState(() => _isResolvingAddress = false);
+    }
+  }
+
   // ============================================================
   // SAVE
   // ============================================================
 
   Future<void> _save() async {
+    if (_isResolvingAddress || widget.controller.isSaving || _isGettingLocation) return;
     FocusScope.of(context).unfocus();
 
     setState(() {
@@ -505,6 +581,9 @@ class _AddressFormPageState extends State<AddressFormPage> {
       });
       return;
     }
+
+    if (!await _resolveManualAddress()) return;
+    if (!mounted) return;
 
     bool success;
 
@@ -713,7 +792,7 @@ class _AddressFormPageState extends State<AddressFormPage> {
 
     _nameController.removeListener(_changed);
     _phoneController.removeListener(_changed);
-    _detailController.removeListener(_changed);
+    _detailController.removeListener(_addressDetailChanged);
 
     _nameController.dispose();
     _phoneController.dispose();
@@ -1113,7 +1192,7 @@ class _AddressFormPageState extends State<AddressFormPage> {
       width: double.infinity,
       height: 42,
       child: ElevatedButton(
-        onPressed: widget.controller.isSaving ? null : _save,
+        onPressed: (widget.controller.isSaving || _isResolvingAddress || _isGettingLocation) ? null : _save,
         style: ElevatedButton.styleFrom(
           backgroundColor: _primary,
           foregroundColor: Colors.white,
@@ -1121,7 +1200,7 @@ class _AddressFormPageState extends State<AddressFormPage> {
           elevation: 0,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(7)),
         ),
-        child: widget.controller.isSaving
+        child: (widget.controller.isSaving || _isResolvingAddress)
             ? const SizedBox(
                 width: 17,
                 height: 17,

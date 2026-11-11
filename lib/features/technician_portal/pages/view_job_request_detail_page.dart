@@ -1,3 +1,4 @@
+import 'booking_travel_panel.dart';
 import 'dart:async';
 
 import '../../chat/booking_chat_page.dart';
@@ -5,6 +6,7 @@ import '../../payments/pages/payment_page.dart';
 import '../../payments/repositories/payment_repository.dart';
 import '../../quotations/pages/quotation_page.dart';
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 
 import '../../../app/localization/app_strings.dart';
 import '../../../app/localization/service_text.dart';
@@ -19,11 +21,13 @@ class ViewJobRequestDetailPage extends StatefulWidget {
   const ViewJobRequestDetailPage({
     required this.request,
     this.repository,
+    this.currentPosition,
     super.key,
   });
 
   final ViewJobRequest request;
   final TechnicianPortalRepository? repository;
+  final Future<({double latitude, double longitude})> Function()? currentPosition;
 
   @override
   State<ViewJobRequestDetailPage> createState() =>
@@ -32,6 +36,28 @@ class ViewJobRequestDetailPage extends StatefulWidget {
 
 class _ViewJobRequestDetailPageState extends State<ViewJobRequestDetailPage> {
   bool _submitting = false;
+  bool _arrived = false;
+  bool _earlyStartAllowed = false;
+  DateTime? _scheduledStart;
+
+  Future<void> _loadArrival() async {
+    if (widget.request.status != 'ACCEPTED' || widget.repository == null) return;
+    try {
+      final travel = await widget.repository!.travelStatus(widget.request.booking.id);
+      if (mounted) {
+        setState(() {
+          _arrived = travel['status'] == 'ARRIVED';
+          _earlyStartAllowed = travel['early_start_allowed'] == true;
+          _scheduledStart = DateTime.tryParse('${travel['scheduled_at'] ?? ''}')?.toLocal();
+        });
+      }
+    } catch (_) { /* Server still validates arrival before completion. */ }
+  }
+
+  bool get _canWorkNow => _earlyStartAllowed ||
+      (_scheduledStart == null || !DateTime.now().isBefore(
+        _scheduledStart!.subtract(const Duration(minutes: 15))));
+
   Timer? _deadlineTimer;
   final PaymentRepository _paymentRepository = PaymentRepository();
   bool? _isPaid;
@@ -262,6 +288,12 @@ class _ViewJobRequestDetailPageState extends State<ViewJobRequestDetailPage> {
   @override
   void initState() {
     super.initState();
+    _loadArrival();
+    if (widget.request.status == 'ACCEPTED') {
+      _deadlineTimer = Timer.periodic(const Duration(seconds: 10), (_) {
+        _loadArrival();
+      });
+    }
     if (widget.request.status == 'SELECTED') {
       _deadlineTimer = Timer.periodic(const Duration(seconds: 1), (_) {
         if (mounted) setState(() {});
@@ -415,7 +447,7 @@ class _ViewJobRequestDetailPageState extends State<ViewJobRequestDetailPage> {
                             showDivider: false,
                             displayBrandModel: _unitEdits[booking.units[index].id],
                           ),
-                          if (request.status == 'ACCEPTED' && widget.repository != null &&
+                          if (request.status == 'ACCEPTED' && _arrived && widget.repository != null &&
                               booking.units[index].id.isNotEmpty)
                             Align(
                               alignment: Alignment.centerRight,
@@ -447,7 +479,7 @@ class _ViewJobRequestDetailPageState extends State<ViewJobRequestDetailPage> {
                   ],
                 ),
               ],
-              if (request.status == 'ACCEPTED') ...[
+              if (request.status == 'ACCEPTED' && _arrived) ...[
                 const SizedBox(height: 12),
                 OutlinedButton.icon(
                   onPressed: () => Navigator.of(context).push(
@@ -660,6 +692,16 @@ class _ViewJobRequestDetailPageState extends State<ViewJobRequestDetailPage> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
+                    if (request.status == 'ACCEPTED' && widget.repository != null) ...[
+                      BookingTravelPanel(
+                        bookingId: booking.id,
+                        repository: widget.repository!,
+                        onArrived: () {
+                          _loadArrival();
+                        },
+                      ),
+                      const SizedBox(height: 8),
+                    ],
                     if (_canViewAcHistory) ...[
                       _buildAcHistoryButton(),
                       const SizedBox(height: 12),
@@ -686,9 +728,15 @@ class _ViewJobRequestDetailPageState extends State<ViewJobRequestDetailPage> {
                               label: Text(context.tr('cancel')),
                             ),
                           ),
-                        if (request.canCancelAcceptedJob && request.canComplete)
+                        if (request.canCancelAcceptedJob && request.canComplete && _arrived && _canWorkNow)
                           const SizedBox(width: 12),
-                        if (request.canComplete)
+                        if (request.canComplete && _arrived && !_canWorkNow)
+                          const Expanded(child: Padding(
+                            padding: EdgeInsets.symmetric(vertical: 10),
+                            child: Text('Cần khách đồng ý bắt đầu sớm hoặc chờ đến 15 phút trước giờ hẹn.',
+                              textAlign: TextAlign.center),
+                          )),
+                        if (request.canComplete && _arrived && _canWorkNow)
                           Expanded(
                             child: FilledButton.icon(
                               onPressed: _submitting ? null : _confirmComplete,
@@ -967,6 +1015,61 @@ class _ViewJobRequestDetailPageState extends State<ViewJobRequestDetailPage> {
     return true;
   }
 
+  Future<void> _estimateAfterAccept() async {
+    final repository = widget.repository;
+    if (repository == null) return;
+    try {
+      final position = await (widget.currentPosition?.call() ?? _currentPosition());
+      final estimate = await repository.estimateTravel(
+        widget.request.booking.id, position.latitude, position.longitude,
+      );
+      if (!mounted) return;
+      final departed = estimate['status'] == 'TRAVELLING';
+      final seconds = (departed
+          ? estimate['duration_seconds']
+          : estimate['predeparture_duration_seconds']) as num?;
+      await showDialog<void>(context: context, builder: (ctx) => AlertDialog(
+        title: const Text('Đã nhận việc'),
+        content: Text(departed
+          ? (seconds == null
+              ? 'Hành trình đã bắt đầu. Chưa có ETA từ dịch vụ định tuyến.'
+              : 'Hành trình đã bắt đầu. Thời gian di chuyển dự kiến: ${(seconds / 60).ceil()} phút.')
+          : (seconds == null
+              ? 'Đã nhận việc. Chưa có thời gian đến dự kiến; bạn vẫn có thể bắt đầu di chuyển và xác nhận khi đến nơi.'
+              : 'Thời gian di chuyển dự kiến từ vị trí hiện tại: ${(seconds / 60).ceil()} phút. Bạn có thể bắt đầu di chuyển khi sẵn sàng.')),
+        actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Đóng'))],
+      ));
+    } catch (e) {
+      if (!mounted) return;
+      await showDialog<void>(context: context, builder: (ctx) => AlertDialog(
+        title: const Text('Đã nhận việc'),
+        content: Text('Không tính được thời gian di chuyển: $e'),
+        actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Đóng'))],
+      ));
+    }
+  }
+
+  Future<({double latitude, double longitude})> _currentPosition() async {
+    if (!await Geolocator.isLocationServiceEnabled()) {
+      throw StateError('Vui lòng bật GPS để tính thời gian di chuyển.');
+    }
+    var permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+    }
+    if (permission == LocationPermission.denied ||
+        permission == LocationPermission.deniedForever) {
+      throw StateError('Ứng dụng chưa được cấp quyền GPS.');
+    }
+    final position = await Geolocator.getCurrentPosition(
+      locationSettings: const LocationSettings(
+        accuracy: LocationAccuracy.high,
+        timeLimit: Duration(seconds: 15),
+      ),
+    );
+    return (latitude: position.latitude, longitude: position.longitude);
+  }
+
   Future<void> _respond({required bool accept, String? reason}) async {
     final repository = widget.repository;
     if (repository == null || _submitting || (accept && _showExpiredRequest())) return;
@@ -977,6 +1080,8 @@ class _ViewJobRequestDetailPageState extends State<ViewJobRequestDetailPage> {
         accept: accept,
         reason: reason,
       );
+      if (!mounted) return;
+      if (accept) await _estimateAfterAccept();
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

@@ -5,11 +5,15 @@ import '../../../app/localization/service_text.dart';
 import '../../../app/theme/coolcare_theme.dart';
 import '../../../core/network/api_client.dart';
 import '../../booking/pages/create_booking_page.dart';
+import '../../auth/controllers/auth_controller.dart';
+import '../../auth/pages/login_page.dart';
 import '../controllers/service_controller.dart';
 import '../models/service_model.dart';
 
 class ServiceDetailPage extends StatefulWidget {
-  const ServiceDetailPage({required this.serviceId, super.key});
+  const ServiceDetailPage({required this.serviceId, required this.authController, super.key});
+
+  final AuthController authController;
 
   final String serviceId;
 
@@ -738,7 +742,16 @@ class _ServiceDetailPageState extends State<ServiceDetailPage> {
     );
   }
 
-  void _openBooking(ServiceModel service) {
+  Future<void> _openBooking(ServiceModel service) async {
+    if (widget.authController.status != AuthStatus.authenticated) {
+      await Navigator.of(context).push(
+        MaterialPageRoute(builder: (_) => LoginPage(controller: widget.authController)),
+      );
+      // Guest must authenticate before opening the booking form.
+      // Do not navigate to booking automatically after login.
+      return;
+    }
+    if (!mounted) return;
     Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (_) => CreateBookingPage(initialServiceId: service.id),

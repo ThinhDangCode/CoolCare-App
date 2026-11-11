@@ -145,11 +145,6 @@ class AccountPage extends StatelessWidget {
           ),
 
           _AccountRow(
-            icon: Icons.local_offer_outlined,
-            label: context.tr('availableOffers'),
-          ),
-
-          _AccountRow(
             icon: Icons.receipt_long_outlined,
             label: context.tr('paymentHistory'),
             onTap: () => Navigator.of(context).push(MaterialPageRoute(

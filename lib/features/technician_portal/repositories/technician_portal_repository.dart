@@ -40,6 +40,27 @@ class TechnicianPortalRepository {
     return session.token;
   }
 
+  Future<Map<String, dynamic>> travelStatus(String bookingId) async {
+    final response = await _apiClient.get('/booking-travel/$bookingId', bearerToken: await _token());
+    return Map<String, dynamic>.from(response['data'] as Map);
+  }
+
+  Future<Map<String, dynamic>> estimateTravel(String bookingId,
+      double latitude, double longitude) async {
+    final response = await _apiClient.post('/booking-travel/$bookingId/estimate',
+      bearerToken: await _token(),
+      body: {'latitude': latitude, 'longitude': longitude});
+    return Map<String, dynamic>.from(response['data'] as Map);
+  }
+
+  Future<Map<String, dynamic>> updateTravel(String bookingId, String action,
+      double? latitude, double? longitude) async {
+    final response = await _apiClient.post('/booking-travel/$bookingId/$action',
+      bearerToken: await _token(),
+      body: action == 'arrive' ? <String, dynamic>{} : {'latitude': latitude, 'longitude': longitude});
+    return Map<String, dynamic>.from(response['data'] as Map);
+  }
+
   Future<TechnicianDashboard> dashboard() async {
     final response = await _apiClient.get(
       '/technician-portal/dashboard',

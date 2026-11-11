@@ -30,8 +30,9 @@ class _BlogListPageState extends State<BlogListPage> {
   }
 
   void _load() {
+    final request = _repository.getPublishedBlogs(search: _search.text);
     setState(() {
-      _articles = _repository.getPublishedBlogs(search: _search.text);
+      _articles = request;
     });
   }
 
@@ -214,11 +215,8 @@ class _BlogDetailPageState extends State<BlogDetailPage> {
     _article = _repository.getBlogDetail(widget.articleId);
   }
 
-  void _retry() {
-    setState(() {
-      _article = _repository.getBlogDetail(widget.articleId);
-    });
-  }
+  void _retry() =>
+      setState(() => _article = _repository.getBlogDetail(widget.articleId));
 
   @override
   Widget build(BuildContext context) => Scaffold(

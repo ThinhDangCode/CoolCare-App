@@ -94,6 +94,7 @@ void main() {
         home: ViewJobRequestDetailPage(
           request: _request(),
           repository: repository,
+          currentPosition: () async => (latitude: 10.0, longitude: 105.0),
         ),
       ),
     );
@@ -101,6 +102,10 @@ void main() {
     await tester.tap(find.text('Accept Job'));
     await tester.pumpAndSettle();
     await tester.tap(find.widgetWithText(FilledButton, 'Accept Job').last);
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(find.text('Đã nhận việc'), findsOneWidget);
+    await tester.tap(find.text('Đóng'));
     await tester.pumpAndSettle();
 
     expect(repository.requestId, 'request-id');
@@ -118,6 +123,7 @@ void main() {
         ),
       ),
     );
+    await tester.pump();
 
     await tester.tap(find.text('Complete Job'));
     await tester.pumpAndSettle();
@@ -225,6 +231,21 @@ class _FakeTechnicianPortalRepository extends TechnicianPortalRepository {
       bookingStatus: 'WAITING_CONFIRMATION',
     );
   }
+
+  @override
+  Future<Map<String, dynamic>> estimateTravel(
+    String bookingId, double latitude, double longitude,
+  ) async => {
+    'status': 'NOT_STARTED',
+    'predeparture_duration_seconds': 1800,
+  };
+
+  @override
+  Future<Map<String, dynamic>> travelStatus(String bookingId) async => {
+    'status': 'ARRIVED',
+    'early_start_allowed': true,
+    'scheduled_at': DateTime.now().add(const Duration(days: 1)).toIso8601String(),
+  };
 
   @override
   Future<CancelAcceptedJobResult> cancelAcceptedJob(
