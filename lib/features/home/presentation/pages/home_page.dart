@@ -3,7 +3,6 @@ import 'dart:async';
 
 import '../../../../app/theme/coolcare_theme.dart';
 import '../../../../app/localization/app_strings.dart';
-import '../../../../app/localization/service_text.dart';
 import '../../../../app/preferences/preference_actions.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../account/pages/account_page.dart';
@@ -19,8 +18,6 @@ import '../../../chat/chat_unread.dart';
 import '../../../notifications/pages/customer_notifications_page.dart';
 import '../../../notifications/widgets/foreground_notifications.dart';
 import '../../../services/controllers/service_controller.dart';
-import '../../../services/models/service_model.dart';
-import '../../../services/pages/service_detail_page.dart';
 import '../../../services/pages/services_page.dart';
 
 class HomePage extends StatefulWidget {
@@ -473,10 +470,14 @@ class _HomeBodyState extends State<_HomeBody> {
     }
   }
 
-  void _openService(ServiceModel service) {
+  void _openCategory(String categoryId, String categoryName) {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) => ServiceDetailPage(serviceId: service.id, authController: widget.controller),
+        builder: (_) => ServicesPage(
+          authController: widget.controller,
+          initialCategoryId: categoryId,
+          initialCategoryName: categoryName,
+        ),
       ),
     );
   }
@@ -611,9 +612,12 @@ class _HomeBodyState extends State<_HomeBody> {
       );
     }
 
-    final services = _serviceController.allServices.take(4).toList();
+    // Use actual active categories and service.categoryId from the API.
+    final categories = _serviceController.categories.where((category) =>
+      _serviceController.allServices.any((service) => service.categoryId == category.id)
+    ).toList();
 
-    if (services.isEmpty) {
+    if (categories.isEmpty) {
       return SizedBox(
         width: double.infinity,
         child: Text(
@@ -626,17 +630,16 @@ class _HomeBodyState extends State<_HomeBody> {
     return LayoutBuilder(
       builder: (context, constraints) {
         final itemWidth = (constraints.maxWidth - 12) / 2;
-
         return Wrap(
           spacing: 12,
           runSpacing: 12,
-          children: services.map((service) {
+          children: categories.map((category) {
             return SizedBox(
               width: itemWidth,
               child: _ServiceShortcut(
-                icon: _serviceIcon(service.name),
-                label: localizedServiceName(context, service.name),
-                onTap: () => _openService(service),
+                icon: Icons.ac_unit_outlined,
+                label: category.name,
+                onTap: () => _openCategory(category.id, category.name),
               ),
             );
           }).toList(),
@@ -645,27 +648,6 @@ class _HomeBodyState extends State<_HomeBody> {
     );
   }
 
-  IconData _serviceIcon(String name) {
-    final value = name.toLowerCase();
-
-    if (value.contains('vệ sinh')) {
-      return Icons.cleaning_services_outlined;
-    }
-
-    if (value.contains('kiểm tra') || value.contains('chẩn đoán')) {
-      return Icons.search_rounded;
-    }
-
-    if (value.contains('bảo dưỡng')) {
-      return Icons.settings_suggest_outlined;
-    }
-
-    if (value.contains('sửa chữa') || value.contains('sửa')) {
-      return Icons.build_outlined;
-    }
-
-    return Icons.home_repair_service_outlined;
-  }
 }
 
 // ============================================================

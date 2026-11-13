@@ -22,8 +22,7 @@ class ServiceController extends ChangeNotifier {
 
   List<ServiceModel> services = [];
 
-  // Category vẫn giữ vì có thể dùng ở chức năng khác.
-  // ServicesPage hiện tại KHÔNG dùng category để filter.
+  // Categories support the home shortcuts and category-filtered service pages.
   List<ServiceCategoryModel> categories = [];
 
   List<Map<String, dynamic>> reviews = [];

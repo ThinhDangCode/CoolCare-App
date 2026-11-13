@@ -10,9 +10,11 @@ import '../models/service_model.dart';
 import 'service_detail_page.dart';
 
 class ServicesPage extends StatefulWidget {
-  const ServicesPage({required this.authController, super.key});
+  const ServicesPage({required this.authController, this.initialCategoryId, this.initialCategoryName, super.key});
 
   final AuthController authController;
+  final String? initialCategoryId;
+  final String? initialCategoryName;
 
   @override
   State<ServicesPage> createState() => _ServicesPageState();
@@ -38,6 +40,14 @@ class _ServicesPageState extends State<ServicesPage> {
       setState(() {});
     }
   }
+
+  List<ServiceModel> get _visibleServices => widget.initialCategoryId == null
+      ? _controller.services
+      : _controller.services.where((service) => service.categoryId == widget.initialCategoryId).toList();
+
+  List<ServiceModel> get _visibleAllServices => widget.initialCategoryId == null
+      ? _controller.allServices
+      : _controller.allServices.where((service) => service.categoryId == widget.initialCategoryId).toList();
 
   void _onSearchChanged(String value) {
     _controller.searchServices(value);
@@ -98,27 +108,42 @@ class _ServicesPageState extends State<ServicesPage> {
   // ============================================================
 
   Widget _buildHeader() {
+    final canGoBack = widget.initialCategoryId != null && Navigator.of(context).canPop();
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 18, 20, 6),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      padding: const EdgeInsets.fromLTRB(12, 18, 20, 6),
+      child: Row(
         children: [
-          Text(
-            context.tr('acServices'),
-            style: TextStyle(
-              color: context.appText,
-              fontSize: 22,
-              fontWeight: FontWeight.w800,
-              letterSpacing: -0.4,
-            ),
-          ),
-          const SizedBox(height: 5),
-          Text(
-            context.tr('chooseService'),
-            style: TextStyle(
-              color: context.appMuted,
-              fontSize: 11,
-              height: 1.35,
+          if (canGoBack)
+            IconButton(
+              icon: const Icon(Icons.arrow_back_ios_new_rounded),
+              tooltip: context.tr('back'),
+              onPressed: () => Navigator.of(context).pop(),
+            )
+          else
+            const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  widget.initialCategoryName ?? context.tr('acServices'),
+                  style: TextStyle(
+                    color: context.appText,
+                    fontSize: 22,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: -0.4,
+                  ),
+                ),
+                const SizedBox(height: 5),
+                Text(
+                  context.tr('chooseService'),
+                  style: TextStyle(
+                    color: context.appMuted,
+                    fontSize: 11,
+                    height: 1.35,
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -198,7 +223,7 @@ class _ServicesPageState extends State<ServicesPage> {
             },
           ),
 
-          ..._controller.allServices.map((service) {
+          ..._visibleAllServices.map((service) {
             return _ServiceChip(
               label: _chipName(service.name),
               selected: _controller.selectedServiceId == service.id,
@@ -212,28 +237,7 @@ class _ServicesPageState extends State<ServicesPage> {
     );
   }
 
-  String _chipName(String name) {
-    final value = name.toLowerCase();
-    final english = Localizations.localeOf(context).languageCode == 'en';
-
-    if (value.contains('vệ sinh')) {
-      return english ? 'Cleaning' : 'Vệ sinh';
-    }
-
-    if (value.contains('kiểm tra') || value.contains('chẩn đoán')) {
-      return english ? 'Inspection' : 'Kiểm tra';
-    }
-
-    if (value.contains('bảo dưỡng')) {
-      return english ? 'Maintenance' : 'Bảo dưỡng';
-    }
-
-    if (value.contains('sửa chữa')) {
-      return english ? 'Repair' : 'Sửa chữa';
-    }
-
-    return localizedServiceName(context, name);
-  }
+  String _chipName(String name) => name;
 
   // ============================================================
   // BODY
@@ -248,7 +252,7 @@ class _ServicesPageState extends State<ServicesPage> {
       return _buildErrorState();
     }
 
-    if (_controller.services.isEmpty) {
+    if (_visibleServices.isEmpty) {
       return _buildEmptyState();
     }
 
@@ -312,6 +316,7 @@ class _ServicesPageState extends State<ServicesPage> {
 
   Widget _buildEmptyState() {
     final hasFilter =
+        widget.initialCategoryId != null ||
         _controller.searchKeyword.isNotEmpty ||
         _controller.selectedServiceId != null;
 
@@ -369,7 +374,7 @@ class _ServicesPageState extends State<ServicesPage> {
       child: ListView.separated(
         physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
-        itemCount: _controller.services.length + 1,
+        itemCount: _visibleServices.length + 1,
         separatorBuilder: (_, index) =>
             index == 0 ? const SizedBox(height: 9) : const SizedBox(height: 10),
         itemBuilder: (context, index) {
@@ -377,7 +382,7 @@ class _ServicesPageState extends State<ServicesPage> {
             return _buildListHeader();
           }
 
-          final service = _controller.services[index - 1];
+          final service = _visibleServices[index - 1];
 
           return _ServiceCard(
             service: service,
@@ -417,8 +422,8 @@ class _ServicesPageState extends State<ServicesPage> {
         ),
         const SizedBox(width: 8),
         Text(
-          '${_controller.services.length} '
-          '${_controller.services.length == 1 ? 'service' : 'services'}',
+          '${_visibleServices.length} '
+          '${Localizations.localeOf(context).languageCode == 'vi' ? 'dịch vụ' : (_visibleServices.length == 1 ? 'service' : 'services')}',
           style: TextStyle(
             color: context.appMuted,
             fontSize: 9,

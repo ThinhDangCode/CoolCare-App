@@ -21,7 +21,7 @@ void main() {
     LanguageState.code = 'en';
   });
 
-  testWidgets('service card uses English catalog text when English is selected',
+  testWidgets('service card preserves Admin catalog text in both locales',
       (tester) async {
     const service = ServiceModel(
       id: 'service-1',
@@ -46,11 +46,11 @@ void main() {
     );
 
     await tester.pumpWidget(app('en'));
-    expect(find.text('Inspection and diagnosis'), findsOneWidget);
-    expect(find.textContaining('Check operation, power and airflow'), findsOneWidget);
-    expect(find.text('Kiểm tra/chẩn đoán'), findsNothing);
+    expect(find.text('Kiểm tra/chẩn đoán'), findsOneWidget);
+    expect(find.textContaining('Kiểm tra tình trạng vận hành'), findsOneWidget);
 
     await tester.pumpWidget(app('vi'));
     expect(find.text('Kiểm tra/chẩn đoán'), findsOneWidget);
+    expect(find.textContaining('Kiểm tra tình trạng vận hành'), findsOneWidget);
   });
 }
