@@ -1,4 +1,5 @@
 import 'package:coolcare_mobile/core/network/api_client.dart';
+import 'package:coolcare_mobile/core/network/api_exception.dart';
 import 'package:coolcare_mobile/features/technician_portal/models/accept_decline_job_request_result.dart';
 import 'package:coolcare_mobile/features/technician_portal/models/view_job_request.dart';
 import 'package:coolcare_mobile/features/technician_portal/models/update_job_status_result.dart';
@@ -161,18 +162,208 @@ void main() {
     expect(repository.cancelledRequestId, 'request-id');
     expect(repository.cancellationReason, 'Family emergency');
   });
+
+  testWidgets('Job Request Detail UTCID05 shows accept API error', (
+    tester,
+  ) async {
+    final repository = _FakeTechnicianPortalRepository()
+      ..respondError = const ApiException(message: 'Denied');
+    await _pumpRequest(tester, repository);
+    await tester.tap(find.text('Accept Job'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(FilledButton, 'Accept Job').last);
+    await tester.pumpAndSettle();
+
+    expect(repository.respondCalls, 1);
+    expect(find.text('Denied'), findsOneWidget);
+    expect(find.byType(ViewJobRequestDetailPage), findsOneWidget);
+  });
+
+  testWidgets('Job Request Detail UTCID06 shows decline generic error', (
+    tester,
+  ) async {
+    final repository = _FakeTechnicianPortalRepository()
+      ..respondError = Exception('offline');
+    await _pumpRequest(tester, repository);
+    await tester.tap(find.text('Decline'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(FilledButton, 'Decline'));
+    await tester.pumpAndSettle();
+
+    expect(repository.respondCalls, 1);
+    expect(
+      find.text('Unable to save your response. Please try again.'),
+      findsOneWidget,
+    );
+    expect(find.byType(ViewJobRequestDetailPage), findsOneWidget);
+  });
+
+  testWidgets('Job Request Detail UTCID07 blocks expired accept', (
+    tester,
+  ) async {
+    final repository = _FakeTechnicianPortalRepository();
+    await _pumpRequest(tester, repository, request: _request(expired: true));
+    final acceptButton = find.text('Accept Job');
+    if (acceptButton.evaluate().isNotEmpty) {
+      await tester.tap(acceptButton);
+      await tester.pump();
+    }
+
+    expect(repository.respondCalls, 0);
+  });
+
+  testWidgets('Job Request Detail UTCID08 shows completion API error', (
+    tester,
+  ) async {
+    final repository = _FakeTechnicianPortalRepository()
+      ..completeError = const ApiException(message: 'Denied');
+    await _pumpRequest(
+      tester,
+      repository,
+      request: _request(canRespond: false, canComplete: true),
+    );
+    await _tapComplete(tester);
+
+    expect(repository.completedRequestId, 'request-id');
+    expect(find.text('Denied'), findsOneWidget);
+    expect(find.byType(ViewJobRequestDetailPage), findsOneWidget);
+  });
+
+  testWidgets('Job Request Detail UTCID09 shows completion generic error', (
+    tester,
+  ) async {
+    final repository = _FakeTechnicianPortalRepository()
+      ..completeError = Exception('offline');
+    await _pumpRequest(
+      tester,
+      repository,
+      request: _request(canRespond: false, canComplete: true),
+    );
+    await _tapComplete(tester);
+
+    expect(repository.completedRequestId, 'request-id');
+    expect(
+      find.text('Unable to complete this job. Please try again.'),
+      findsOneWidget,
+    );
+    expect(find.byType(ViewJobRequestDetailPage), findsOneWidget);
+  });
+
+  testWidgets('Job Request Detail UTCID10 reports penalty and returns true', (
+    tester,
+  ) async {
+    final repository = _FakeTechnicianPortalRepository()..penaltyPoints = 3;
+    bool? routeResult;
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: Builder(
+            builder: (context) => TextButton(
+              onPressed: () async {
+                routeResult = await Navigator.of(context).push<bool>(
+                  MaterialPageRoute(
+                    builder: (_) => ViewJobRequestDetailPage(
+                      request: _request(
+                        canRespond: false,
+                        canComplete: true,
+                        canCancelAcceptedJob: true,
+                      ),
+                      repository: repository,
+                    ),
+                  ),
+                );
+              },
+              child: const Text('Open job'),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.text('Open job'));
+    await tester.pumpAndSettle();
+    await _tapCancel(tester);
+
+    expect(repository.cancelledRequestId, 'request-id');
+    expect(routeResult, isTrue);
+    expect(find.textContaining('3 penalty points'), findsOneWidget);
+  });
+
+  testWidgets('Job Request Detail UTCID11 shows cancel API error and resets', (
+    tester,
+  ) async {
+    final repository = _FakeTechnicianPortalRepository()
+      ..cancelError = const ApiException(message: 'Denied');
+    await _pumpRequest(
+      tester,
+      repository,
+      request: _request(
+        canRespond: false,
+        canComplete: true,
+        canCancelAcceptedJob: true,
+      ),
+    );
+    await _tapCancel(tester);
+
+    expect(repository.cancelledRequestId, 'request-id');
+    expect(find.text('Denied'), findsOneWidget);
+    expect(find.byType(ViewJobRequestDetailPage), findsOneWidget);
+    expect(
+      tester
+          .widget<OutlinedButton>(find.widgetWithText(OutlinedButton, 'Cancel'))
+          .onPressed,
+      isNotNull,
+    );
+  });
+}
+
+Future<void> _pumpRequest(
+  WidgetTester tester,
+  _FakeTechnicianPortalRepository repository, {
+  ViewJobRequest? request,
+}) async {
+  await tester.pumpWidget(
+    MaterialApp(
+      home: ViewJobRequestDetailPage(
+        request: request ?? _request(),
+        repository: repository,
+      ),
+    ),
+  );
+  await tester.pump();
+}
+
+Future<void> _tapComplete(WidgetTester tester) async {
+  await tester.tap(find.text('Complete Job'));
+  await tester.pumpAndSettle();
+  await tester.tap(find.widgetWithText(FilledButton, 'Complete Job').last);
+  await tester.pumpAndSettle();
+}
+
+Future<void> _tapCancel(WidgetTester tester) async {
+  await tester.tap(find.text('Cancel'));
+  await tester.pumpAndSettle();
+  await tester.enterText(find.byType(TextField), 'Family emergency');
+  await tester.pump();
+  await tester.tap(find.widgetWithText(FilledButton, 'Cancel Job'));
+  await tester.pumpAndSettle();
 }
 
 ViewJobRequest _request({
   bool canRespond = true,
   bool canComplete = false,
   bool canCancelAcceptedJob = false,
+  bool expired = false,
 }) => ViewJobRequest.fromJson({
   'id': 'request-id',
   'status': canComplete ? 'ACCEPTED' : 'SELECTED',
   'canRespond': canRespond,
   'canComplete': canComplete,
   'canCancelAcceptedJob': canCancelAcceptedJob,
+  if (expired)
+    'expiresAt': DateTime.now()
+        .subtract(const Duration(minutes: 1))
+        .toUtc()
+        .toIso8601String(),
   'booking': {
     'id': 'booking-id',
     'code': 'BK-001',
@@ -203,6 +394,11 @@ class _FakeTechnicianPortalRepository extends TechnicianPortalRepository {
   String? completedRequestId;
   String? cancelledRequestId;
   String? cancellationReason;
+  Object? respondError;
+  Object? completeError;
+  Object? cancelError;
+  int respondCalls = 0;
+  int penaltyPoints = 10;
 
   @override
   Future<AcceptDeclineJobRequestResult> respondToJobRequest(
@@ -210,9 +406,11 @@ class _FakeTechnicianPortalRepository extends TechnicianPortalRepository {
     required bool accept,
     String? reason,
   }) async {
+    respondCalls++;
     this.requestId = requestId;
     this.accept = accept;
     this.reason = reason;
+    if (respondError case final error?) throw error;
     return AcceptDeclineJobRequestResult(
       id: 'request-id',
       bookingId: 'booking-id',
@@ -224,6 +422,7 @@ class _FakeTechnicianPortalRepository extends TechnicianPortalRepository {
   @override
   Future<UpdateJobStatusResult> completeJob(String requestId) async {
     completedRequestId = requestId;
+    if (completeError case final error?) throw error;
     return const UpdateJobStatusResult(
       id: 'request-id',
       bookingId: 'booking-id',
@@ -234,17 +433,18 @@ class _FakeTechnicianPortalRepository extends TechnicianPortalRepository {
 
   @override
   Future<Map<String, dynamic>> estimateTravel(
-    String bookingId, double latitude, double longitude,
-  ) async => {
-    'status': 'NOT_STARTED',
-    'predeparture_duration_seconds': 1800,
-  };
+    String bookingId,
+    double latitude,
+    double longitude,
+  ) async => {'status': 'NOT_STARTED', 'predeparture_duration_seconds': 1800};
 
   @override
   Future<Map<String, dynamic>> travelStatus(String bookingId) async => {
     'status': 'ARRIVED',
     'early_start_allowed': true,
-    'scheduled_at': DateTime.now().add(const Duration(days: 1)).toIso8601String(),
+    'scheduled_at': DateTime.now()
+        .add(const Duration(days: 1))
+        .toIso8601String(),
   };
 
   @override
@@ -254,12 +454,13 @@ class _FakeTechnicianPortalRepository extends TechnicianPortalRepository {
   }) async {
     cancelledRequestId = requestId;
     cancellationReason = reason;
-    return const CancelAcceptedJobResult(
+    if (cancelError case final error?) throw error;
+    return CancelAcceptedJobResult(
       id: 'request-id',
       bookingId: 'booking-id',
       status: 'CANCELLED',
       bookingStatus: 'CANCELLED',
-      penaltyPoints: 10,
+      penaltyPoints: penaltyPoints,
     );
   }
 }

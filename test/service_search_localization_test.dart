@@ -56,4 +56,22 @@ void main() {
       expect(controller.services, isEmpty);
     },
   );
+
+  test(
+    'Services Tab UTCID02 restores all services when search is cleared',
+    () async {
+      final controller = ServiceController(apiClient: _CatalogClient());
+      addTearDown(controller.dispose);
+      await controller.loadInitialData();
+
+      controller.searchServices('repair');
+      expect(controller.services.map((service) => service.id), ['repair']);
+      controller.searchServices('');
+      expect(controller.services.map((service) => service.id), [
+        'repair',
+        'cleaning',
+      ]);
+      expect(controller.searchKeyword, isEmpty);
+    },
+  );
 }

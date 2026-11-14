@@ -35,4 +35,16 @@ void main() {
     expect(status.isOnline, isFalse);
     expect(status.canReceiveJobs, isFalse);
   });
+
+  test('Availability UTCID02 tolerates an invalid updated date', () {
+    final status = SetAvailabilityStatus.fromJson({
+      'availability_status': 'OFFLINE',
+      'can_receive_jobs': false,
+      'updated_at': 'not-a-date',
+    });
+    expect(status.status, 'OFFLINE');
+    expect(status.isOnline, isFalse);
+    expect(status.canReceiveJobs, isFalse);
+    expect(status.updatedAt, isNull);
+  });
 }

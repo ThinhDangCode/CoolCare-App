@@ -87,6 +87,36 @@ void main() {
     expect(controller.user?.email, 'customer@coolcare.test');
   });
 
+  test('Customer Login UTCID02 leaves failed login unauthenticated', () async {
+    final repository = _FakeAuthRepository()
+      ..loginError = const ApiException(message: 'Invalid credentials');
+    final controller = AuthController(repository);
+
+    expect(
+      await controller.login(email: 'wrong@example.test', password: 'bad'),
+      isFalse,
+    );
+    expect(controller.status, AuthStatus.unauthenticated);
+    expect(controller.user, isNull);
+    expect(controller.errorMessage, 'Invalid credentials');
+    expect(controller.isBusy, isFalse);
+  });
+
+  test(
+    'Google Login UTCID02 leaves failed Google login unauthenticated',
+    () async {
+      final repository = _FakeAuthRepository()
+        ..googleError = const ApiException(message: 'Google sign-in cancelled');
+      final controller = AuthController(repository);
+
+      expect(await controller.loginWithGoogle(), isFalse);
+      expect(controller.status, AuthStatus.unauthenticated);
+      expect(controller.user, isNull);
+      expect(controller.errorMessage, 'Google sign-in cancelled');
+      expect(controller.isBusy, isFalse);
+    },
+  );
+
   test('forgot password completes OTP and reset sequence', () async {
     final repository = _FakeAuthRepository();
     final controller = AuthController(repository);
@@ -115,6 +145,8 @@ class _FakeAuthRepository implements AuthRepository {
   bool passwordReset = false;
   bool localSessionCleared = false;
   ApiException? refreshError;
+  ApiException? loginError;
+  ApiException? googleError;
 
   static const _user = AuthUser(
     id: 'user-id',
@@ -128,11 +160,13 @@ class _FakeAuthRepository implements AuthRepository {
     required String email,
     required String password,
   }) async {
+    if (loginError case final error?) throw error;
     return const AuthSession(token: 'token', user: _user);
   }
 
   @override
   Future<AuthSession> loginWithGoogle() async {
+    if (googleError case final error?) throw error;
     return const AuthSession(token: 'google-token', user: _user);
   }
 
