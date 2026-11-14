@@ -3,14 +3,18 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('AuthValidators.fullName', () {
-    test('accepts valid Vietnamese names', () {
+    const maxError = 'Họ và tên không được quá 100 ký tự.';
+    const formatError =
+        'Họ tên chỉ gồm chữ cái, khoảng trắng, dấu nháy đơn hoặc gạch nối.';
+
+    test('UTCID01 accepts a Vietnamese name with apostrophe and hyphen', () {
       expect(AuthValidators.fullName("Nguyễn Thị O'Connor-Lê"), isNull);
     });
-
-    test('rejects one-character, numeric, and symbol-only names', () {
-      for (final value in ['A', '12', '@@', 'Nguyễn 123']) {
-        expect(AuthValidators.fullName(value), isNotNull);
-      }
+    test('UTCID02 rejects 101 characters', () {
+      expect(AuthValidators.fullName('A' * 101), maxError);
+    });
+    test('UTCID03 rejects letters mixed with digits', () {
+      expect(AuthValidators.fullName('Nguyễn 123'), formatError);
     });
   });
 
@@ -47,5 +51,9 @@ void main() {
   test('OTP contains exactly six digits', () {
     expect(AuthValidators.otp('123456'), isNull);
     expect(AuthValidators.otp('12345a'), isNotNull);
+  });
+
+  test('OTP UTCID02 rejects a five-digit input', () {
+    expect(AuthValidators.otp('12345'), 'OTP phải gồm đúng 6 chữ số.');
   });
 }

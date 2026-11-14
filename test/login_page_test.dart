@@ -42,6 +42,25 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('Services Tab UTCID02 clears entered search text', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(390, 932));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    final controller = AuthController(_NoopAuthRepository());
+    await controller.initialize();
+    await tester.pumpWidget(_buildVietnameseApp(controller));
+
+    await tester.tap(find.text('Khám phá dịch vụ'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField), 'repair');
+    await tester.pump();
+    expect(find.byIcon(Icons.close_rounded), findsOneWidget);
+
+    await tester.tap(find.byIcon(Icons.close_rounded));
+    await tester.pump();
+    expect(tester.widget<TextField>(find.byType(TextField)).controller!.text, isEmpty);
+    expect(find.byIcon(Icons.close_rounded), findsNothing);
+  });
+
   testWidgets('authenticated customer can open Account and Personal Profile', (
     tester,
   ) async {
@@ -69,6 +88,36 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Hồ sơ cá nhân'), findsOneWidget);
     expect(find.text('nguyenvana@gmail.com'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('Profile UTCID03 shows gender and a nonempty phone', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(390, 932));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    const user = AuthUser(
+      id: 'customer-1',
+      email: 'nguyenvana@gmail.com',
+      fullName: 'Nguyễn Văn A',
+      role: 'CUSTOMER',
+      gender: 'MALE',
+      phone: '0900000000',
+    );
+    final controller = AuthController(
+      _NoopAuthRepository(
+        session: const AuthSession(token: 'test-token', user: user),
+      ),
+    );
+    await controller.initialize();
+    await tester.pumpWidget(_buildVietnameseApp(controller));
+    await tester.tap(find.text('Tài khoản'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Xem hồ sơ →'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Nam'), findsOneWidget);
+    expect(find.text('0900000000'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
