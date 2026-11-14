@@ -22,7 +22,8 @@ class ServiceController extends ChangeNotifier {
 
   List<ServiceModel> services = [];
 
-  // Categories support the home shortcuts and category-filtered service pages.
+  // Category vẫn giữ vì có thể dùng ở chức năng khác.
+  // ServicesPage hiện tại KHÔNG dùng category để filter.
   List<ServiceCategoryModel> categories = [];
 
   List<Map<String, dynamic>> reviews = [];
@@ -346,6 +347,21 @@ class ServiceController extends ChangeNotifier {
       }
 
       selectedService = service;
+
+      // Reviews are optional: an unavailable review API must not hide service details.
+      try {
+        final reviewResponse = await _apiClient.get(
+          '${ApiEndpoints.serviceDetail(cleanId)}/reviews',
+        );
+        if (_disposed) return;
+        reviews = _extractList(reviewResponse)
+            .whereType<Map<String, dynamic>>()
+            .toList();
+      } catch (error) {
+        if (_disposed) return;
+        reviews = [];
+        debugPrint('Unable to load service reviews: $error');
+      }
     } catch (error) {
       if (_disposed) return;
       detailErrorMessage = _cleanErrorMessage(error);
