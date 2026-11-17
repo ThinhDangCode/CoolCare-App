@@ -2,6 +2,7 @@ import 'booking_travel_panel.dart';
 import 'dart:async';
 
 import '../../chat/booking_chat_page.dart';
+import '../../chat/chat_unread.dart';
 import '../../payments/pages/payment_page.dart';
 import '../../payments/repositories/payment_repository.dart';
 import '../../quotations/pages/quotation_page.dart';
@@ -288,6 +289,10 @@ class _ViewJobRequestDetailPageState extends State<ViewJobRequestDetailPage> {
   @override
   void initState() {
     super.initState();
+    // Start the existing unread-message listener for this detail screen.
+    unawaited(ChatUnread.instance.start().catchError((Object error) {
+      debugPrint('[CHAT UNREAD] Cannot start job detail listener: $error');
+    }));
     _loadArrival();
     if (widget.request.status == 'ACCEPTED') {
       _deadlineTimer = Timer.periodic(const Duration(seconds: 10), (_) {
@@ -363,7 +368,39 @@ class _ViewJobRequestDetailPageState extends State<ViewJobRequestDetailPage> {
           if (widget.request.status == 'ACCEPTED' || widget.request.status == 'COMPLETED')
             IconButton(
               tooltip: 'Chat',
-              icon: const Icon(Icons.chat_bubble_outline_rounded),
+              icon: AnimatedBuilder(
+                animation: ChatUnread.instance,
+                builder: (context, _) {
+                  final unread = ChatUnread.instance.rooms.any(
+                    (room) =>
+                        room.bookingId == widget.request.booking.id &&
+                        ChatUnread.instance.isUnread(room),
+                  );
+                  return Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      const Icon(Icons.chat_bubble_outline_rounded),
+                      if (unread)
+                        Positioned(
+                          right: -3,
+                          top: -3,
+                          child: Container(
+                            width: 10,
+                            height: 10,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFE53935),
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: Theme.of(context).scaffoldBackgroundColor,
+                                width: 1.5,
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
+                  );
+                },
+              ),
               onPressed: () => Navigator.of(context).push(MaterialPageRoute(
                 builder: (_) => BookingChatPage(bookingId: widget.request.booking.id),
               )),
