@@ -146,6 +146,14 @@ class PaymentRepository {
         .toList();
   }
 
+  Future<void> closeForRetry(String paymentId, {bool cashNotReceived = false}) async {
+    await _api.post(
+      '/payments/${_checkedPaymentId(paymentId)}/close-for-retry',
+      bearerToken: await _token(),
+      body: {'cashNotReceived': cashNotReceived},
+    );
+  }
+
   Future<void> confirmCash(
       String paymentId,
       ) async {

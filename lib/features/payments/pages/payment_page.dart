@@ -276,6 +276,38 @@ class _PaymentPageState extends State<PaymentPage>
     });
   }
 
+  Future<void> _changePayment(Map<String, dynamic> payment) async {
+    final isCash = payment['payment_kind'] == 'CASH';
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(tr('Đổi phương thức thanh toán', 'Change payment method')),
+        content: Text(isCash
+            ? tr('Chỉ tiếp tục nếu bạn CHƯA nhận tiền mặt từ khách. Xác nhận hủy lượt tiền mặt hiện tại?',
+                'Continue only if you have NOT received cash. Cancel this cash attempt?')
+            : tr('CoolCare sẽ kiểm tra giao dịch với cổng thanh toán. Chỉ khi xác nhận lượt cũ đã đóng, bạn mới được chọn phương thức khác.',
+                'CoolCare will verify the old payment with the gateway before allowing another method.')),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(dialogContext, false),
+              child: Text(tr('Quay lại', 'Back'))),
+          FilledButton(onPressed: () => Navigator.pop(dialogContext, true),
+              child: Text(tr('Kiểm tra và đổi', 'Check and change'))),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+    await _run(() async {
+      await _repo.closeForRetry('${payment['id']}', cashNotReceived: isCash);
+      if (!mounted) return;
+      setState(() {
+        _checkoutUrl = null;
+        _techQrData = null;
+        _notice = tr('Lượt cũ đã đóng. Hãy chọn phương thức thanh toán mới.',
+            'The old attempt is closed. Choose another payment method.');
+      });
+    });
+  }
+
   Widget _messageCard(
       String message, {
         bool error = false,
@@ -324,7 +356,9 @@ class _PaymentPageState extends State<PaymentPage>
             _checkoutUrl ??
             (storedIsLink ? stored : null))
         : null;
-    final hasQr = qrData != null && qrData.isNotEmpty;
+    final expiresAt = DateTime.tryParse('${current?['qr_expires_at'] ?? ''}');
+    final qrExpired = expiresAt != null && DateTime.now().isAfter(expiresAt);
+    final hasQr = !qrExpired && qrData != null && qrData.isNotEmpty;
     final isCash = current?['payment_kind'] == 'CASH';
     final isWaiting = current != null;
 
@@ -446,6 +480,13 @@ class _PaymentPageState extends State<PaymentPage>
                       ),
                     ],
                   ),
+                  if (qrExpired) ...[
+                    const SizedBox(height: 14),
+                    _messageCard(tr(
+                      'Mã QR đã hết hạn sau 15 phút. CoolCare đang đối soát giao dịch; chỉ tạo lượt mới khi cổng thanh toán xác nhận đã đóng.',
+                      'The QR expired after 15 minutes. Wait for gateway verification before creating another attempt.',
+                    )),
+                  ],
                   if (hasQr) ...[
                     const SizedBox(height: 18),
                     Center(
@@ -511,6 +552,12 @@ class _PaymentPageState extends State<PaymentPage>
                       ],
                     ),
                   ],
+                  const SizedBox(height: 10),
+                  OutlinedButton.icon(
+                    onPressed: _busy ? null : () => _changePayment(current!),
+                    icon: const Icon(Icons.swap_horiz_rounded),
+                    label: Text(tr('Đổi phương thức thanh toán', 'Change payment method')),
+                  ),
                 ],
               ),
             ),
