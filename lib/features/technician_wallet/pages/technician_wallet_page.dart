@@ -1799,6 +1799,9 @@ class _TechnicianTopupCheckoutPageState
 
     final qr = data['qrData']?.toString();
     final url = data['url']?.toString();
+    final expiresAt = DateTime.tryParse('${_topup['expiresAt'] ?? ''}');
+    final qrExpired = expiresAt != null && DateTime.now().isAfter(expiresAt);
+
 
     return Scaffold(
       appBar: AppBar(
@@ -1893,7 +1896,7 @@ class _TechnicianTopupCheckoutPageState
               Center(
                 child: Column(
                   children: [
-                    if (qr != null && qr.isNotEmpty)
+                    if (!qrExpired && qr != null && qr.isNotEmpty)
                       Container(
                         padding: const EdgeInsets.all(14),
                         decoration: BoxDecoration(
@@ -1909,7 +1912,11 @@ class _TechnicianTopupCheckoutPageState
                       ),
                     const SizedBox(height: 16),
                     Text(
-                      qr == null || qr.isEmpty
+                      qrExpired
+                          ? walletText(context,
+                              'Mã QR đã hết hạn sau 15 phút. CoolCare đang kiểm tra kết quả trước khi cho phép tạo lượt nạp mới.',
+                              'The QR expired after 15 minutes. CoolCare is verifying the payment before allowing a new top-up.')
+                          : qr == null || qr.isEmpty
                           ? context.tr(
                         'settlementQrUnavailable',
                       )
@@ -1922,7 +1929,7 @@ class _TechnicianTopupCheckoutPageState
                 ),
               ),
 
-              if (url != null && url.isNotEmpty) ...[
+              if (!qrExpired && url != null && url.isNotEmpty) ...[
                 const SizedBox(height: 14),
                 SelectableText(
                   url,
