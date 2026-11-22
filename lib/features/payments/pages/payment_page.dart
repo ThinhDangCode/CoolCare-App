@@ -554,7 +554,7 @@ class _PaymentPageState extends State<PaymentPage>
                   ],
                   const SizedBox(height: 10),
                   OutlinedButton.icon(
-                    onPressed: _busy ? null : () => _changePayment(current!),
+                    onPressed: _busy ? null : () => _changePayment(current),
                     icon: const Icon(Icons.swap_horiz_rounded),
                     label: Text(tr('Đổi phương thức thanh toán', 'Change payment method')),
                   ),
