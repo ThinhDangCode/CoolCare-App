@@ -54,9 +54,11 @@ class BookingDetailRepository {
     await _api.post('/customer/bookings/$id/voucher/remove', bearerToken: await _token(), body: const {});
   }
 
-  Future<void> reportNoShow(String id, String description) async {
-    await _api.post('/bookings/$id/report-no-show',
-      bearerToken: await _token(), body: {'description': description});
+  Future<void> changeLateTechnician(String id, String reason, DateTime scheduledAt) async {
+    await _api.post('/bookings/$id/change-late-technician',
+      bearerToken: await _token(), body: {
+        'reason': reason, 'scheduledAt': scheduledAt.toUtc().toIso8601String(),
+      });
   }
 
   Future<Map<String, dynamic>> travelStatus(String id) async {

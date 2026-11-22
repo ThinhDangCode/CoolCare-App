@@ -192,51 +192,46 @@ class _BookingDetailPageState extends State<BookingDetailPage> {
     ),
   );
 
-  Future<void> _reportNoShow() async {
+  Future<void> _changeLateTechnician() async {
     final vi = Localizations.localeOf(context).languageCode == 'vi';
-    final reason = TextEditingController();
-    final content = await showDialog<String>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text(vi ? 'Báo kỹ thuật viên không đến' : 'Report technician no-show'),
-        content: TextField(
-          controller: reason,
-          autofocus: true,
-          minLines: 3,
-          maxLines: 5,
-          maxLength: 2000,
-          decoration: InputDecoration(hintText: vi
-              ? 'Mô tả thời gian chờ và tình huống (ít nhất 10 ký tự)'
-              : 'Describe your wait and what happened (at least 10 characters)'),
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(dialogContext),
-            child: Text(vi ? 'Đóng' : 'Cancel')),
-          FilledButton(onPressed: () => Navigator.pop(dialogContext, reason.text.trim()),
-            child: Text(vi ? 'Gửi báo cáo' : 'Submit report')),
-        ],
-      ),
-    );
-    reason.dispose();
-    if (content == null || !mounted) return;
-    if (content.length < 10) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(vi
-        ? 'Vui lòng nhập ít nhất 10 ký tự.' : 'Please enter at least 10 characters.')));
+    final reasonController = TextEditingController();
+    final reason = await showDialog<String>(context: context, builder: (dialogContext) => AlertDialog(
+      title: Text(vi ? 'Đổi thợ do đến trễ' : 'Change late technician'),
+      content: TextField(controller: reasonController, minLines: 2, maxLines: 4,
+        maxLength: 1000, decoration: InputDecoration(hintText: vi
+          ? 'Nhập lý do (ít nhất 10 ký tự)' : 'Reason (at least 10 characters)')),
+      actions: [
+        TextButton(onPressed: () => Navigator.pop(dialogContext), child: Text(vi ? 'Hủy' : 'Cancel')),
+        FilledButton(onPressed: () => Navigator.pop(dialogContext, reasonController.text.trim()),
+          child: Text(vi ? 'Chọn giờ mới' : 'Choose new time')),
+      ],
+    ));
+    reasonController.dispose();
+    if (!mounted || reason == null) return;
+    if (reason.length < 10) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Lý do phải có ít nhất 10 ký tự.')));
+      return;
+    }
+    final now = DateTime.now();
+    final date = await showDatePicker(context: context, initialDate: now.add(const Duration(days: 1)),
+      firstDate: now, lastDate: now.add(const Duration(days: 365)));
+    if (!mounted || date == null) return;
+    final time = await showTimePicker(context: context, initialTime: TimeOfDay.fromDateTime(now.add(const Duration(hours: 1))));
+    if (!mounted || time == null) return;
+    final selected = DateTime(date.year, date.month, date.day, time.hour, time.minute);
+    if (!selected.isAfter(DateTime.now())) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Vui lòng chọn thời gian trong tương lai.')));
       return;
     }
     setState(() => reportingNoShow = true);
     try {
-      await repo.reportNoShow(widget.bookingId, content);
+      await repo.changeLateTechnician(widget.bookingId, reason, selected);
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(vi
-        ? 'Đã gửi báo cáo để quản trị viên xác minh.'
-        : 'Report submitted for admin review.')));
-    } catch (_) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(vi
-          ? 'Không gửi được báo cáo hoặc bạn đã báo trước đó.'
-          : 'Unable to submit or already reported.')));
-      }
+        ? 'Đã đổi giờ. Vui lòng chọn kỹ thuật viên mới.' : 'Choose a new technician.')));
+      _reload();
+    } catch (error) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$error')));
     } finally {
       if (mounted) setState(() => reportingNoShow = false);
     }
@@ -653,9 +648,9 @@ class _BookingDetailPageState extends State<BookingDetailPage> {
                 Padding(
                   padding: const EdgeInsets.only(bottom: 12),
                   child: OutlinedButton.icon(
-                    onPressed: reportingNoShow ? null : _reportNoShow,
+                    onPressed: reportingNoShow ? null : _changeLateTechnician,
                     icon: const Icon(Icons.report_problem_outlined),
-                    label: Text(bilingual('Báo KTV không đến', 'Report technician no-show')),
+                    label: Text(bilingual('Đổi thợ và chọn giờ mới', 'Change technician and time')),
                   ),
                 ),
               if (status == 'PENDING' && technician == null)
