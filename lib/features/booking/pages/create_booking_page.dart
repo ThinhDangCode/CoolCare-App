@@ -117,6 +117,10 @@ class _CreateBookingPageState extends State<CreateBookingPage> {
     if (!mounted) return;
 
     if (!success) {
+      if (controller.bookingNoticeCode == 'BOOKING_RATE_LIMIT') {
+        await _showBookingRestrictionNotice();
+        return;
+      }
       _showMessage(
         controller.formErrorMessage == null
             ? context.tr('bookingUi54')
@@ -162,6 +166,29 @@ class _CreateBookingPageState extends State<CreateBookingPage> {
     // A successful selection completes the booking flow.
     // HomePage is the first route of the customer app.
     Navigator.of(context).popUntil((route) => route.isFirst);
+  }
+
+  Future<void> _showBookingRestrictionNotice() async {
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Row(children: [
+          Icon(Icons.info_outline, color: Color(0xFF078B96)),
+          SizedBox(width: 8),
+          Expanded(child: Text('Thông báo hạn chế đặt lịch')),
+        ]),
+        content: const Text(
+          'Bạn đã hủy từ 5 đơn trong 24 giờ gần nhất. '
+          'Tính năng tạo đơn mới đang tạm bị hạn chế. '
+          'Bạn có thể đặt lịch lại khi số lần hủy trong 24 giờ gần nhất giảm xuống dưới 5. '
+          'Các đơn hủy do kỹ thuật viên đến trễ không được tính.'
+        ),
+        actions: [TextButton(
+          onPressed: () => Navigator.of(dialogContext).pop(),
+          child: const Text('Đã hiểu'),
+        )],
+      ),
+    );
   }
 
   void _showMessage(String message) {
