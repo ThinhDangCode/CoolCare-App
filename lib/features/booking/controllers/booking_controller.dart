@@ -96,6 +96,7 @@ class BookingController extends ChangeNotifier {
 
   String? errorMessage;
   String? formErrorMessage;
+  String? bookingNoticeCode;
   Map<String, dynamic>? createdBooking;
 
   bool _disposed = false;
@@ -412,6 +413,7 @@ class BookingController extends ChangeNotifier {
 
     isSaving = true;
     formErrorMessage = null;
+    bookingNoticeCode = null;
     createdBooking = null;
     _notify();
 
@@ -442,6 +444,11 @@ class BookingController extends ChangeNotifier {
       createdBooking = data;
       return true;
     } catch (error) {
+      if (error is ApiException &&
+          (error.code == 'BOOKING_RATE_LIMIT' ||
+           error.code == 'TECHNICIAN_REQUEST_RATE_LIMIT')) {
+        bookingNoticeCode = error.code;
+      }
       formErrorMessage = _errorMessage(error);
       return false;
     } finally {

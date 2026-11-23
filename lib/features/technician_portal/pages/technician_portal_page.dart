@@ -551,19 +551,18 @@ class _NextJobCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    context.tr('newRequest').toUpperCase(),
-                    style: TextStyle(
-                      color: context.appMuted,
-                      fontWeight: FontWeight.w800,
-                      fontSize: 11,
+                  Icon(Icons.assignment_outlined, size: 17, color: CoolCareColors.primary),
+                  const SizedBox(width: 7),
+                  Expanded(
+                    child: Text(
+                      context.tr('newRequest'),
+                      style: TextStyle(color: context.appMuted, fontWeight: FontWeight.w700, fontSize: 12),
                     ),
                   ),
-                  Chip(label: Text(context.tr('newRequest'))),
                 ],
               ),
+              const SizedBox(height: 10),
               Text(
                 localizedServiceName(context, job!.serviceName),
                 style: const TextStyle(
@@ -583,7 +582,7 @@ class _NextJobCard extends StatelessWidget {
                 width: double.infinity,
                 child: FilledButton(
                   onPressed: onViewDetails,
-                  child: Text(context.tr('viewDetails')),
+                  child: Text(context.tr('viewJobDetails')),
                 ),
               ),
             ],
