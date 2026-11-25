@@ -63,6 +63,8 @@ class AcServiceHistoryItem {
     required this.services,
     required this.additionalWork,
     this.completedAt,
+    this.scheduledAt,
+    this.unitDescription,
     this.diagnosis,
     this.serviceNotes,
     this.bookingDescription,
@@ -71,6 +73,8 @@ class AcServiceHistoryItem {
   factory AcServiceHistoryItem.fromJson(Map<String, dynamic> json) =>
       AcServiceHistoryItem(
         bookingCode: json['bookingCode']?.toString() ?? '',
+        scheduledAt: DateTime.tryParse(json['scheduledAt']?.toString() ?? ''),
+        unitDescription: (json['unit'] is Map) ? json['unit']['description']?.toString() : null,
         completedAt: DateTime.tryParse(json['completedAt']?.toString() ?? ''),
         totalAmount: _number(json['totalAmount']),
         diagnosis: json['diagnosis']?.toString(),
@@ -86,6 +90,8 @@ class AcServiceHistoryItem {
       );
   final String bookingCode;
   final DateTime? completedAt;
+  final DateTime? scheduledAt;
+  final String? unitDescription;
   final double totalAmount;
   final String? diagnosis;
   final String? serviceNotes;
@@ -116,14 +122,24 @@ class AcHistoryService {
 }
 
 class AcAdditionalWork {
-  const AcAdditionalWork({required this.description, required this.totalPrice});
+  const AcAdditionalWork({required this.description, required this.totalPrice, this.quantity = 0, this.unit, this.unitPrice = 0, this.reason, this.note});
   factory AcAdditionalWork.fromJson(Map<String, dynamic> json) =>
       AcAdditionalWork(
         description: json['description']?.toString() ?? '',
         totalPrice: _number(json['totalPrice']),
+        quantity: _number(json['quantity']),
+        unit: json['unit']?.toString(),
+        unitPrice: _number(json['unitPrice']),
+        reason: json['reason']?.toString(),
+        note: json['note']?.toString(),
       );
   final String description;
   final double totalPrice;
+  final double quantity;
+  final String? unit;
+  final double unitPrice;
+  final String? reason;
+  final String? note;
 }
 
 class AcServiceHistoryPagination {

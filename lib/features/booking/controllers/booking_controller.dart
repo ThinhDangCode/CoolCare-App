@@ -19,7 +19,7 @@ class BookingAcUnit {
 
   Map<String, dynamic> toJson() => {
     'acBrandId': acBrandId,
-    'acModelId': null, // Only assigned technicians may set the model.
+    'acModelId': acModelId,
     'description': description.trim(),
     'serviceIds': serviceIds,
   };
@@ -76,7 +76,7 @@ class BookingController extends ChangeNotifier {
   void selectPreviousAcUnit(int index, Map<String, dynamic>? previous) {
     if (index < 0 || index >= units.length) return;
     units[index].acBrandId = previous?['brandId']?.toString();
-    units[index].acModelId = null;
+    units[index].acModelId = previous?['modelId']?.toString();
     _notify();
   }
 

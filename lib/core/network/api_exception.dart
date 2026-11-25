@@ -16,6 +16,9 @@ class ApiException implements Exception {
   String get message {
     if (LanguageState.code != 'en') return _message;
     const englishByCode = <String, String>{
+      'TECHNICIAN_PREVIOUSLY_CANCELLED': 'This technician previously cancelled this booking. Please select another technician.',
+      'TECHNICIAN_PREVIOUS_REQUEST': 'You have already requested this technician for this booking. Please select another technician.',
+      'PREVIOUS_TECHNICIAN_EXCLUDED': 'You cannot select the technician you just replaced.',
       'NETWORK_ERROR': 'Could not connect to the server. Check your connection and try again.',
       'REQUEST_TIMEOUT': 'The request timed out. Please try again.',
       'INVALID_RESPONSE': 'The server returned an invalid response. Please try again.',

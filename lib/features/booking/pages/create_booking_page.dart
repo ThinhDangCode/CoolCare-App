@@ -1,4 +1,5 @@
 import '../../../app/localization/app_strings.dart';
+import '../../../core/localization/language_state.dart';
 import '../../../app/localization/service_text.dart';
 import 'package:flutter/material.dart';
 
@@ -413,9 +414,27 @@ class _CreateBookingPageState extends State<CreateBookingPage> {
           ),
 
           const SizedBox(height: 14),
+          if (controller.previousAcUnits.isNotEmpty) ...[
+            _fieldLabel(LanguageState.code == 'en' ? 'Previously serviced AC' : 'Máy lạnh từng sử dụng dịch vụ', optional: true),
+            DropdownButtonFormField<String>(
+              key: ValueKey('previous-$index-${controller.customerAddressId}-${unit.acModelId}'),
+              isExpanded: true,
+              initialValue: controller.previousAcUnits.any((p) => p['modelId']?.toString() == unit.acModelId) ? unit.acModelId : null,
+              decoration: _inputDecoration(LanguageState.code == 'en' ? 'Select previous AC' : 'Chọn máy lạnh cũ'),
+              items: [
+                DropdownMenuItem(value: '', child: Text(LanguageState.code == 'en' ? 'New / other AC' : 'Máy lạnh mới / khác')),
+                ...controller.previousAcUnits.map((p) => DropdownMenuItem<String>(value: p['modelId'].toString(), child: Text("${p['brandName']} - ${p['modelName']}", overflow: TextOverflow.ellipsis))),
+              ],
+              onChanged: (value) {
+                final matches = controller.previousAcUnits.where((p) => p['modelId']?.toString() == value);
+                controller.selectPreviousAcUnit(index, matches.isEmpty ? null : matches.first);
+              },
+            ),
+            const SizedBox(height: 14),
+          ],
           _fieldLabel(context.tr('bookingUi8'), optional: true),
           DropdownButtonFormField<String>(
-            key: ValueKey('brand-$index-${controller.customerAddressId}'),
+            key: ValueKey('brand-$index-${controller.customerAddressId}-${unit.acBrandId}'),
             isExpanded: true,
             initialValue: controller.brands.any(
               (brand) => brand['id']?.toString() == unit.acBrandId,

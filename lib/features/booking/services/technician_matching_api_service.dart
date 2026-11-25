@@ -108,7 +108,10 @@ class TechnicianMatchingApiService {
       );
     } on ApiException catch (error) {
       if (error.code == 'TECHNICIAN_UNAVAILABLE' ||
-          error.code == 'TECHNICIAN_NOT_FOUND') {
+          error.code == 'TECHNICIAN_NOT_FOUND' ||
+          error.code == 'TECHNICIAN_PREVIOUSLY_CANCELLED' ||
+          error.code == 'TECHNICIAN_PREVIOUS_REQUEST' ||
+          error.code == 'PREVIOUS_TECHNICIAN_EXCLUDED') {
         throw TechnicianUnavailableException(error.message);
       }
 

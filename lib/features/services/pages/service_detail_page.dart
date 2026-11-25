@@ -495,6 +495,7 @@ class _ServiceDetailPageState extends State<ServiceDetailPage> {
     final rating = _parseRating(review['rating']);
 
     final comment = review['comment']?.toString().trim() ?? '';
+    final customerName = review['customer_name']?.toString().trim() ?? '';
 
     return Container(
       width: double.infinity,
@@ -529,7 +530,9 @@ class _ServiceDetailPageState extends State<ServiceDetailPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  context.tr('customer'),
+                  customerName.isNotEmpty
+                      ? customerName
+                      : context.tr('customer'),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
