@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
+import '../../../core/localization/language_state.dart';
+
 
 import '../../../app/theme/coolcare_theme.dart';
 import '../../../core/network/api_exception.dart';
 import '../models/ac_service_history.dart';
 import '../repositories/technician_portal_repository.dart';
+
+String _bi(String vi, String en) => LanguageState.code == 'en' ? en : vi;
 
 class CustomerAcServiceHistoryPage extends StatefulWidget {
   const CustomerAcServiceHistoryPage({
@@ -71,8 +75,8 @@ class _CustomerAcServiceHistoryPageState
       title: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'AC Service History',
+          Text(
+            _bi('Lịch sử dịch vụ máy lạnh', 'AC Service History'),
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
           ),
           const SizedBox(height: 2),
@@ -100,8 +104,8 @@ class _CustomerAcServiceHistoryPageState
             icon: Icons.cloud_off_outlined,
             message: error is ApiException
                 ? error.message
-                : 'Unable to load AC service history.',
-            actionLabel: 'Try again',
+                : _bi('Không tải được lịch sử dịch vụ.', 'Unable to load AC service history.'),
+            actionLabel: _bi('Thử lại', 'Try again'),
             onAction: _refresh,
           );
         }
@@ -111,6 +115,7 @@ class _CustomerAcServiceHistoryPageState
           child: ListView(
             physics: const AlwaysScrollableScrollPhysics(),
             children: [
+              Padding(padding: const EdgeInsets.all(12), child: Text(_bi('Lịch sử đối chiếu theo địa chỉ, hãng và model; có thể gồm nhiều máy giống nhau.', 'History matches address, brand and model; identical AC units may be combined.'))),
               _CustomerAndUnitHeader(
                 customerName: widget.customerName,
                 address: widget.address,
@@ -123,9 +128,9 @@ class _CustomerAcServiceHistoryPageState
                   children: [
                     Row(
                       children: [
-                        const Expanded(
+                        Expanded(
                           child: Text(
-                            'Service Timeline',
+                            _bi('Lịch sử dịch vụ', 'Service Timeline'),
                             style: TextStyle(
                               color: Color(0xFF193943),
                               fontSize: 14,
@@ -134,7 +139,7 @@ class _CustomerAcServiceHistoryPageState
                           ),
                         ),
                         Text(
-                          '${history.pagination.total} visits',
+                          '${history.pagination.total} ${_bi('lần', 'visits')}',
                           style: const TextStyle(
                             color: Color(0xFF657F8A),
                             fontSize: 11,
@@ -246,7 +251,7 @@ class _CustomerAndUnitHeader extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        acName.isEmpty ? 'Air conditioner' : acName,
+                        acName.isEmpty ? _bi('Máy lạnh', 'Air conditioner') : acName,
                         style: const TextStyle(
                           color: Color(0xFF193943),
                           fontSize: 13,
@@ -257,7 +262,7 @@ class _CustomerAndUnitHeader extends StatelessWidget {
                       Text(
                         [
                               if (unit.unitNumber > 0)
-                                'Unit ${unit.unitNumber}',
+                                '${_bi('Máy', 'Unit')} ${unit.unitNumber}',
                               unit.description,
                             ]
                             .where((value) => value?.trim().isNotEmpty == true)
@@ -360,16 +365,24 @@ class _TimelineItem extends StatelessWidget {
                     fontWeight: FontWeight.w800,
                   ),
                 ),
-                if (item.summary.isNotEmpty) ...[
-                  const SizedBox(height: 5),
-                  Text(
-                    item.summary,
-                    style: const TextStyle(
-                      color: Color(0xFF657F8A),
-                      fontSize: 12,
-                      height: 1.4,
-                    ),
-                  ),
+                Text('${_bi('Mã đơn', 'Booking code')}: ${item.bookingCode}'),
+                Text('${_bi('Ngày hẹn', 'Scheduled date')}: ${_date(item.scheduledAt)}'),
+                Text(_bi('Chi phí trên là tổng đơn, không phải riêng máy.', 'Amount above is the booking total, not the individual AC cost.')),
+                for (final entry in <String, String?>{
+                  _bi('Tình trạng máy', 'AC condition'): item.unitDescription,
+                  _bi('Mô tả đơn', 'Booking description'): item.bookingDescription,
+                  _bi('Chẩn đoán', 'Diagnosis'): item.diagnosis,
+                  _bi('Ghi chú sửa chữa', 'Service notes'): item.serviceNotes,
+                }.entries)
+                  if (entry.value?.trim().isNotEmpty == true) Text('${entry.key}: ${entry.value}'),
+                for (final service in item.services)
+                  Text('${service.name}: ${_money(service.unitPrice)}'),
+                if (item.additionalWork.isNotEmpty)
+                  Text(_bi('Phát sinh toàn đơn', 'Booking-wide additional work')),
+                for (final work in item.additionalWork) ...[
+                  Text('${work.description}: ${work.quantity} ${work.unit ?? ''} × ${_money(work.unitPrice)}'),
+                  if (work.reason?.isNotEmpty == true) Text('${_bi('Lý do', 'Reason')}: ${work.reason}'),
+                  if (work.note?.isNotEmpty == true) Text('${_bi('Ghi chú', 'Note')}: ${work.note}'),
                 ],
                 if (item.additionalWork.isNotEmpty) ...[
                   const SizedBox(height: 8),
@@ -411,7 +424,7 @@ class _TimelineItem extends StatelessWidget {
                       ),
                       const SizedBox(width: 4),
                       Text(
-                        'Tech: ${item.technicianName}',
+                        '${_bi('Kỹ thuật viên', 'Tech')}: ${item.technicianName}',
                         style: const TextStyle(
                           color: Color(0xFF657F8A),
                           fontSize: 11,
@@ -441,7 +454,7 @@ class _HistoryEmpty extends StatelessWidget {
       border: Border.all(color: const Color(0xFFDBE7EB)),
       borderRadius: BorderRadius.circular(12),
     ),
-    child: const Column(
+    child: Column(
       children: [
         Icon(
           Icons.history_toggle_off_rounded,
@@ -450,7 +463,7 @@ class _HistoryEmpty extends StatelessWidget {
         ),
         SizedBox(height: 10),
         Text(
-          'No previous service history',
+          _bi('Chưa có lịch sử dịch vụ', 'No previous service history'),
           style: TextStyle(
             color: Color(0xFF193943),
             fontWeight: FontWeight.w700,
@@ -458,7 +471,7 @@ class _HistoryEmpty extends StatelessWidget {
         ),
         SizedBox(height: 4),
         Text(
-          'This may be the first recorded service for this AC.',
+          _bi('Có thể đây là lần đầu máy lạnh được ghi nhận dịch vụ.', 'This may be the first recorded service for this AC.'),
           textAlign: TextAlign.center,
           style: TextStyle(color: Color(0xFF657F8A), fontSize: 12),
         ),
@@ -497,7 +510,7 @@ class _HistoryMessage extends StatelessWidget {
 }
 
 String _date(DateTime? value) {
-  if (value == null) return 'Date unavailable';
+  if (value == null) return _bi('Chưa có ngày', 'Date unavailable');
   final local = value.toLocal();
   String two(int number) => number.toString().padLeft(2, '0');
   return '${two(local.day)}/${two(local.month)}/${local.year}';
