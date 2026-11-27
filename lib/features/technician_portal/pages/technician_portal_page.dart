@@ -42,6 +42,9 @@ class _TechnicianPortalPageState extends State<TechnicianPortalPage> {
   String? _error;
   int _tab = 0;
   bool _changingAvailability = false;
+  bool _penaltyLocked = false;
+  Timer? _penaltyCheckTimer;
+  bool _checkingPenalty = false;
 
   @override
   void initState() {
@@ -56,16 +59,39 @@ class _TechnicianPortalPageState extends State<TechnicianPortalPage> {
     }));
     _load();
     _loadNotificationHistory();
+    _penaltyCheckTimer = Timer.periodic(
+      const Duration(seconds: 15), (_) => _checkPenaltyLock(),
+    );
   }
 
   @override
   void dispose() {
+    _penaltyCheckTimer?.cancel();
     ChatUnread.instance.removeListener(_onChatChanged);
     super.dispose();
   }
 
   void _onChatChanged() {
     if (mounted) setState(() {});
+  }
+
+  Future<void> _checkPenaltyLock() async {
+    if (_checkingPenalty || _penaltyLocked || !mounted) return;
+    _checkingPenalty = true;
+    try {
+      await _repository.availabilityStatus();
+    } on ApiException catch (error) {
+      if (mounted && error.code == 'TECHNICIAN_POINTS_EXHAUSTED') {
+        setState(() {
+          _penaltyLocked = true;
+          _dashboard = null;
+        });
+      }
+    } catch (_) {
+      // Network errors must not be interpreted as a penalty lock.
+    } finally {
+      _checkingPenalty = false;
+    }
   }
 
   Future<void> _loadNotificationHistory() async {
@@ -107,7 +133,13 @@ class _TechnicianPortalPageState extends State<TechnicianPortalPage> {
       }
     } on ApiException catch (error) {
       if (mounted) {
-        setState(() => _error = error.message);
+        setState(() {
+          _error = error.message;
+          if (error.code == 'TECHNICIAN_POINTS_EXHAUSTED') {
+            _penaltyLocked = true;
+            _dashboard = null;
+          }
+        });
       }
     } catch (_) {
       if (mounted) {
@@ -151,6 +183,20 @@ class _TechnicianPortalPageState extends State<TechnicianPortalPage> {
     final unreadNotificationCount = ForegroundNotifications.unreadCountOf(
       context,
     );
+    if (_penaltyLocked || widget.user.technicianPenaltyLocked) {
+      return Scaffold(
+        appBar: AppBar(title: Text(context.tr('technicianPenaltyLocked'))),
+        body: Center(child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(mainAxisSize: MainAxisSize.min, children: [
+            Text(context.tr('technicianPenaltyLockedHint')),
+            const SizedBox(height: 16),
+            FilledButton(onPressed: () => Navigator.of(context).pop(),
+              child: Text(context.tr('back'))),
+          ]),
+        )),
+      );
+    }
     return Scaffold(
       backgroundColor: context.appBackground,
       appBar: AppBar(

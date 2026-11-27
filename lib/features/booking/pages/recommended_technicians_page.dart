@@ -1,4 +1,5 @@
 import '../../../app/localization/app_strings.dart';
+import '../../../core/network/api_exception.dart';
 import 'my_bookings_page.dart';
 import 'package:flutter/material.dart';
 
@@ -73,6 +74,7 @@ class _RecommendedTechniciansPageState
 
   bool _loading = true;
   bool _submitting = false;
+  bool _closed = false;
 
   String? _error;
   String? _warning;
@@ -89,6 +91,7 @@ class _RecommendedTechniciansPageState
     setState(() {
       _loading = true;
       _error = null;
+      _closed = false;
       _warning = null;
     });
 
@@ -98,10 +101,17 @@ class _RecommendedTechniciansPageState
       if (!mounted) return;
 
       setState(() => _technicians = result);
+    } on ApiException catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _technicians = const [];
+        _closed = _bookingClosed(error);
+        _error = _closed ? _closedMessage() : context.tr('bookingUi81');
+      });
     } catch (_) {
       if (!mounted) return;
-
       setState(() {
+        _technicians = const [];
         _error = context.tr('bookingUi81');
       });
     } finally {
@@ -110,6 +120,13 @@ class _RecommendedTechniciansPageState
       }
     }
   }
+
+  bool _bookingClosed(ApiException error) =>
+      error.code == 'BOOKING_SCHEDULE_EXPIRED' || error.code == 'INVALID_BOOKING_STATUS';
+
+  String _closedMessage() => Localizations.localeOf(context).languageCode == 'vi'
+      ? 'Lịch hẹn đã hết hạn hoặc trạng thái đơn đã thay đổi. Vui lòng quay lại chi tiết đơn.'
+      : 'The appointment expired or the booking status changed. Please return to booking details.';
 
   Future<void> _showProfile(RecommendedTechnician technician) async {
     await showModalBottomSheet<void>(
@@ -237,6 +254,17 @@ class _RecommendedTechniciansPageState
       });
 
       await _reloadKeepingWarning();
+    } on ApiException catch (error) {
+      if (!mounted) return;
+      if (_bookingClosed(error)) {
+        setState(() {
+          _technicians = const [];
+          _closed = true;
+          _error = _closedMessage();
+        });
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(error.message)));
+      }
     } catch (_) {
       if (!mounted) return;
 
@@ -490,8 +518,8 @@ class _RecommendedTechniciansPageState
               icon: Icons.error_outline,
               title: context.tr('bookingUi76'),
               message: _error!,
-              action: context.tr('bookingUi52'),
-              onAction: _reload,
+              action: _closed ? (Localizations.localeOf(context).languageCode == 'vi' ? 'Quay lại' : 'Go back') : context.tr('bookingUi52'),
+              onAction: _closed ? () { Navigator.of(context).pop(); } : _reload,
             )
           else if (_technicians.isEmpty)
             _statusView(

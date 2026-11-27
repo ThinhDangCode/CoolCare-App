@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../../../app/localization/app_strings.dart';
@@ -29,12 +30,42 @@ class _MyBookingsPageState extends State<MyBookingsPage> {
   final Map<String, bool?> _paidByBooking = {};
   String _filter = 'all';
   String? _rebookingId;
+  Timer? _statusTimer;
+  bool _statusChecking = false;
+
+  @override
+  void dispose() {
+    _statusTimer?.cancel();
+    super.dispose();
+  }
+
+  String _statusKey(List<MyBooking> rows) => rows.map((b) =>
+      '${b.id}:${b.status}:${b.scheduledAt}:${b.technicianName}:${b.totalAmount}:${b.reviewed}').join('|');
+
+  Future<void> _pollStatuses() async {
+    if (!mounted || _statusChecking || ModalRoute.of(context)?.isCurrent != true || _showReviews) return;
+    _statusChecking = true;
+    final original = _bookings;
+    try {
+      final latest = await _repository.getMyBookings();
+      List<MyBooking>? old;
+      try { old = await original; } catch (_) {}
+      if (!mounted || !identical(original, _bookings) || ModalRoute.of(context)?.isCurrent != true) return;
+      if (old == null || _statusKey(old) != _statusKey(latest)) {
+        final next = Future.value(latest);
+        setState(() => _bookings = next);
+        _loadPaymentStatuses(next);
+      }
+    } catch (_) { /* Keep the last successful list. */ }
+    finally { _statusChecking = false; }
+  }
 
   @override
   void initState() {
     super.initState();
     _bookings = _repository.getMyBookings();
     _loadPaymentStatuses(_bookings);
+    _statusTimer = Timer.periodic(const Duration(seconds: 15), (_) => _pollStatuses());
   }
 
   Future<void> _loadPaymentStatuses(Future<List<MyBooking>> source) async {

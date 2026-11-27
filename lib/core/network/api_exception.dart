@@ -25,6 +25,7 @@ class ApiException implements Exception {
       'API_NOT_CONFIGURED': 'The server address has not been configured.',
       'INVALID_CREDENTIALS': 'Incorrect email or password.',
       'ACCOUNT_UNAVAILABLE': 'This account is unavailable. Please contact support.',
+      'TECHNICIAN_POINTS_EXHAUSTED': 'Technician access is locked because no points remain. Customer features are still available.' ,
       'EMAIL_NOT_VERIFIED': 'Please verify your email before logging in.',
       'GOOGLE_SIGN_IN_REQUIRED': 'This account uses Google. Continue with Google to log in.',
       'EMAIL_ALREADY_REGISTERED': 'This email is already registered. Please log in.',

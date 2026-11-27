@@ -220,7 +220,9 @@ class AccountPage extends StatelessWidget {
                 const SizedBox(height: 5),
 
                 Text(
-                  user.isTechnicianVerified
+                  user.technicianPenaltyLocked
+                      ? context.tr('technicianPenaltyLockedHint')
+                      : user.isTechnicianVerified
                       ? context.tr('technicianPortalHint')
                       : context.tr('becomeTechnicianHint'),
                   style: TextStyle(
@@ -235,7 +237,7 @@ class AccountPage extends StatelessWidget {
                 SizedBox(
                   width: double.infinity,
                   child: FilledButton(
-                    onPressed: () => Navigator.of(context).push(
+                    onPressed: user.technicianPenaltyLocked ? null : () => Navigator.of(context).push(
                       MaterialPageRoute(
                         builder: (_) => user.isTechnicianVerified
                             ? TechnicianPortalPage(user: user)
@@ -249,7 +251,9 @@ class AccountPage extends StatelessWidget {
                       ),
                     ),
                     child: Text(
-                      user.isTechnicianVerified
+                      user.technicianPenaltyLocked
+                          ? context.tr('technicianPenaltyLocked')
+                          : user.isTechnicianVerified
                           ? context.tr('openTechnicianPortal')
                           : context.tr('registerTechnician'),
                       style: const TextStyle(

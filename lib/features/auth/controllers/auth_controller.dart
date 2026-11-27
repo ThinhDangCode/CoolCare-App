@@ -130,7 +130,8 @@ class AuthController extends ChangeNotifier {
       notifyListeners();
     } on ApiException catch (error) {
       if (generation != _sessionGeneration) return;
-      if (error.code == 'SESSION_REPLACED' || error.statusCode == 401) {
+      if (error.code == 'SESSION_REPLACED' ||
+          error.code == 'ACCOUNT_UNAVAILABLE' || error.statusCode == 401) {
         await _expireLocalSession(error.code == 'SESSION_REPLACED');
       }
       // Keep the session when only the network is temporarily unavailable.
