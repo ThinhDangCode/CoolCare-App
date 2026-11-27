@@ -41,6 +41,8 @@ class _BookingDetailPageState extends State<BookingDetailPage> {
   bool _timelineFailed = false;
   Timer? _acceptanceTimer;
   String? _previousBookingStatus;
+  bool? _previousCanReportNoShow;
+  bool? _previousCanCancel;
   bool _acceptanceChecking = false;
 
 
@@ -51,8 +53,12 @@ class _BookingDetailPageState extends State<BookingDetailPage> {
     _paymentRepo = widget.paymentRepository ?? PaymentRepository();
     detail = _load();
     // Poll only while this detail screen is open; initial status is not a new event.
-    detail.then((value) {
-      if (mounted) _previousBookingStatus = value['status']?.toString();
+    detail.then<void>((value) {
+      if (mounted) {
+        _previousBookingStatus = value['status']?.toString();
+        _previousCanReportNoShow = value['canReportNoShow'] == true;
+        _previousCanCancel = value['canCancel'] == true;
+      }
     }).catchError((Object _) {});
     _acceptanceTimer = Timer.periodic(const Duration(seconds: 15), (_) => _checkTechnicianAccepted());
   }
@@ -64,15 +70,19 @@ class _BookingDetailPageState extends State<BookingDetailPage> {
   }
 
   Future<void> _checkTechnicianAccepted() async {
-    if (!mounted || _acceptanceChecking || _previousBookingStatus == null) return;
+    if (!mounted || _acceptanceChecking) return;
     _acceptanceChecking = true;
     try {
       final latest = await repo.getDetail(widget.bookingId);
       final current = latest['status']?.toString();
       final previous = _previousBookingStatus;
       if (!mounted) return;
+      final actionsChanged = _previousCanReportNoShow != (latest['canReportNoShow'] == true) ||
+          _previousCanCancel != (latest['canCancel'] == true);
+      _previousCanReportNoShow = latest['canReportNoShow'] == true;
+      _previousCanCancel = latest['canCancel'] == true;
       if (current != null) _previousBookingStatus = current;
-      if (current == 'ACCEPTED' && previous != 'ACCEPTED') {
+      if (current == 'ACCEPTED' && previous != null && previous != 'ACCEPTED') {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             behavior: SnackBarBehavior.floating,
@@ -85,7 +95,20 @@ class _BookingDetailPageState extends State<BookingDetailPage> {
             ]),
           ),
         );
+      }
+      if (current != null && current != previous) {
+        if (previous != null && (current == 'PENDING' || current == 'CANCELLED')) {
+          final vi = Localizations.localeOf(context).languageCode == 'vi';
+          final message = current == 'PENDING'
+              ? (vi ? 'Yêu cầu thợ đã kết thúc. Bạn có thể chọn thợ khác nếu còn giờ hẹn.' : 'The request ended. Choose another technician if the appointment is still valid.')
+              : (vi ? 'Đơn đã bị hủy. Xem lý do trong chi tiết đơn.' : 'The booking was cancelled. See the reason in booking details.');
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+        }
         _reload();
+      } else if (actionsChanged) {
+        _reload();
+      } else if (current == 'PENDING' || current == 'TECHNICIAN_SELECTED' || current == 'ACCEPTED') {
+        setState(() {});
       }
     } catch (_) {
       // A transient network failure must not disrupt the booking detail screen.
@@ -423,6 +446,10 @@ class _BookingDetailPageState extends State<BookingDetailPage> {
         final isWaiting = awaitingPayment || paymentUnknown ||
             status == 'PENDING' || status == 'TECHNICIAN_SELECTED';
         final isCancelled = status == 'CANCELLED';
+        final scheduledAt = DateTime.tryParse(data['scheduledAt']?.toString() ?? '');
+        final scheduleExpired = scheduledAt != null && !scheduledAt.isAfter(DateTime.now());
+        final expiredUnassigned = scheduleExpired &&
+            (status == 'PENDING' || status == 'TECHNICIAN_SELECTED');
         final statusColor = isCancelled
             ? const Color(0xFFB42318)
             : isWaiting
@@ -653,7 +680,16 @@ class _BookingDetailPageState extends State<BookingDetailPage> {
                     label: Text(bilingual('Đổi thợ và chọn giờ mới', 'Change technician and time')),
                   ),
                 ),
-              if (status == 'PENDING' && technician == null)
+              if (expiredUnassigned)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: OutlinedButton.icon(
+                    onPressed: _reload,
+                    icon: const Icon(Icons.refresh),
+                    label: Text(bilingual('Đã hết giờ hẹn – cập nhật trạng thái', 'Appointment expired – refresh status')),
+                  ),
+                ),
+              if (status == 'PENDING' && technician == null && !scheduleExpired)
                 Padding(
                   padding: const EdgeInsets.only(bottom: 12),
                   child: FilledButton.icon(
@@ -718,7 +754,7 @@ class _BookingDetailPageState extends State<BookingDetailPage> {
                   context.tr('bookingDetailReason'),
                   Text(data['cancellationReason'].toString()),
                 ),
-              if (data['canCancel'] == true)
+              if (data['canCancel'] == true && !expiredUnassigned)
                 OutlinedButton.icon(
                   onPressed: cancelling ? null : _cancel,
                   icon: const Icon(Icons.cancel_outlined),

@@ -52,7 +52,16 @@ class _ViewJobRequestDetailPageState extends State<ViewJobRequestDetailPage> {
           _scheduledStart = DateTime.tryParse('${travel['scheduled_at'] ?? ''}')?.toLocal();
         });
       }
-    } catch (_) { /* Server still validates arrival before completion. */ }
+    } on ApiException catch (error) {
+      if (!mounted || !['TRAVEL_NOT_ALLOWED', 'BOOKING_NOT_FOUND'].contains(error.code)) return;
+      if (ModalRoute.of(context)?.isCurrent != true) return;
+      _deadlineTimer?.cancel();
+      final vi = Localizations.localeOf(context).languageCode == 'vi';
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(vi
+          ? 'Công việc không còn được phân công cho bạn. Vui lòng tải lại danh sách.'
+          : 'This job is no longer assigned to you. Refresh the list.')));
+      if (ModalRoute.of(context)?.isCurrent == true) Navigator.of(context).pop(true);
+    } catch (_) { /* Transient failures do not change the assignment. */ }
   }
 
   bool get _canWorkNow => _earlyStartAllowed ||
@@ -665,7 +674,7 @@ class _ViewJobRequestDetailPageState extends State<ViewJobRequestDetailPage> {
                       children: [
                         Expanded(
                           child: OutlinedButton(
-                            onPressed: _submitting ? null : _confirmDecline,
+                            onPressed: _submitting || _requestExpired ? null : _confirmDecline,
                             style: OutlinedButton.styleFrom(
                               foregroundColor: const Color(0xFFDC2626),
                               side: const BorderSide(color: Color(0xFFDC2626)),
@@ -745,7 +754,7 @@ class _ViewJobRequestDetailPageState extends State<ViewJobRequestDetailPage> {
                     ],
                     Row(
                       children: [
-                        if (request.canCancelAcceptedJob)
+                        if (request.canCancelAcceptedJob && !_arrived)
                           Expanded(
                             child: OutlinedButton.icon(
                               onPressed: _submitting
@@ -765,8 +774,6 @@ class _ViewJobRequestDetailPageState extends State<ViewJobRequestDetailPage> {
                               label: Text(context.tr('cancel')),
                             ),
                           ),
-                        if (request.canCancelAcceptedJob && request.canComplete && _arrived && _canWorkNow)
-                          const SizedBox(width: 12),
                         if (request.canComplete && _arrived && !_canWorkNow)
                           const Expanded(child: Padding(
                             padding: EdgeInsets.symmetric(vertical: 10),
@@ -980,14 +987,13 @@ class _ViewJobRequestDetailPageState extends State<ViewJobRequestDetailPage> {
       );
       if (!mounted) return;
       final penalty = result.penaltyPoints;
+      final outcome = result.bookingStatus == 'CANCELLED'
+          ? context.tr('jobCancelBookingExpired')
+          : context.tr('jobCancelBookingPending');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            penalty == null
-                ? context.tr('jobCancelledSuccess')
-                : context
-                      .tr('jobPenaltyApplied')
-                      .replaceFirst('{count}', '$penalty'),
+            '${penalty == null ? context.tr('jobCancelledSuccess') : context.tr('jobPenaltyApplied').replaceFirst('{count}', '$penalty')} $outcome',
           ),
         ),
       );
@@ -1039,7 +1045,10 @@ class _ViewJobRequestDetailPageState extends State<ViewJobRequestDetailPage> {
 
   bool get _requestExpired {
     final deadline = jobRequestDeadline(widget.request);
-    return deadline != null && !DateTime.now().isBefore(deadline);
+    final scheduledAt = widget.request.booking.scheduledAt;
+    final now = DateTime.now();
+    return (deadline != null && !now.isBefore(deadline)) ||
+        (scheduledAt != null && !now.isBefore(scheduledAt));
   }
 
   bool _showExpiredRequest() {
@@ -1109,7 +1118,7 @@ class _ViewJobRequestDetailPageState extends State<ViewJobRequestDetailPage> {
 
   Future<void> _respond({required bool accept, String? reason}) async {
     final repository = widget.repository;
-    if (repository == null || _submitting || (accept && _showExpiredRequest())) return;
+    if (repository == null || _submitting || _showExpiredRequest()) return;
     setState(() => _submitting = true);
     try {
       await repository.respondToJobRequest(

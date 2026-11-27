@@ -28,12 +28,15 @@ class ViewJobRequestsPage extends StatefulWidget {
 class _ViewJobRequestsPageState extends State<ViewJobRequestsPage> {
   int _tab = 0;
   Timer? _departureClock;
+  Timer? _statusClock;
+  bool _statusChecking = false;
   DateTime? _lastDepartureReminder;
   bool _reminderVisible = false;
 
   @override
   void dispose() {
     _departureClock?.cancel();
+    _statusClock?.cancel();
     super.dispose();
   }
 
@@ -79,6 +82,7 @@ class _ViewJobRequestsPageState extends State<ViewJobRequestsPage> {
     _requests = _fetch();
     WidgetsBinding.instance.addPostFrameCallback((_) => _checkDepartureReminder());
     _departureClock = Timer.periodic(const Duration(minutes: 1), (_) => _checkDepartureReminder());
+    _statusClock = Timer.periodic(const Duration(seconds: 15), (_) => _pollStatuses());
   }
 
   Future<List<ViewJobRequest>> _fetch() async {
@@ -89,6 +93,26 @@ class _ViewJobRequestsPageState extends State<ViewJobRequestsPage> {
       _ => 'CLOSED',
     };
     return widget.repository.viewJobRequests(status: status);
+  }
+
+  String _statusKey(List<ViewJobRequest> rows) => rows.map((r) =>
+      '${r.id}:${r.status}:${r.booking.status}:${r.booking.scheduledAt}').join('|');
+
+  Future<void> _pollStatuses() async {
+    if (!mounted || _statusChecking || ModalRoute.of(context)?.isCurrent != true) return;
+    _statusChecking = true;
+    final original = _requests;
+    final tab = _tab;
+    try {
+      final latest = await _fetch();
+      List<ViewJobRequest>? old;
+      try { old = await original; } catch (_) {}
+      if (!mounted || tab != _tab || !identical(original, _requests) || ModalRoute.of(context)?.isCurrent != true) return;
+      if (old == null || _statusKey(old) != _statusKey(latest)) {
+        setState(() => _requests = Future.value(latest));
+      }
+    } catch (_) { /* Keep the last successful list. */ }
+    finally { _statusChecking = false; }
   }
 
   void _selectTab(int value) {
